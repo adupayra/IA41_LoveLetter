@@ -8,13 +8,13 @@ import tkinter as tk
 
 
 def display_game_scene():
-    View._game_scene.tkraise()
+        View._game_scene.tkraise()
 
 def display_end_game_scene():
-    View._end_game_scene.tkraise()
-
+        View._end_game_scene.tkraise()
+    
 def display_menu_scene():
-    View._menu_scene.tkraise()
+        View._menu_scene.tkraise()
     
 
 class View(tk.Tk):
@@ -35,18 +35,19 @@ class View(tk.Tk):
         height_value = self.winfo_screenheight()
         self.geometry("%dx%d+0+0" % (width_value, height_value))
         
-        #Création des différentes scènes
-        View._menu_scene = MenuScene(self)
-        View._game_scene = GameScene(self)
-        View._end_game_scene = EndGameScene(self)
+        #Création d'un container pour les différentes scènes
+        container = tk.Frame(self)
+        container.place(relwidth = 1, relheight = 1)
         
-        for f in (View._menu_scene, View._game_scene, View._end_game_scene):
-            f.initbuttons()
+        #Création des différentes scènes
+        View._menu_scene = MenuScene(container)
+        View._game_scene = GameScene(container)
+        View._end_game_scene = EndGameScene(container)
+        
         display_menu_scene()
-        self._menu_scene.button.tkraise()
         self.mainloop()
             
-
+    
 
 
 class MenuScene(tk.Frame):
@@ -61,13 +62,8 @@ class MenuScene(tk.Frame):
         '''
         tk.Frame.__init__(self, parent, bg = 'green')
         self.place(relwidth = 1, relheight = 1)
-        self.parent = parent
-        self.button = None
-
-    def initbuttons(self):
-        self.button=tk.Button(self.parent, command = display_game_scene(),text = "bite")
-        self.button.pack()
-        self.button.tkraise()
+        button = tk.Button(self, text = "test", command = display_game_scene)
+        button.pack()
        
         
 
@@ -84,12 +80,9 @@ class GameScene(tk.Frame):
         '''
         tk.Frame.__init__(self, parent, bg = 'blue')
         self.place(relwidth = 1, relheight = 1)
-        self.parent= parent
+        button=tk.Button(self,text = "encorebite", command = display_end_game_scene)
+        button.pack()
         
-        
-    def initbuttons(self):
-        self.button=tk.Button(self.parent, command = display_menu_scene(),text = "bite")
-        self.button.pack()
 
 
 class EndGameScene(tk.Frame):
@@ -104,10 +97,8 @@ class EndGameScene(tk.Frame):
         '''
         tk.Frame.__init__(self, parent, bg = 'cyan')
         self.place(relwidth = 1, relheight = 1)
-        self.parent = parent
+        button = tk.Button(self, text = "bite", command = display_menu_scene)
+        button.pack()
         
-    def initbuttons(self):
-        self.button=tk.Button(self.parent, command = display_menu_scene(), text = "bite")
-        self.button.pack()
         
 test = View()
