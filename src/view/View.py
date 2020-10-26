@@ -35,13 +35,12 @@ class View(object):
     def __new__(cls):
         if(cls._instance is None):
             cls._instance = super(View, cls).__new__(cls)
-            cls._root = tk.Tk()
-            cls._root.mainloop()
-            
+            _menu_scene = MenuScene(cls._instance)
+            _game_scene = GameScene(cls._instance)
         return cls._instance
     
     def initialization(self):
-        """
+        
         #Initialition seulement si ça n'a pas déjà été fait
         if(View._root is None):
             #Création de la fenêtre et scale en fonction de la taille de l'écran de l'utilisateur
@@ -57,7 +56,7 @@ class View(object):
             
             View.display_game_scene()
             View._root.mainloop()
-        """
+        
     #Getter de l'unique instance de classe
     @classmethod
     def get_instance(cls):
@@ -76,4 +75,5 @@ class View(object):
         View._menu_scene.tkraise()
 
 test = View()
+View.get_instance().initialization()
         
