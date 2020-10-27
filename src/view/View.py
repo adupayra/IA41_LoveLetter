@@ -5,16 +5,8 @@ Created on 26 oct. 2020
 @author: Antoine
 '''
 import tkinter as tk
-
-
-def display_game_scene():
-        View._game_scene.tkraise()
-
-def display_end_game_scene():
-        View._end_game_scene.tkraise()
-    
-def display_menu_scene():
-        View._menu_scene.tkraise()
+import src.controller.controller as controller
+import abc
     
 
 class View(tk.Tk):
@@ -22,9 +14,7 @@ class View(tk.Tk):
     Classe qui gère la création de la fenêtre ainsi que les transitions entre les différentes scènes UI (entre le menu de 
     séléction, le jeu, et le menu de victoire
     '''
-    _menu_scene = None
-    _game_scene = None
-    _end_game_scene = None
+    _scenes = None
     
     def __init__(self):
         #Création de la fenêtre
@@ -40,30 +30,44 @@ class View(tk.Tk):
         container.place(relwidth = 1, relheight = 1)
         
         #Création des différentes scènes
-        View._menu_scene = MenuScene(container)
-        View._game_scene = GameScene(container)
-        View._end_game_scene = EndGameScene(container)
+        menu_scene = MenuScene(self, container)
+        game_scene = GameScene(self, container)
+        end_game_scene = EndGameScene(self, container)
         
-        display_menu_scene()
+        View._scenes = {"Menu scene":menu_scene, "Game scene":game_scene, 
+                       "End game scene":end_game_scene}
+        
+        self.display_scene("Menu scene")
+        
         self.mainloop()
             
+    def display_scene(self, scene_name):
+        View._scenes[scene_name].display()
+
+
+
+class Scene(tk.Frame, metaclass = abc.ABCMeta):
     
-
-
+    def __init__(self, parent, color):
+        tk.Frame.__init__(self, parent, bg = color)
+        self.place(relwidth = 1, relheight = 1)
+    
 class MenuScene(tk.Frame):
     '''
     Classe responsable de l'affichage du menu
     '''
 
-
-    def __init__(self, parent):
+    def __init__(self, view, parent):
         '''
         Constructor
         '''
         tk.Frame.__init__(self, parent, bg = 'green')
         self.place(relwidth = 1, relheight = 1)
-        button = tk.Button(self, text = "test", command = display_game_scene)
+        button = tk.Button(self, text = "test", command = lambda:controller.display_scene(view, "Game scene"))
         button.pack()
+    
+    def display(self):
+        self.tkraise()
        
         
 
@@ -72,33 +76,53 @@ class GameScene(tk.Frame):
     '''
     Cette classe contient les éléments UI du jeu
     '''
-
-
-    def __init__(self, parent):
+    
+    def __init__(self, view, parent):
         '''
         Constructor
         '''
         tk.Frame.__init__(self, parent, bg = 'blue')
         self.place(relwidth = 1, relheight = 1)
-        button=tk.Button(self,text = "encorebite", command = display_end_game_scene)
+        button=tk.Button(self,text = "encorebite", command = lambda:controller.display_scene(view, "End game scene"))
         button.pack()
         
+    def display(self):
+        self.tkraise()
 
 
 class EndGameScene(tk.Frame):
     '''
     Classe s'occupant de l'affichage du menu de fin
     '''
+    def __str__(self):
+        return "End game scene"
 
 
-    def __init__(self, parent):
+    def __init__(self, view, parent):
         '''
         Constructor
         '''
+        
+        #Création de la scène
         tk.Frame.__init__(self, parent, bg = 'cyan')
         self.place(relwidth = 1, relheight = 1)
-        button = tk.Button(self, text = "bite", command = display_menu_scene)
+        
+        #Texte de victoire
+        self.label_text = tk.StringVar()
+        self.label = tk.Label(self, text = "")
+        self.label.pack()
+        
+        #Bouton pour revenir au menu
+        button = tk.Button(self, text = "Retour au menu", command = lambda:controller.display_scene(view, "Menu scene"))
         button.pack()
         
+    #Fonction qui permet l'affichage du vainqueur
+    def update_text(self, winner_name):
+        self.label_text = winner_name + "a gagné la manche !"
+    
+    
+    def display(self):
+        self.tkraise()
+
         
 test = View()
