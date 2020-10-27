@@ -24,7 +24,7 @@ class View(tk.Tk):
         #scale de la fenêtre en fonction de la taille de l'écran de l'utilisateur
         width_value = self.winfo_screenwidth()
         height_value = self.winfo_screenheight()
-        self.geometry("%dx%d+0+0" % (width_value, height_value))
+        self.geometry("%dx%d+0+0" % (300, 300)) #Remplacer par les deux variables du dessus pour fullscreen
         
         #Création d'un container pour les différentes scènes
         container = tk.Frame(self)
@@ -74,8 +74,12 @@ class MenuScene(Scene):
         #Création scène        
         Scene.__init__(self, parent, 'green')
         
+        #Création label titre
+        label = tk.Label(self, text = "Love Letter", bg = 'green')
+        label.pack()
+        
         #Création bouton transition
-        button = tk.Button(self, text = "test", command = lambda:controller.display_scene(view, "Game scene"))
+        button = tk.Button(self, text = "Start Game", command = lambda:controller.display_scene(view, "Game scene"))
         button.pack()
     
     def display(self):
@@ -96,17 +100,19 @@ class GameScene(Scene):
         #Création de la scène
         Scene.__init__(self, parent, 'blue')
         
+        
+        
         #Création du bouton transition
-        button=tk.Button(self,text = "encorebite", command = lambda:controller.display_scene(view, "End game scene"))
+        button=tk.Button(self,text = "carte test", command = lambda:controller.card_played(view))
         button.pack()
         
     def display(self):
         self.tkraise()
-
-
+        
+        
 class EndGameScene(Scene):
     '''
-    Classe s'occupant de l'affichage du menu de fin
+    Classe s'occupant de l'affichage du menu de fin (fin de round et fin de partie)
     '''
 
     def __init__(self, view, parent):
@@ -118,19 +124,33 @@ class EndGameScene(Scene):
         Scene.__init__(self, parent, 'cyan')
         
         #Texte de victoire
-        self.label_text = tk.StringVar()
-        self.label = tk.Label(self, text = "")
-        self.label.pack()
+        self._label_victory = tk.Label(self, text = "", bg = 'cyan')
+        self._label_victory.pack()
         
-        #Bouton pour revenir au menu
-        button = tk.Button(self, text = "Retour au menu", command = lambda:controller.display_scene(view, "Menu scene"))
-        button.pack()
+        #Score label et texte
+        self._label_score = tk.Label(self, text = "", bg = 'cyan')
+        self._label_score.pack()
+        
+        
+        #Bouton pour revenir au menu/aller au prochain round
+        retour_menu_button = tk.Button(self, text = "Retour au menu", 
+                                       command = lambda:controller.display_scene(view, "Menu scene"))
+        self._next_round_button = tk.Button(self, text = "Prochain round", 
+                                      command = lambda:controller.display_scene(view, "Game scene"))
+        retour_menu_button.pack()
+        self._next_round_button.pack()
         
     #Fonction qui permet l'affichage du vainqueur
-    def update_text(self, winner_name):
-        self.label_text = winner_name + "a gagné la manche !"
-    
-    
+    def victory_screen(self, winner_name, score):
+        self.display()
+        if score[0] == 6 or score[1] == 6:
+            self._label_victory['text'] = winner_name + " a gagné la partie !"
+            self._next_round_button.pack_forget()
+        else:
+            self._label_victory['text'] = winner_name + " a gagné le round !"
+        
+        self._label_score['text'] = "Joueur : " + str(score[0]) + "points\nIA : " + str(score[1]) + " points"
+        
     def display(self):
         self.tkraise()
 
