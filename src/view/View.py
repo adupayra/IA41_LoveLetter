@@ -108,9 +108,6 @@ class EndGameScene(Scene):
     '''
     Classe s'occupant de l'affichage du menu de fin
     '''
-    def __str__(self):
-        return "End game scene"
-
 
     def __init__(self, view, parent):
         '''
