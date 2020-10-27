@@ -7,6 +7,7 @@ Created on 26 oct. 2020
 import tkinter as tk
 import src.controller.controller as controller
 import abc
+from abc import abstractmethod
     
 
 class View(tk.Tk):
@@ -47,12 +48,20 @@ class View(tk.Tk):
 
 
 class Scene(tk.Frame, metaclass = abc.ABCMeta):
+    """
+    Abstract class qui permet la création des différentes scènes (menu, game, end game, end round)
+    """
     
     def __init__(self, parent, color):
         tk.Frame.__init__(self, parent, bg = color)
         self.place(relwidth = 1, relheight = 1)
     
-class MenuScene(tk.Frame):
+    @abstractmethod
+    def display(self):
+        pass
+    
+
+class MenuScene(Scene):
     '''
     Classe responsable de l'affichage du menu
     '''
@@ -61,8 +70,11 @@ class MenuScene(tk.Frame):
         '''
         Constructor
         '''
-        tk.Frame.__init__(self, parent, bg = 'green')
-        self.place(relwidth = 1, relheight = 1)
+
+        #Création scène        
+        Scene.__init__(self, parent, 'green')
+        
+        #Création bouton transition
         button = tk.Button(self, text = "test", command = lambda:controller.display_scene(view, "Game scene"))
         button.pack()
     
@@ -72,7 +84,7 @@ class MenuScene(tk.Frame):
         
 
         
-class GameScene(tk.Frame):
+class GameScene(Scene):
     '''
     Cette classe contient les éléments UI du jeu
     '''
@@ -81,8 +93,10 @@ class GameScene(tk.Frame):
         '''
         Constructor
         '''
-        tk.Frame.__init__(self, parent, bg = 'blue')
-        self.place(relwidth = 1, relheight = 1)
+        #Création de la scène
+        Scene.__init__(self, parent, 'blue')
+        
+        #Création du bouton transition
         button=tk.Button(self,text = "encorebite", command = lambda:controller.display_scene(view, "End game scene"))
         button.pack()
         
@@ -90,7 +104,7 @@ class GameScene(tk.Frame):
         self.tkraise()
 
 
-class EndGameScene(tk.Frame):
+class EndGameScene(Scene):
     '''
     Classe s'occupant de l'affichage du menu de fin
     '''
@@ -104,8 +118,7 @@ class EndGameScene(tk.Frame):
         '''
         
         #Création de la scène
-        tk.Frame.__init__(self, parent, bg = 'cyan')
-        self.place(relwidth = 1, relheight = 1)
+        Scene.__init__(self, parent, 'cyan')
         
         #Texte de victoire
         self.label_text = tk.StringVar()
