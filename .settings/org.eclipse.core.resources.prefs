@@ -1,3 +1,6 @@
 eclipse.preferences.version=1
 encoding//src/controller/controller.py=utf-8
+encoding//src/model/cards.py=utf-8
+encoding//src/model/model.py=utf-8
+encoding//src/model/player.py=utf-8
 encoding//src/view/view.py=utf-8
