@@ -8,6 +8,7 @@ import tkinter as tk
 import src.controller.controller as controller
 import abc
 from abc import abstractmethod
+
     
 
 class View(tk.Tk):
@@ -24,7 +25,7 @@ class View(tk.Tk):
         #scale de la fenêtre en fonction de la taille de l'écran de l'utilisateur
         width_value = self.winfo_screenwidth()
         height_value = self.winfo_screenheight()
-        self.geometry("%dx%d+0+0" % (300, 300)) #Remplacer par les deux variables du dessus pour fullscreen
+        self.geometry("%dx%d+0+0" % (500, 500)) #Remplacer par les deux variables du dessus pour fullscreen
         
         #Création d'un container pour les différentes scènes
         container = tk.Frame(self)
@@ -101,10 +102,27 @@ class GameScene(Scene):
         Scene.__init__(self, parent, 'blue')
         
         
-        
-        #Création du bouton transition
-        button=tk.Button(self,text = "carte test", command = lambda:controller.card_played(view))
+        #Création du bouton transition test
+        button=tk.Button(self,text = "Go to end game scene", command = lambda:controller.victory_test(view))
         button.pack()
+        
+        #Création des boutons de jeu
+        HEIGHT = 10
+        WIDTH = 10
+        
+        ia_button1 = tk.Button(self, text = "", height = HEIGHT, width = WIDTH)
+        ia_button1.place(rely = 0, relx = 0.7)
+        ia_button1.config(state = "disabled")
+        
+        ia_button2 = tk.Button(self, text = "", height = HEIGHT, width = WIDTH)
+        ia_button2.place(rely = 0, relx = 0.7, x = ia_button1.winfo_reqwidth())
+        ia_button2.config(state = "disabled")
+        
+        player_button1 = tk.Button(self, text = "", command = lambda:controller.card_played(0), height = HEIGHT, width = WIDTH)
+        player_button1.place(rely = 1, relx = 0.5, y = -player_button1.winfo_reqheight())
+        
+        player_button2 = tk.Button(self, text = "", command = lambda:controller.card_played(1),height = HEIGHT, width = WIDTH)
+        player_button2.place(rely = 1, relx = 0.5, x = player_button1.winfo_reqwidth(), y = -player_button1.winfo_reqheight())
         
     def display(self):
         self.tkraise()
