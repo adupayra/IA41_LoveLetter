@@ -14,7 +14,9 @@ class Card(metaclass = abc.ABCMeta):
     template pour toutes les cartes du jeu
     '''
 
-    
+    #Permet d'afficher la string retournée par __str__ lorsque l'on veut print une instance d'une carte
+    def __repr__(self):
+        return self.__str__()
     
     def __init__(self):
         pass
@@ -36,6 +38,11 @@ class Espionne(Card):
     Classe définissant la carte espionne
     '''
     
+    #Permet de print Espionne à la place de la référence de l'objet en mémoire
+    def __str__(self):
+        return "Espionne"
+    
+    
     def __init__(self):
         Card.__init__(self)
     
@@ -51,6 +58,9 @@ class Garde(Card):
     '''
     Classe définissant la carte garde
     '''
+    
+    def __str__(self):
+        return "Garde"
     
     def __init__(self):
         Card.__init__(self)
@@ -68,6 +78,9 @@ class Pretre(Card):
     Classe définissant la carte pretre
     '''
     
+    def __str__(self):
+        return "Pretre"
+    
     def __init__(self):
         Card.__init__(self)
     
@@ -84,6 +97,9 @@ class Baron(Card):
     Classe définissant la carte baron
     '''
     
+    def __str__(self):
+        return "Baron"
+    
     def __init__(self):
         Card.__init__(self)
     
@@ -99,6 +115,8 @@ class Servante(Card):
     '''
     Classe définissant la carte servante
     '''
+    def __str__(self):
+        return "Servante"
     
     def __init__(self):
         Card.__init__(self)
@@ -116,6 +134,9 @@ class Prince(Card):
     Classe définissant la carte prince
     '''
     
+    def __str__(self):
+        return "Prince"
+    
     def __init__(self):
         Card.__init__(self)
     
@@ -131,6 +152,9 @@ class Chancelier(Card):
     '''
     Classe définissant la carte chancelier
     '''
+    
+    def __str__(self):
+        return "Chancelier"
     
     def __init__(self):
         Card.__init__(self)
@@ -148,6 +172,9 @@ class Roi(Card):
     Classe définissant la carte comtesse
     '''
     
+    def __str__(self):
+        return "Roi"
+    
     def __init__(self):
         Card.__init__(self)
     
@@ -164,6 +191,9 @@ class Comtesse(Card):
     Classe définissant la carte comtesse
     '''
     
+    def __str__(self):
+        return "Comtesse"
+    
     def __init__(self):
         Card.__init__(self)
     
@@ -179,6 +209,9 @@ class Princesse(Card):
     '''
     Classe définissant la carte princesse
     '''
+    
+    def __str__(self):
+        return "Princesse"
     
     def __init__(self):
         Card.__init__(self)
