@@ -15,7 +15,7 @@ class Model(object):
     
     _cards = []
     _card_played = []
-    _card_remained = []
+    _burnt_card = None
     _deck = []
     _player = None
     _ia = None
@@ -67,12 +67,14 @@ class Model(object):
             Model._ia = player.IADifficile()
             
     def distribution(self):
-        pass
+        Model._player.add_card(Model._cards[0])
+        print(Model._player.cards[0])
             
             
         
         
 test = Model()
+test.init_data(3)
             
                 
         

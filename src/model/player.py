@@ -23,17 +23,17 @@ class Player(metaclass = abc.ABCMeta):
         
     @property
     def cards(self):
-        return self.cards
+        return self._cards
     
     @property
     def nb_cards(self):
-        return self.nb_cards
+        return self._nb_cards
     
     def add_card(self, new_card):
-        self.cards.append(new_card)
+        self._cards.append(new_card)
         
     def remove_card(self, index):
-        self.cards.pop(index)
+        self._cards.pop(index)
     
     
 
