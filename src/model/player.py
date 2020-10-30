@@ -18,8 +18,8 @@ class Player(metaclass = abc.ABCMeta):
         '''
         Constructor
         '''
-        self.cards = []
-        self.nb_cards = 0
+        self._cards = []
+        self._nb_cards = 0
         
     @property
     def cards(self):
@@ -41,6 +41,7 @@ class RealPlayer(Player):
     
     def __init__(self):
         Player.__init__(self)
+    
     
 class IA(Player, metaclass = abc.ABCMeta):
     '''

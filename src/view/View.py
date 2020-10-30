@@ -8,7 +8,6 @@ import tkinter as tk
 import src.controller.controller as controller
 import abc
 from abc import abstractmethod
-
     
 
 class View(tk.Tk):
