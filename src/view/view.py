@@ -8,6 +8,8 @@ import tkinter as tk
 import src.controller.controller as controller
 import abc
 from abc import abstractmethod
+import os
+
     
 
 class View(tk.Tk):
@@ -70,17 +72,17 @@ class MenuScene(Scene):
         '''
         Constructor
         '''
-
+        
         #Création scène        
         Scene.__init__(self, parent, 'green')
         
         #Création label titre
-        label = tk.Label(self, text = "Love Letter", bg = 'green')
-        label.pack()
+        titre = tk.Label(self, text = "Love Letter", bg = 'green')
+        titre.pack()
         
         #Création bouton transition
-        button = tk.Button(self, text = "Start Game", command = lambda:controller.display_scene(view, "Game scene"))
-        button.pack()
+        start_button = tk.Button(self, text = "Start Game", command = lambda:controller.display_scene(view, "Game scene"))
+        start_button.pack()
     
     def display(self):
         self.tkraise()
@@ -103,28 +105,52 @@ class GameScene(Scene):
         
         #Création du bouton transition test
         button=tk.Button(self,text = "Go to end game scene", command = lambda:controller.victory_test(view))
-        button.pack()
-        
+        button.place(relx = 0, rely = 0)
+               
         #Création des boutons de jeu
         HEIGHT = 10
         WIDTH = 10
         
         ia_button1 = tk.Button(self, text = "", height = HEIGHT, width = WIDTH)
-        ia_button1.place(rely = 0, relx = 0.7)
+        ia_button1.place(rely = 0, relx = 0.5)
         ia_button1.config(state = "disabled")
         
         ia_button2 = tk.Button(self, text = "", height = HEIGHT, width = WIDTH)
-        ia_button2.place(rely = 0, relx = 0.7, x = ia_button1.winfo_reqwidth())
+        ia_button2.place(rely = 0, relx = 0.5, x = ia_button1.winfo_reqwidth())
         ia_button2.config(state = "disabled")
         
-        player_button1 = tk.Button(self, text = "", command = lambda:controller.card_played(0), height = HEIGHT, width = WIDTH)
-        player_button1.place(rely = 1, relx = 0.5, y = -player_button1.winfo_reqheight())
+        self._player_button1 = tk.Button(self, text = "", command = lambda:controller.card_played(0), height = HEIGHT, width = WIDTH)
+        self._player_button1.place(rely = 1, relx = 0.5, y = -self._player_button1.winfo_reqheight())
         
-        player_button2 = tk.Button(self, text = "", command = lambda:controller.card_played(1),height = HEIGHT, width = WIDTH)
-        player_button2.place(rely = 1, relx = 0.5, x = player_button1.winfo_reqwidth(), y = -player_button1.winfo_reqheight())
+        self._player_button2 = tk.Button(self, text = "", command = lambda:controller.card_played(1),height = HEIGHT, width = WIDTH)
+        self._player_button2.place(rely = 1, relx = 0.5, x = self._player_button1.winfo_reqwidth(), y = -self._player_button1.winfo_reqheight())
         
+        #Changement du répertoire courant afin de se trouver dans le répertoire où se trouvent les ressources
+        path_ressources = os.path.dirname(os.path.abspath(__file__))
+        os.chdir(path_ressources)
+        os.chdir(os.pardir)
+        os.chdir(os.pardir)
+        os.chdir("resources")
+        
+        #Création des différentes images des cartes
+        self._images = {"Espionne":tk.PhotoImage(file = "Espionne.png"), "Garde":tk.PhotoImage(file = "Garde.png"),
+                        "Pretre":tk.PhotoImage(file = "Pretre.png"),"Baron":tk.PhotoImage(file = "Baron.png"), "Servante":tk.PhotoImage(file = "Servante.png"),
+                        "Prince":tk.PhotoImage(file = "Prince.png"), "Chancelier":tk.PhotoImage(file = "Chancelier.png"), "Roi":tk.PhotoImage(file = "Roi.png"),
+                        "Comtesse":tk.PhotoImage(file = "Comtesse.png")}
+        
+    
+    @property
+    def images(self):
+        return self._images
+    
     def display(self):
         self.tkraise()
+        controller.start_turn()
+        #self.update_buttons(sprite1, sprite2)
+    
+    def update_buttons(self):
+        pass
+        
         
         
 class EndGameScene(Scene):
@@ -160,9 +186,10 @@ class EndGameScene(Scene):
     #Fonction qui permet l'affichage du vainqueur
     def victory_screen(self, winner_name, score):
         self.display()
+         #Dissociation des cas entre fin de round et fin de partie
         if score[0] == 6 or score[1] == 6:
             self._label_victory['text'] = winner_name + " a gagné la partie !"
-            self._next_round_button.pack_forget()
+            self._next_round_button.pack_forget() #Désactivation du bouton next round si fin de partie
         else:
             self._label_victory['text'] = winner_name + " a gagné le round !"
         
@@ -170,6 +197,3 @@ class EndGameScene(Scene):
         
     def display(self):
         self.tkraise()
-
-        
-test = View()

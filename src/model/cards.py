@@ -7,13 +7,14 @@ Created on 27 oct. 2020
 
 import abc
 from abc import abstractmethod
-
+from builtins import classmethod
+import tkinter as tk
 
 class Card(metaclass = abc.ABCMeta):
     '''
     template pour toutes les cartes du jeu
     '''
-
+    
     #Permet d'afficher la string retournée par __str__ lorsque l'on veut print une instance d'une carte
     def __repr__(self):
         return self.__str__()
@@ -21,13 +22,13 @@ class Card(metaclass = abc.ABCMeta):
     def __init__(self):
         pass
     
+    #Propriété des cartes (valeur)
     @property
     @abstractmethod
     def value(self):
         pass
     
-    
-    
+    #Action effectuée par la carte une fois jouée
     @abstractmethod
     def action(self):
         pass
@@ -47,12 +48,14 @@ class Espionne(Card):
         Card.__init__(self)
     
     @classmethod
-    def value(self):
+    def value():
         return 0
+    
     
     @classmethod
     def action(self):
         pass
+    
     
 class Garde(Card):
     '''
@@ -224,7 +227,7 @@ class Princesse(Card):
     def action(self):
         pass
     
-test = Garde()
+
     
     
     

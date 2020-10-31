@@ -7,10 +7,16 @@ Created on 26 oct. 2020
 
 import src.model.model as model
 
+#Ne pas appeler cette variable depuis un module de view afin de garder l'indépendance entre modèle et view
+modelvar = None
+
 #Fonction appelée lorsque l'utilisateur lance une partie/finit une partie/retourne au menu
 def display_scene(view, scene_name):
     view.display_scene(scene_name)
-    
+
+def start_turn():
+    pass
+
 def victory_test(view):
     
     #Simulation d'une victoire de partie/manche

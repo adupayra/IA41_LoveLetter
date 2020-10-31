@@ -7,6 +7,7 @@ Created on 28 oct. 2020
 import src.model.cards as cards
 from random import shuffle
 import src.model.player as player
+import os
 
 class Model(object):
     '''
@@ -14,38 +15,42 @@ class Model(object):
     '''
     
     _cards_played = []
-    
+    _instance = None
 
     def __init__(self):
         '''
         Le constructeur va permettre l'instantiation de toutes les cartes, seule donnée persistante du programme (afin de ne pas avoir à ré instancier les cartes
         à chaque début de partie/début de round
         '''
-        #Définition des différents attributs
-        self._cards = []
-        self._cards_played = []
-        self._burnt_card = None
-        self._deck = []
-        self._player = None
-        self._ia = None
         
-        #Instantiation de toutes les cartes
-        self._cards.append(cards.Roi())
-        self._cards.append(cards.Comtesse())
-        self._cards.append(cards.Princesse())
-        
-        for _ in range(0,2):
-            self._cards.append(cards.Espionne())
-            self._cards.append(cards.Garde())
-            self._cards.append(cards.Pretre())
-            self._cards.append(cards.Baron())
-            self._cards.append(cards.Servante())
-            self._cards.append(cards.Prince())
-            self._cards.append(cards.Chancelier())
+        if(Model._instance is None):
+            #Définition des différents attributs
+            self._cards = []
+            self._cards_played = []
+            self._burnt_card = None
+            self._deck = []
+            self._player = None
+            self._ia = None
             
-        for _ in range(0, 4):
-            self._cards.append(cards.Garde())
-    
+            #Instantiation de toutes les cartes
+            self._cards.append(cards.Roi())
+            self._cards.append(cards.Comtesse())
+            self._cards.append(cards.Princesse())
+            
+            for _ in range(0,2):
+                self._cards.append(cards.Espionne())
+                self._cards.append(cards.Garde())
+                self._cards.append(cards.Pretre())
+                self._cards.append(cards.Baron())
+                self._cards.append(cards.Servante())
+                self._cards.append(cards.Prince())
+                self._cards.append(cards.Chancelier())
+                
+            for _ in range(0, 4):
+                self._cards.append(cards.Garde())
+            Model._instance = self
+
+        
         #print(Model._cards[0])
         #Fonction qui permet de compter le nombre d'instances d'une classe dans la liste, ici, garde
         #elle sert à rien, c'est juste au cas où vous ayez besoin de ça
@@ -116,8 +121,5 @@ class Model(object):
     def pick_card(self, card):
         self.deck.remove(card)
             
-        
-test = Model()
-test.init_data()
             
         
