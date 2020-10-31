@@ -6,6 +6,7 @@ Created on 28 oct. 2020
 '''
 import src.model.cards as cards
 from random import shuffle
+from random import randrange
 import src.model.player as player
 import os
 
@@ -13,42 +14,37 @@ class Model(object):
     '''
     classdocs
     '''
-    
-    _cards_played = []
-    _instance = None
+
 
     def __init__(self):
         '''
         Le constructeur va permettre l'instantiation de toutes les cartes, seule donnée persistante du programme (afin de ne pas avoir à ré instancier les cartes
         à chaque début de partie/début de round
         '''
+        #Définition des différents attributs
+        self._cards = [] #Liste de toutes les cartes
+        self._cards_played = [] #Liste des cartes jouées (comprenant les 3 cartes montrées au début)
+        self._burnt_card = None #La carte inconnue
+        self._deck = [] #La pioche
+        self._player = None #Le vrai joueur
+        self._ia = None #l'ia
         
-        if(Model._instance is None):
-            #Définition des différents attributs
-            self._cards = []
-            self._cards_played = []
-            self._burnt_card = None
-            self._deck = []
-            self._player = None
-            self._ia = None
+        #Instantiation de toutes les cartes
+        self._cards.append(cards.Roi())
+        self._cards.append(cards.Comtesse())
+        self._cards.append(cards.Princesse())
+        
+        for _ in range(0,2):
+            self._cards.append(cards.Espionne())
+            self._cards.append(cards.Garde())
+            self._cards.append(cards.Pretre())
+            self._cards.append(cards.Baron())
+            self._cards.append(cards.Servante())
+            self._cards.append(cards.Prince())
+            self._cards.append(cards.Chancelier())
             
-            #Instantiation de toutes les cartes
-            self._cards.append(cards.Roi())
-            self._cards.append(cards.Comtesse())
-            self._cards.append(cards.Princesse())
-            
-            for _ in range(0,2):
-                self._cards.append(cards.Espionne())
-                self._cards.append(cards.Garde())
-                self._cards.append(cards.Pretre())
-                self._cards.append(cards.Baron())
-                self._cards.append(cards.Servante())
-                self._cards.append(cards.Prince())
-                self._cards.append(cards.Chancelier())
-                
-            for _ in range(0, 4):
-                self._cards.append(cards.Garde())
-            Model._instance = self
+        for _ in range(0, 4):
+            self._cards.append(cards.Garde())
 
         
         #print(Model._cards[0])
@@ -56,41 +52,7 @@ class Model(object):
         #elle sert à rien, c'est juste au cas où vous ayez besoin de ça
         
         #count = sum(isinstance(x, cards.Garde) for x in self._cards)
-        
-        
-        
-    #Fonction permettant l'initialisation des données non persistantes (appel à chaque début de partie et début de round)
-    def init_data(self,difficulty = 0):
-        #Mélange des cartes
-        shuffle(self._cards)
-        
-        
-        #Création des joueurs si il s'agit d'un début de partie
-        if self._player is None:
-            self.creer_joueurs(difficulty)
-        
-        #distribution des cartes dans les différentes listes
-        self.distribution()
-        
-    def creer_joueurs(self, difficulty = 0):
-        self._player = player.RealPlayer()
-        if difficulty == 0:
-            self._ia = player.IAFacile()
-        elif difficulty == 1:
-            self._ia = player.IAMoyenne()
-        else:
-            self._ia = player.IADifficile()
     
-    def distribution(self):
-        self._player.add_card(self._cards[0])
-        self._ia.add_card(self._cards[1])
-        self._burnt_card = self._cards[2]
-        self._cards_played.append(self._cards[3])
-        self._cards_played.append(self._cards[4])
-        self._cards_played.append(self._cards[5])
-        for i in range (6, self._cards.__len__()):
-            self._deck.append(self._cards[i])
-        
     @property
     def cards(self):
         return self._cards
@@ -114,12 +76,57 @@ class Model(object):
     @property
     def ia(self):
         return self._ia
+        
+        
+    #Fonction permettant l'initialisation des données non persistantes (appel à chaque début de partie et début de round)
+    def init_data(self,difficulty = 0):
+        #Mélange des cartes
+        shuffle(self._cards)
+        
+        
+        #Création des joueurs si il s'agit d'un début de partie
+        if self._player is None:
+            self.creer_joueurs(difficulty)
+        
+        #distribution des cartes dans les différentes listes
+        self.distribution()
+        
+        #Détermine le premier joueur
+        premier_joueur = randrange(0,2)
+        
+        
+        
+    def creer_joueurs(self, difficulty = 0):
+        self._player = player.RealPlayer()
+        if difficulty == 0:
+            self._ia = player.IAFacile()
+        elif difficulty == 1:
+            self._ia = player.IAMoyenne()
+        else:
+            self._ia = player.IADifficile()
+    
+    
+    def distribution(self):
+        self._player.add_card(self._cards[0]) #Une carte au joueur
+        self._ia.add_card(self._cards[1]) #Une à l'IA
+        self._burnt_card = self._cards[2] #La carte qui restera cachée le long de la partie
+        
+        #Les 3 cartes visibles dès le début
+        self._cards_played.append(self._cards[3]) 
+        self._cards_played.append(self._cards[4])
+        self._cards_played.append(self._cards[5])
+        
+        #la pioche
+        for i in range (6, self._cards.__len__()):
+            self._deck.append(self._cards[i])
+        
+        
     
     def add_cards_played(self, new_card):
         self._cards_played.append(new_card)
 
-    def pick_card(self, card):
-        self.deck.remove(card)
-            
+    def pick_card(self):
+        return self._deck.pop(0)
+        
             
         
