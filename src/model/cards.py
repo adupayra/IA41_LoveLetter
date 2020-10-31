@@ -8,7 +8,6 @@ Created on 27 oct. 2020
 import abc
 from abc import abstractmethod
 from builtins import classmethod
-import tkinter as tk
 
 class Card(metaclass = abc.ABCMeta):
     '''
