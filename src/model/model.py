@@ -28,6 +28,7 @@ class Model(object):
         self._deck = [] #La pioche
         self._player = None #Le vrai joueur
         self._ia = None #l'ia
+        self._current_player = None #Utilisé pour savoir qui doit jouer 
         
         #Instantiation de toutes les cartes
         self._cards.append(cards.Roi())
@@ -94,6 +95,13 @@ class Model(object):
         #Détermine le premier joueur
         premier_joueur = randrange(0,2)
         
+        if premier_joueur == 0:
+            self._current_player = self._player
+        else:
+            self._current_player = self._ia
+        self._current_player.add_card(self.pick_card())
+        
+        return self._current_player
         
         
     def creer_joueurs(self, difficulty = 0):

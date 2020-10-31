@@ -21,7 +21,7 @@ def start_game(view, difficulty = 0):
     #view.resetdata
     #modelvar.resetdata
     
-    modelvar.init_data()
+    current_player = modelvar.init_data()
 
     #Variables permettant le stockage des différentes listes de cartes du modèle qui nous intéresse sous forme de string
     cards_played_string = []
@@ -32,7 +32,7 @@ def start_game(view, difficulty = 0):
         cards_played_string.append(str(card))
     
     #Stockage des string des valeurs des cartes du joueur
-    for card in modelvar.player.cards:
+    for card in current_player.cards:
         players_cards_string.append(str(card))
         
     view.scenes["Game scene"].init_round(cards_played_string, players_cards_string)

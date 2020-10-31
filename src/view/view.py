@@ -24,9 +24,13 @@ class View(tk.Tk):
         tk.Tk.__init__(self)
         
         #scale de la fenêtre en fonction de la taille de l'écran de l'utilisateur
+        ''''
         width_value = self.winfo_screenwidth()
         height_value = self.winfo_screenheight()
-        self.geometry("%dx%d+0+0" % (500, 500)) #Remplacer par les deux variables du dessus pour fullscreen
+        self.geometry("%dx%d+0+0" % (width_value, height_value)) #Remplacer par les deux variables du dessus pour fullscreen
+        '''
+        #Fullscreen
+        self.attributes('-fullscreen', True)
         
         #Création d'un container pour les différentes scènes
         container = tk.Frame(self)
@@ -116,12 +120,20 @@ class GameScene(Scene):
         '''
         Constructor
         '''
+        #Color themes
+        theme1 = 'red4'
+        theme2 = 'brown4'
+        
         #Création de la scène
-        Scene.__init__(self, parent, 'red3')
+        Scene.__init__(self, parent, theme1)
         
         #Création du bouton transition test
         button=tk.Button(self,text = "Go to end game scene", command = lambda:controller.victory_test(view))
         button.place(relx = 0, rely = 0)
+        
+        #Création d'un bouton quittant l'application
+        button_quit = tk.Button(self, text = "Quit game", command = lambda:controller.quitter_jeu())
+        button_quit.place(relx = 0, rely = 1, y = -button_quit.winfo_reqheight())
                
         #Changement du répertoire courant afin de se trouver dans le répertoire où se trouvent les ressources
         path_ressources = os.path.dirname(os.path.abspath(__file__))
@@ -134,19 +146,17 @@ class GameScene(Scene):
         self._images = {"Espionne":tk.PhotoImage(file = "Espionne.png"), "Garde":tk.PhotoImage(file = "Garde.png"),
                         "Pretre":tk.PhotoImage(file = "Pretre.png"),"Baron":tk.PhotoImage(file = "Baron.png"), "Servante":tk.PhotoImage(file = "Servante.png"),
                         "Prince":tk.PhotoImage(file = "Prince.png"), "Chancelier":tk.PhotoImage(file = "Chancelier.png"), "Roi":tk.PhotoImage(file = "Roi.png"),
-                        "Comtesse":tk.PhotoImage(file = "Comtesse.png")} #Carte face cachée et princesse à ajouter
+                        "Comtesse":tk.PhotoImage(file = "Comtesse.png"), "Princesse":tk.PhotoImage(file = "Princesse.png"), "Cache":tk.PhotoImage(file="Cache.png")} #Carte face cachée et princesse à ajouter
         
         #Boutons correspondant à l'affichage du jeu de l'IA (purement visuel)
-        self._ia_buttons = []
-        self._ia_buttons.append(tk.Button(self, image = self._images["Comtesse"]))
-        self._ia_buttons[0].place(rely = 0, relx = 0.5, x = -self._ia_buttons[0].winfo_reqwidth())
-        self._ia_buttons[0].config(state = "disabled")
-        
+        self._ia_labels = []
+        self._ia_labels.append(tk.Label(self, image = self._images["Cache"],borderwidth = 0, highlightthickness = 0))
+        self._ia_labels[0].place(rely = 0, relx = 0.5, x = -self._ia_labels[0].winfo_reqwidth())
         
         #Boutons de l'utilisateur, servent à choisir la carte à jouer
         self._player_buttons = []
-        self._player_buttons.append(tk.Button(self, command = lambda:controller.card_played(0)))
-        self._player_buttons[0].place(rely = 1, relx = 0.5, x = -self._ia_buttons[0].winfo_reqwidth(), y = -self._ia_buttons[0].winfo_reqheight())
+        self._player_buttons.append(tk.Button(self, command = lambda:controller.card_played(0), borderwidth = 0, highlightthickness = 0))
+        self._player_buttons[0].place(rely = 1, relx = 0.5, x = -self._ia_labels[0].winfo_reqwidth(), y = -self._ia_labels[0].winfo_reqheight())
         
         
         #self._player_buttons[1].place(rely = 1, relx = 0.5, y = -self._player_buttons[0].winfo_reqheight())
@@ -155,17 +165,18 @@ class GameScene(Scene):
         Milieu de plateau : container permettant d'afficher les widgets plus facilement, les 3 cartes du début de partie, et la pioche
         """
         #Création du container
-        container = tk.Frame(self, bg = 'white')
+        container = tk.Frame(self, bg = theme2, highlightbackground = 'dark goldenrod1', highlightthickness = 3)
         container.place(relx = 0.2, rely = 0.325, relwidth = 0.6, relheight = 0.35)
         
-        #Création des boutons sur lesquels on va afficher les images
-        self._boutons_milieux = (tk.Button(container), tk.Button(container), tk.Button(container), tk.Button(container, image = self._images["Comtesse"]))
-        self._boutons_milieux[0].pack(side = tk.LEFT)
-        self._boutons_milieux[1].pack(side = tk.LEFT)
-        self._boutons_milieux[2].pack(side = tk.LEFT)
-        self._boutons_milieux[3].pack(side = tk.RIGHT)
-        for bouton in self._boutons_milieux:
-            bouton.config(state = "disabled")
+        #Création des Labels sur lesquels on va afficher les images
+        espace = tk.Label(container, text = " ", bg = theme2).pack(side = tk.LEFT) #Pas d'intérêt, sert à avoir un affichage plus joli
+        self._label_milieux = (tk.Label(container, borderwidth = 0, highlightthickness = 0), tk.Label(container, borderwidth = 0, highlightthickness = 0), 
+                                 tk.Label(container, borderwidth = 0, highlightthickness = 0), tk.Label(container, image = self._images["Cache"],borderwidth = 0, highlightthickness = 0))
+        self._label_milieux[0].pack(side = tk.LEFT)
+        self._label_milieux[1].pack(side = tk.LEFT)
+        self._label_milieux[2].pack(side = tk.LEFT)
+        espace = tk.Label(container, text = " ", bg = theme2).pack(side = tk.RIGHT) #Pas d'intérêt, sert à avoir un affichage plus joli
+        self._label_milieux[3].pack(side = tk.RIGHT)
 
         
     @property
@@ -184,7 +195,7 @@ class GameScene(Scene):
         
     def add_three_middlecards(self, cards):
         for i in range(0,3):
-            self._boutons_milieux[i].config(image = self._images[cards[i]])
+            self._label_milieux[i].config(image = self._images[cards[i]])
             
     def update_player_buttons(self, cards):
         for i in range(0,cards.__len__()):
@@ -228,7 +239,7 @@ class EndGameScene(Scene):
     #Fonction qui permet l'affichage du vainqueur
     def victory_screen(self, winner_name, score):
         self.display()
-         #Dissociation des cas entre fin de round et fin de partie
+        #Dissociation des cas entre fin de round et fin de partie
         if score[0] == 6 or score[1] == 6:
             self._label_victory['text'] = winner_name + " a gagné la partie !"
             self._next_round_button.pack_forget() #Désactivation du bouton next round si fin de partie
