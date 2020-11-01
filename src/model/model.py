@@ -8,7 +8,6 @@ import src.model.cards as cards
 from random import shuffle
 from random import randrange
 import src.model.player as player
-import os
 
 class Model(object):
     '''
@@ -28,6 +27,7 @@ class Model(object):
         self._deck = [] #La pioche
         self._player = None #Le vrai joueur
         self._ia = None #l'ia
+        self._players = [] #Utilisé afin de connaitre le prochain joueur
         self._current_player = None #Utilisé pour savoir qui doit jouer 
         
         #Instantiation de toutes les cartes
@@ -47,12 +47,6 @@ class Model(object):
         for _ in range(0, 4):
             self._cards.append(cards.Garde())
 
-        
-        #print(Model._cards[0])
-        #Fonction qui permet de compter le nombre d'instances d'une classe dans la liste, ici, garde
-        #elle sert à rien, c'est juste au cas où vous ayez besoin de ça
-        
-        #count = sum(isinstance(x, cards.Garde) for x in self._cards)
     
     @property
     def cards(self):
@@ -77,17 +71,30 @@ class Model(object):
     @property
     def ia(self):
         return self._ia
+    
+    @property
+    def current_player(self):
+        return self._current_player
         
         
     #Fonction permettant l'initialisation des données non persistantes (appel à chaque début de partie et début de round)
-    def init_data(self,difficulty = 0):
+    def init_data(self,difficulty = -1):
+        
+        #Réinitialisation des données du round précédent
+        self._cards_played = []
+        self._burnt_card = None
+        self._deck = [] 
+        
         #Mélange des cartes
         shuffle(self._cards)
         
-        
         #Création des joueurs si il s'agit d'un début de partie
-        if self._player is None:
+        if difficulty != -1: #-1 veut dire qu'aucun argument n'a été envoyé à la fonction, ce qui veut dire qu'il s'agit d'un nouveau round et non d'une nouvelle 
+                            #partie
             self.creer_joueurs(difficulty)
+        else: #Nouveau round, on réinitialise donc la main de l'ia et du joueur
+            self._ia.reset_values()
+            self._player.reset_values()
         
         #distribution des cartes dans les différentes listes
         self.distribution()
@@ -97,9 +104,14 @@ class Model(object):
         
         if premier_joueur == 0:
             self._current_player = self._player
+            self._players.append(self._player)
+            self._players.append(self._ia)
         else:
             self._current_player = self._ia
-        self._current_player.add_card(self.pick_card())
+            self._players.append(self._ia)
+            self._players.append(self._player)
+        self._current_player.add_card(self.pick_card(),1)
+        
         
         return self._current_player
         
@@ -115,8 +127,8 @@ class Model(object):
     
     
     def distribution(self):
-        self._player.add_card(self._cards[0]) #Une carte au joueur
-        self._ia.add_card(self._cards[1]) #Une à l'IA
+        self._player.add_card(self._cards[0], 0) #Une carte au joueur
+        self._ia.add_card(self._cards[1],0) #Une à l'IA
         self._burnt_card = self._cards[2] #La carte qui restera cachée le long de la partie
         
         #Les 3 cartes visibles dès le début
@@ -136,5 +148,27 @@ class Model(object):
     def pick_card(self):
         return self._deck.pop(0)
         
+    def get_three_cards(self):
+        return str(self._cards_played[0]), str(self._cards_played[1]), str(self._cards_played[2])
+    
+    def play(self, index):
+        self._cards_played.append(self._current_player.cards[index])
+        self._current_player.cards[index].action()
+        self._current_player.remove_card(index)
+        self.next_turn(index)
+
+        return self._current_player
+        
+    def next_turn(self, index):
+        if(isinstance(self._current_player, player.RealPlayer)):
+            self._current_player = self._ia
+        else:
+            self._current_player = self._player
+        self._current_player.add_card(self.pick_card(), index)
+        
+    def choose_cardAI(self):
+        #Appeler algo de l'IA ici
+
+        return randrange(0,1)
             
         

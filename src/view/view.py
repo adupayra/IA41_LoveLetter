@@ -91,7 +91,7 @@ class MenuScene(Scene):
         titre.pack(side = tk.TOP, fill = tk.BOTH)
         
         #Création bouton transition
-        start_button = tk.Button(self, text = "Commencer partie", command = lambda:controller.start_game(view), pady = 75, bg = theme2, fg = theme1,
+        start_button = tk.Button(self, text = "Commencer partie", command = lambda:controller.start_game(view, 1), pady = 75, bg = theme2, fg = theme1,
                                  relief = tk.RIDGE, font = button_font)
         start_button.pack(side = tk.TOP, fill = tk.BOTH)
         
@@ -134,6 +134,10 @@ class GameScene(Scene):
         #Création d'un bouton quittant l'application
         button_quit = tk.Button(self, text = "Quit game", command = lambda:controller.quitter_jeu())
         button_quit.place(relx = 0, rely = 1, y = -button_quit.winfo_reqheight())
+        
+        #Création du label affichant les informations de jeu
+        self._info_label = tk.Label(self, text = "Idle")
+        self._info_label.place(rely = 0.5)
                
         #Changement du répertoire courant afin de se trouver dans le répertoire où se trouvent les ressources
         path_ressources = os.path.dirname(os.path.abspath(__file__))
@@ -149,13 +153,17 @@ class GameScene(Scene):
                         "Comtesse":tk.PhotoImage(file = "Comtesse.png"), "Princesse":tk.PhotoImage(file = "Princesse.png"), "Cache":tk.PhotoImage(file="Cache.png")} #Carte face cachée et princesse à ajouter
         
         #Boutons correspondant à l'affichage du jeu de l'IA (purement visuel)
-        self._ia_labels = []
-        self._ia_labels.append(tk.Label(self, image = self._images["Cache"],borderwidth = 0, highlightthickness = 0))
+        self._ia_labels = (tk.Label(self, image = self._images["Cache"], borderwidth = 0, highlightthickness = 0), 
+                           tk.Label(self, image = "", borderwidth = 0, highlightthickness = 0, bg = theme1),
+                           tk.Label(self, image = "", borderwidth = 0, highlightthickness = 0, bg = theme1) )
         self._ia_labels[0].place(rely = 0, relx = 0.5, x = -self._ia_labels[0].winfo_reqwidth())
         
         #Boutons de l'utilisateur, servent à choisir la carte à jouer
-        self._player_buttons = []
-        self._player_buttons.append(tk.Button(self, command = lambda:controller.card_played(0), borderwidth = 0, highlightthickness = 0))
+        self._player_buttons = (tk.Button(self, command = lambda:controller.card_played(view, 0), borderwidth = 0, highlightthickness = 0),
+                                tk.Button(self, command = lambda:controller.card_played(view, 1), borderwidth = 0, highlightthickness = 0),
+                                tk.Button(self, command = lambda:controller.card_played(view, 2), borderwidth = 0, highlightthickness = 0))
+        #Le 3e bouton est là pour couvrir le cas du chancelier
+        
         self._player_buttons[0].place(rely = 1, relx = 0.5, x = -self._ia_labels[0].winfo_reqwidth(), y = -self._ia_labels[0].winfo_reqheight())
         
         
@@ -186,21 +194,62 @@ class GameScene(Scene):
     def display(self):
         self.tkraise()
     
-    def init_round(self, three_cards, player_cards):
-        #Ajout des 3 cartes montrées au début du jeu
-        self.add_three_middlecards(three_cards)
-        
-        #Ajout des images correspondant aux cartes du joueur
-        self.update_player_buttons(player_cards)
-        
-    def add_three_middlecards(self, cards):
+    #Fonction appelée en début de round : elle affiche les 3 cartes montrées en début de jeu
+    def init_round(self, three_cards, string_joueur):
         for i in range(0,3):
-            self._label_milieux[i].config(image = self._images[cards[i]])
-            
-    def update_player_buttons(self, cards):
-        for i in range(0,cards.__len__()):
-            self._player_buttons[i].config(image = self._images[cards[i]])
+            self._label_milieux[i].config(image = self._images[three_cards[i]])
         
+        self._info_label['text'] = "c'est à " + string_joueur + " de commencer !" #Affiche le joueur qui commence
+             
+    #Fonction permettant l'actualisation de l'UI en fonction des cartes du joueur
+    def update_playerUI(self, cards):
+        number_cards_displayed = sum(button.winfo_ismapped() for button in self._player_buttons) #Compte le nombre de boutons de l'utilisateurs
+        number_cards_todisplay = cards.__len__() #Nombre de cartes à afficher
+
+        #Disjonction de cas entre les cas où il y a plus de cartes à afficher que de boutons disponibles et les cas où il y a trop de boutons
+        #disponibles à l'écran pour le nombre de cartes à afficher
+        if(number_cards_todisplay >= number_cards_displayed ):
+            #Dans ce cas, on update les cartes sur les boutons déjà disponibles
+            for i in range(0,number_cards_displayed):
+                self._player_buttons[i].config(image = self._images[cards[i]])
+            
+            #Puis affiche le nombre de boutons nécessaires afin d'afficher toutes les cartes
+            for i in range(number_cards_displayed, number_cards_todisplay):
+                self._player_buttons[i].config(image = self._images[cards[i]])
+                self._player_buttons[i].place(rely = 1, relx = 0.5, x = (i-1) * self._ia_labels[0].winfo_reqwidth(), y = -self._ia_labels[0].winfo_reqheight())
+                
+                
+        elif(number_cards_displayed > number_cards_todisplay):
+            #Actualisation des boutons dont on a besoin
+            for i in range(0, number_cards_todisplay):
+                self._player_buttons[i].config(image = self._images[cards[i]])
+            #On retire les boutons dont on n'a plus besoin
+            for i in range(number_cards_todisplay, number_cards_displayed):
+                self._player_buttons[i].place_forget()
+        
+    #Fonction permettant l'actualisation de l'UI en fonction du nombre de cartes de l'IA (meme principe que l'update player)
+    def update_iaUI(self, nbcards):
+        number_cards_displayed = sum(label["image"] != "" for label in self._ia_labels)
+
+        if(nbcards > number_cards_displayed):
+            for i in range(number_cards_displayed, nbcards):
+                self._ia_labels[i]['image'] = self._images["Cache"]
+                self._ia_labels[i].place(relx = 0.5, x = (i-1) * self._ia_labels[0].winfo_reqwidth())
+        elif(number_cards_displayed > nbcards):
+            for i in range(nbcards, number_cards_displayed):
+                self._ia_labels[i].config(image = "")
+
+    def update_infolabel(self, joueur, action):
+        self._info_label['text'] = joueur + " a joué la carte " + action
+        
+    #Label permettant de vérouiller les boutons lorsque l'IA joue        
+    def lock_buttons(self):
+        for button in self._player_buttons:
+            button.config(state = 'disabled')
+    
+    def unlock_buttons(self):
+        for button in self._player_buttons:
+            button.config(state = 'normal')
         
         
         
@@ -232,7 +281,7 @@ class EndGameScene(Scene):
         retour_menu_button = tk.Button(self, text = "Retour au menu", 
                                        command = lambda:controller.display_scene(view, "Menu scene"))
         self._next_round_button = tk.Button(self, text = "Prochain round", 
-                                      command = lambda:controller.display_scene(view, "Game scene"))
+                                      command = lambda:controller.start_game(view))
         retour_menu_button.pack()
         self._next_round_button.pack()
         
