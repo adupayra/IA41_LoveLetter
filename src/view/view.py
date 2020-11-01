@@ -32,6 +32,9 @@ class View(tk.Tk):
         #Fullscreen
         self.attributes('-fullscreen', True)
         
+        #Titre
+        self.title("Love Letters")
+        
         #Création d'un container pour les différentes scènes
         container = tk.Frame(self)
         container.place(relwidth = 1, relheight = 1)
@@ -91,7 +94,7 @@ class MenuScene(Scene):
         titre.pack(side = tk.TOP, fill = tk.BOTH)
         
         #Création bouton transition
-        start_button = tk.Button(self, text = "Commencer partie", command = lambda:controller.start_game(view, 1), pady = 75, bg = theme2, fg = theme1,
+        start_button = tk.Button(self, text = "Commencer partie", command = lambda:self.display_difficulty_choice(view), pady = 75, bg = theme2, fg = theme1,
                                  relief = tk.RIDGE, font = button_font)
         start_button.pack(side = tk.TOP, fill = tk.BOTH)
         
@@ -104,7 +107,33 @@ class MenuScene(Scene):
         exit_button = tk.Button(self, text = "Quitter", command = lambda:controller.quitter_jeu(), pady = 75, bg = theme2, fg = theme1,
                                 relief = tk.RIDGE, font = button_font)
         exit_button.pack(side = tk.TOP, fill = tk.BOTH)
+        
+        
+        
+    def display_difficulty_choice(self, view):
+        '''
+        choix de difficulté
+        '''
+        #Création fenetre
+        difficulty_window = tk.Toplevel()
+        difficulty_window.title("Choix difficulté")
+        var = tk.IntVar()
+        radio1 = tk.Radiobutton(difficulty_window, text = "Facile", value = 0, 
+                                variable = var)
+        radio2 = tk.Radiobutton(difficulty_window, text = "Intermédiare", value = 1, 
+                                variable = var)
+        radio3 = tk.Radiobutton(difficulty_window, text = "Difficile", value = 2, 
+                                variable = var)
+        radio1.pack(anchor = tk.W)
+        radio2.pack(anchor = tk.W)
+        radio3.pack(anchor = tk.W)
+        validate = tk.Button(difficulty_window, text = "OK", command =lambda:self.validate(difficulty_window, view, var.get()))
+        validate.pack(anchor = tk.SE)
     
+    def validate(self, window, view, difficulty):
+        window.destroy()
+        controller.start_game(view, difficulty)
+        
     def display(self):
         self.tkraise()
        
@@ -281,7 +310,7 @@ class EndGameScene(Scene):
         retour_menu_button = tk.Button(self, text = "Retour au menu", 
                                        command = lambda:controller.display_scene(view, "Menu scene"))
         self._next_round_button = tk.Button(self, text = "Prochain round", 
-                                      command = lambda:controller.start_game(view))
+                                      command = lambda:controller.start_game(view, -1))
         retour_menu_button.pack()
         self._next_round_button.pack()
         

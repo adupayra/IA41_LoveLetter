@@ -91,13 +91,20 @@ class IAFacile(IA):
     def __init__(self):
         IA.__init__(self)
     
+    def __str__(self):
+        return "IA Facile"
+    
     def algorithme(self):
         pass
 
 class IAMoyenne(IA):
     
+    
     def __init__(self):
         IA.__init__(self)
+    
+    def __str__(self):
+        return "IA Moyenne"
     
     def algorithme(self):
         pass
@@ -106,6 +113,9 @@ class IADifficile(IA):
     
     def __init__(self):
         IA.__init__(self)
+    
+    def __str__(self):
+        return "IA Difficile"
     
     def algorithme(self):
         pass

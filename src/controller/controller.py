@@ -19,10 +19,7 @@ def consulter_regles():
 def quitter_jeu():
     sys.exit(0)
 
-def start_game(view, difficulty = -1): #difficulty = -1 : nouveau round, difficulté != -1 : nouvelle partie
-    #view.resetdata
-    #modelvar.resetdata
-    
+def start_game(view, difficulty): #difficulty = -1 : nouveau round, difficulté != -1 : nouvelle partie
     current_player = modelvar.init_data(difficulty)
 
     display_scene(view, "Game scene")
