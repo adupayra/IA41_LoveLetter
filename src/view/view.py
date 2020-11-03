@@ -145,6 +145,7 @@ class GameScene(Scene):
     Cette classe contient les éléments UI du jeu
     '''
     
+    
     def __init__(self, view, parent):
         '''
         Constructor
@@ -156,24 +157,9 @@ class GameScene(Scene):
         #Création de la scène
         Scene.__init__(self, parent, theme1)
         
-        #Création du bouton transition test
-        button=tk.Button(self,text = "Go to end game scene", command = lambda:controller.victory_test(view))
-        button.place(relx = 0, rely = 0)
-        
-        #Création d'un bouton quittant l'application
-        button_quit = tk.Button(self, text = "Quit game", command = lambda:controller.quitter_jeu())
-        button_quit.place(relx = 0, rely = 1, y = -button_quit.winfo_reqheight())
-        
-        #Création du label affichant les informations de jeu
-        self._info_label = tk.Label(self, text = "Idle")
-        self._info_label.place(rely = 0.5)
+        self.init_features(view)
                
-        #Changement du répertoire courant afin de se trouver dans le répertoire où se trouvent les ressources
-        path_ressources = os.path.dirname(os.path.abspath(__file__))
-        os.chdir(path_ressources)
-        os.chdir(os.pardir)
-        os.chdir(os.pardir)
-        os.chdir("resources")
+        self.change_dir_resources()
         
         #Création des différentes images des cartes
         self._images = {"Espionne":tk.PhotoImage(file = "Espionne.png"), "Garde":tk.PhotoImage(file = "Garde.png"),
@@ -181,40 +167,78 @@ class GameScene(Scene):
                         "Prince":tk.PhotoImage(file = "Prince.png"), "Chancelier":tk.PhotoImage(file = "Chancelier.png"), "Roi":tk.PhotoImage(file = "Roi.png"),
                         "Comtesse":tk.PhotoImage(file = "Comtesse.png"), "Princesse":tk.PhotoImage(file = "Princesse.png"), "Cache":tk.PhotoImage(file="Cache.png")} #Carte face cachée et princesse à ajouter
         
+        self.init_playersUI(view, theme1)
+        
+        
+        self.init_middleboard(theme2)
+    
+    
+    '''_________________FONCTIONS DINSTANTIATION DES ELEMENTS UI_____________'''
+    #Initialise les éléments UI de feature
+    def init_features(self, view):
+        
+        #Création du bouton transition test
+        button = tk.Button(self, text="Go to end game scene", command=lambda:controller.victory_test(view))
+        button.place(relx=0, rely=0)
+        
+        #Création d'un bouton quittant l'application
+        button_quit = tk.Button(self, text="Quit game", command=lambda:controller.quitter_jeu())
+        button_quit.place(relx=0, rely=1, y=-button_quit.winfo_reqheight())
+        
+        #Création du label affichant les informations de jeu
+        self._info_label = tk.Label(self, text="Idle")
+        self._info_label.place(rely=0.5)
+
+    #Changement du répertoire courant afin de se trouver dans le répertoire où se trouvent les ressources
+    def change_dir_resources(self):
+        
+        path_ressources = os.path.dirname(os.path.abspath(__file__))
+        os.chdir(path_ressources)
+        os.chdir(os.pardir)
+        os.chdir(os.pardir)
+        os.chdir("resources")
+
+    #Initialisation des éléments UI du joueur et de l'IA
+    def init_playersUI(self, view, theme1):
         #Boutons correspondant à l'affichage du jeu de l'IA (purement visuel)
-        self._ia_labels = (tk.Label(self, image = self._images["Cache"], borderwidth = 0, highlightthickness = 0), 
-                           tk.Label(self, image = "", borderwidth = 0, highlightthickness = 0, bg = theme1),
-                           tk.Label(self, image = "", borderwidth = 0, highlightthickness = 0, bg = theme1) )
-        self._ia_labels[0].place(rely = 0, relx = 0.5, x = -self._ia_labels[0].winfo_reqwidth())
+        self._ia_labels = (tk.Label(self, image=self._images["Cache"], borderwidth=0, highlightthickness=0), 
+                           tk.Label(self, image="", borderwidth=0, highlightthickness=0, bg=theme1), 
+                           tk.Label(self, image="", borderwidth=0, highlightthickness=0, bg=theme1))
+        self._ia_labels[0].place(rely=0, relx=0.5, x=-self._ia_labels[0].winfo_reqwidth())
         
         #Boutons de l'utilisateur, servent à choisir la carte à jouer
-        self._player_buttons = (tk.Button(self, command = lambda:controller.card_played(view, 0), borderwidth = 0, highlightthickness = 0),
-                                tk.Button(self, command = lambda:controller.card_played(view, 1), borderwidth = 0, highlightthickness = 0),
-                                tk.Button(self, command = lambda:controller.card_played(view, 2), borderwidth = 0, highlightthickness = 0))
+        self._player_buttons = (tk.Button(self, command=lambda:controller.card_played(view, 0), borderwidth=0, highlightthickness=0),
+                                tk.Button(self, command=lambda:controller.card_played(view, 1), borderwidth=0, highlightthickness=0),
+                                tk.Button(self, command=lambda:controller.card_played(view, 2), borderwidth=0, highlightthickness=0))
         #Le 3e bouton est là pour couvrir le cas du chancelier
         
-        self._player_buttons[0].place(rely = 1, relx = 0.5, x = -self._ia_labels[0].winfo_reqwidth(), y = -self._ia_labels[0].winfo_reqheight())
-        
-        
-        #self._player_buttons[1].place(rely = 1, relx = 0.5, y = -self._player_buttons[0].winfo_reqheight())
-        
+        self._player_buttons[0].place(rely=1, relx=0.5, x=-self._ia_labels[0].winfo_reqwidth(), y=-self._ia_labels[0].winfo_reqheight())
+
+
+
+    def init_middleboard(self, theme2):
         """       
+        
         Milieu de plateau : container permettant d'afficher les widgets plus facilement, les 3 cartes du début de partie, et la pioche
+        
         """
         #Création du container
-        container = tk.Frame(self, bg = theme2, highlightbackground = 'dark goldenrod1', highlightthickness = 3)
-        container.place(relx = 0.2, rely = 0.325, relwidth = 0.6, relheight = 0.35)
+        container = tk.Frame(self, bg=theme2, highlightbackground='dark goldenrod1', highlightthickness=3)
+        container.place(relx=0.2, rely=0.325, relwidth=0.6, relheight=0.35)
         
         #Création des Labels sur lesquels on va afficher les images
-        espace = tk.Label(container, text = " ", bg = theme2).pack(side = tk.LEFT) #Pas d'intérêt, sert à avoir un affichage plus joli
-        self._label_milieux = (tk.Label(container, borderwidth = 0, highlightthickness = 0), tk.Label(container, borderwidth = 0, highlightthickness = 0), 
-                                 tk.Label(container, borderwidth = 0, highlightthickness = 0), tk.Label(container, image = self._images["Cache"],borderwidth = 0, highlightthickness = 0))
-        self._label_milieux[0].pack(side = tk.LEFT)
-        self._label_milieux[1].pack(side = tk.LEFT)
-        self._label_milieux[2].pack(side = tk.LEFT)
-        espace = tk.Label(container, text = " ", bg = theme2).pack(side = tk.RIGHT) #Pas d'intérêt, sert à avoir un affichage plus joli
-        self._label_milieux[3].pack(side = tk.RIGHT)
+        espace = tk.Label(container, text=" ", bg=theme2).pack(side=tk.LEFT) #Pas d'intérêt, sert à avoir un affichage plus joli
+        self._label_milieux = (tk.Label(container, borderwidth=0, highlightthickness=0), 
+                               tk.Label(container, borderwidth=0, highlightthickness=0), 
+                               tk.Label(container, borderwidth=0, highlightthickness=0), 
+                               tk.Label(container, image=self._images["Cache"], borderwidth=0, highlightthickness=0))
+        self._label_milieux[0].pack(side=tk.LEFT)
+        self._label_milieux[1].pack(side=tk.LEFT)
+        self._label_milieux[2].pack(side=tk.LEFT)
+        espace = tk.Label(container, text=" ", bg=theme2).pack(side=tk.RIGHT) #Pas d'intérêt, sert à avoir un affichage plus joli
+        self._label_milieux[3].pack(side=tk.RIGHT)
 
+    '''______________________FIN DES FONCTIONS DINSTANCIATION DES ELEMENTS UI___________'''
         
     @property
     def images(self):
