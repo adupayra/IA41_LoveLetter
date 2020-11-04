@@ -68,6 +68,7 @@ def card_played(gamescene, index):
     #Si la carte est un prince, alors il pourra choisir le camp qui défausse sa carte
     if(str(modelvar.current_player.cards[index]) == "Prince" and isinstance(modelvar.current_player, model.player.RealPlayer)):
         gamescene.display_prince_choice()
+        gamescene.wait_visibility(gamescene)
         
     #Actualisation du label indiquant la carte dernièrement jouée
     gamescene.update_infolabel(str(modelvar.current_player), str(modelvar.current_player.cards[index])) 
