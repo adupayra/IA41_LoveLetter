@@ -115,7 +115,7 @@ class Model(object):
         
         return self._current_player
         
-        
+    #Instanciation des joueurs
     def creer_joueurs(self, difficulty = 0):
         self._player = player.RealPlayer()
         if difficulty == 0:
@@ -125,7 +125,7 @@ class Model(object):
         else:
             self._ia = player.IADifficile()
     
-    
+    #Distribution des cartes dans les différentes listes
     def distribution(self):
         self._player.add_card(self._cards[0], 0) #Une carte au joueur
         self._ia.add_card(self._cards[1],0) #Une à l'IA
@@ -141,31 +141,36 @@ class Model(object):
             self._deck.append(self._cards[i])
         
         
-    
+    #Ajoute une carte à la liste des cartes jouées dans le round
     def add_cards_played(self, new_card):
         self._cards_played.append(new_card)
 
+    #Pioche une carte
     def pick_card(self):
         return self._deck.pop(0)
         
+    #Retourne les 3 première cartes de jeu (celles affichées au milieu du plateau)
     def get_three_cards(self):
         return str(self._cards_played[0]), str(self._cards_played[1]), str(self._cards_played[2])
     
+    #Effectue l'action de la carte à l'index associée du joueur courrant
     def play(self, index):
-        self._cards_played.append(self._current_player.cards[index])
-        self._current_player.cards[index].action()
-        self._current_player.remove_card(index)
+        self._cards_played.append(self._current_player.cards[index])#Ajout de cette carte à la liste des cartes jouées
+        self._current_player.cards[index].action()#Action de la carte
+        self._current_player.remove_card(index)#Suppression de la carte dans la main du joueur courrant
         self.next_turn(index)
 
         return self._current_player
         
+    #Définition du prochain joueur
     def next_turn(self, index):
         if(isinstance(self._current_player, player.RealPlayer)):
             self._current_player = self._ia
         else:
             self._current_player = self._player
         self._current_player.add_card(self.pick_card(), index)
-        
+    
+    #Choix de la carte jouée par l'IA
     def choose_cardAI(self):
         #Appeler algo de l'IA ici
 
