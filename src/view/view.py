@@ -102,6 +102,7 @@ class MenuScene(tk.Frame):
         choix de difficulté
         '''
         #Création fenetre
+        
         difficulty_window = tk.Toplevel()
         difficulty_window.title("Choix difficulté")
         

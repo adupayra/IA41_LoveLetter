@@ -17,10 +17,11 @@ class Controller():
     _viewvar = None
     
     @classmethod
-    def consulter_regles():
+    def consulter_regles(cls):
         webbrowser.open('https://fr.wikipedia.org/wiki/Love_Letter_(jeu)')
+        
     @classmethod
-    def quitter_jeu():
+    def quitter_jeu(cls):
         sys.exit(0)
     
     @classmethod
@@ -73,7 +74,8 @@ class Controller():
         #Si la carte est un garde et que c'est le tour de l'utilisateur, on va afficher une écran lui montrant quelles cartes il peut 
         #deviner
         if(str(cls._modelvar.current_player.cards[index]) == "Garde"):
-            pass
+            gamescene.display_guard_choice()
+            gamescene.wait_visibility(gamescene)
         
         #Si la carte est un prince, alors il pourra choisir le camp qui défausse sa carte
         if(str(cls._modelvar.current_player.cards[index]) == "Prince"):
