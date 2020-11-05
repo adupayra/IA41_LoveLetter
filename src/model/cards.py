@@ -18,8 +18,9 @@ class Card(metaclass = abc.ABCMeta):
     def __repr__(self):
         return self.__str__()
     
-    def __init__(self):
-        pass
+    def __init__(self, model):
+        self._model = model
+        
     
     #Propriété des cartes (valeur)
     @property
@@ -43,8 +44,8 @@ class Espionne(Card):
         return "Espionne"
     
     
-    def __init__(self):
-        Card.__init__(self)
+    def __init__(self, model):
+        Card.__init__(self, model)
     
     @classmethod
     def value():
@@ -64,8 +65,8 @@ class Garde(Card):
     def __str__(self):
         return "Garde"
     
-    def __init__(self):
-        Card.__init__(self)
+    def __init__(self, model):
+        Card.__init__(self, model)
     
     @classmethod
     def value(self):
@@ -83,8 +84,8 @@ class Pretre(Card):
     def __str__(self):
         return "Pretre"
     
-    def __init__(self):
-        Card.__init__(self)
+    def __init__(self, model):
+        Card.__init__(self, model)
     
     @classmethod
     def value(self):
@@ -102,8 +103,8 @@ class Baron(Card):
     def __str__(self):
         return "Baron"
     
-    def __init__(self):
-        Card.__init__(self)
+    def __init__(self, model):
+        Card.__init__(self, model)
     
     @classmethod
     def value(self):
@@ -120,8 +121,8 @@ class Servante(Card):
     def __str__(self):
         return "Servante"
     
-    def __init__(self):
-        Card.__init__(self)
+    def __init__(self, model):
+        Card.__init__(self, model)
     
     @classmethod
     def value(self):
@@ -139,8 +140,8 @@ class Prince(Card):
     def __str__(self):
         return "Prince"
     
-    def __init__(self):
-        Card.__init__(self)
+    def __init__(self, model):
+        Card.__init__(self, model)
     
     @classmethod
     def value(self):
@@ -158,8 +159,8 @@ class Chancelier(Card):
     def __str__(self):
         return "Chancelier"
     
-    def __init__(self):
-        Card.__init__(self)
+    def __init__(self, model):
+        Card.__init__(self, model)
     
     @classmethod
     def value(self):
@@ -177,8 +178,8 @@ class Roi(Card):
     def __str__(self):
         return "Roi"
     
-    def __init__(self):
-        Card.__init__(self)
+    def __init__(self, model):
+        Card.__init__(self, model)
     
     @classmethod
     def value(self):
@@ -196,8 +197,8 @@ class Comtesse(Card):
     def __str__(self):
         return "Comtesse"
     
-    def __init__(self):
-        Card.__init__(self)
+    def __init__(self, model):
+        Card.__init__(self, model)
     
     @classmethod
     def value(self):
@@ -215,8 +216,8 @@ class Princesse(Card):
     def __str__(self):
         return "Princesse"
     
-    def __init__(self):
-        Card.__init__(self)
+    def __init__(self, model):
+        Card.__init__(self, model)
     
     @classmethod
     def value(self):

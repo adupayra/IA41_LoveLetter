@@ -38,6 +38,10 @@ class Player(metaclass = abc.ABCMeta):
     def last_card_played(self):
         return self._last_card_played
     
+    @last_card_played.setter
+    def last_card_played(self, value):
+        self._last_card_played = value   
+         
     @property
     def immune(self):
         return self._immune
@@ -73,8 +77,9 @@ class IA(Player, metaclass = abc.ABCMeta):
     Classe servant de template pour les différentes IA
     '''
     
-    def __init__(self):
+    def __init__(self, model):
         Player.__init__(self)
+        self._model = model
     
     def __str__(self):
         return "IA"
@@ -85,11 +90,23 @@ class IA(Player, metaclass = abc.ABCMeta):
     @abstractmethod
     def algorithme(self):
         pass
+
+    @abstractmethod
+    def algorithmeGuard(self):
+        pass
+    
+    @abstractmethod
+    def algorithmePrince(self):
+        pass
+    
+    @abstractmethod
+    def algorithmeChancelier(self):
+        pass
     
 class IAFacile(IA):
     
-    def __init__(self):
-        IA.__init__(self)
+    def __init__(self, model):
+        IA.__init__(self, model)
     
     def __str__(self):
         return "IA Facile"
@@ -97,26 +114,53 @@ class IAFacile(IA):
     def algorithme(self):
         pass
 
+    def algorithmeGuard(self):
+        pass
+    
+    def algorithmePrince(self):
+        pass
+    
+    def algorithmeChancelier(self):
+        pass
+    
 class IAMoyenne(IA):
     
     
-    def __init__(self):
-        IA.__init__(self)
+    def __init__(self, model):
+        IA.__init__(self, model)
     
     def __str__(self):
         return "IA Moyenne"
     
     def algorithme(self):
         pass
+    
+    def algorithmeGuard(self):
+        pass
+    
+    def algorithmePrince(self):
+        pass
+    
+    def algorithmeChancelier(self):
+        pass
 
 class IADifficile(IA):
     
-    def __init__(self):
-        IA.__init__(self)
+    def __init__(self, model):
+        IA.__init__(self, model)
     
     def __str__(self):
         return "IA Difficile"
     
     def algorithme(self):
+        pass
+    
+    def algorithmeGuard(self):
+        pass
+    
+    def algorithmePrince(self):
+        pass
+    
+    def algorithmeChancelier(self):
         pass
     

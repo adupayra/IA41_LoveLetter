@@ -31,21 +31,21 @@ class Model(object):
         self._current_player = None #Utilisé pour savoir qui doit jouer 
         
         #Instantiation de toutes les cartes
-        self._cards.append(cards.Roi())
-        self._cards.append(cards.Comtesse())
-        self._cards.append(cards.Princesse())
+        self._cards.append(cards.Roi(self))
+        self._cards.append(cards.Comtesse(self))
+        self._cards.append(cards.Princesse(self))
         
         for _ in range(0,2):
-            self._cards.append(cards.Espionne())
-            self._cards.append(cards.Garde())
-            self._cards.append(cards.Pretre())
-            self._cards.append(cards.Baron())
-            self._cards.append(cards.Servante())
-            self._cards.append(cards.Prince())
-            self._cards.append(cards.Chancelier())
+            self._cards.append(cards.Espionne(self))
+            self._cards.append(cards.Garde(self))
+            self._cards.append(cards.Pretre(self))
+            self._cards.append(cards.Baron(self))
+            self._cards.append(cards.Servante(self))
+            self._cards.append(cards.Prince(self))
+            self._cards.append(cards.Chancelier(self))
             
         for _ in range(0, 4):
-            self._cards.append(cards.Garde())
+            self._cards.append(cards.Garde(self))
 
     
     @property
@@ -104,10 +104,13 @@ class Model(object):
         
         if premier_joueur == 0:
             self._current_player = self._player
+            #a supprimer potentiellement
             self._players.append(self._player)
             self._players.append(self._ia)
         else:
             self._current_player = self._ia
+            
+            #A supprimer potentielement
             self._players.append(self._ia)
             self._players.append(self._player)
         self._current_player.add_card(self.pick_card(),1)
@@ -119,11 +122,11 @@ class Model(object):
     def creer_joueurs(self, difficulty = 0):
         self._player = player.RealPlayer()
         if difficulty == 0:
-            self._ia = player.IAFacile()
+            self._ia = player.IAFacile(self)
         elif difficulty == 1:
-            self._ia = player.IAMoyenne()
+            self._ia = player.IAMoyenne(self)
         else:
-            self._ia = player.IADifficile()
+            self._ia = player.IADifficile(self)
     
     #Distribution des cartes dans les différentes listes
     def distribution(self):
@@ -153,8 +156,15 @@ class Model(object):
     def get_three_cards(self):
         return str(self._cards_played[0]), str(self._cards_played[1]), str(self._cards_played[2])
     
+    
+    #Choix de la carte jouée par l'IA
+    def playAI(self):
+        #Appeler algo de l'IA ici
+        self.play(randrange(0,2))
+    
     #Effectue l'action de la carte à l'index associée du joueur courrant
     def play(self, index):
+        self._current_player.last_card_played = self._current_player.cards[index]
         self._cards_played.append(self._current_player.cards[index])#Ajout de cette carte à la liste des cartes jouées
         self._current_player.cards[index].action()#Action de la carte
         self._current_player.remove_card(index)#Suppression de la carte dans la main du joueur courrant
@@ -162,6 +172,7 @@ class Model(object):
 
         return self._current_player
         
+            
     #Définition du prochain joueur
     def next_turn(self, index):
         if(isinstance(self._current_player, player.RealPlayer)):
@@ -170,10 +181,9 @@ class Model(object):
             self._current_player = self._player
         self._current_player.add_card(self.pick_card(), index)
     
-    #Choix de la carte jouée par l'IA
-    def choose_cardAI(self):
-        #Appeler algo de l'IA ici
-
-        return randrange(0,1)
-            
+    
+    def victory(self, joueur, condition):
+        pass
+    
+        
         

@@ -9,8 +9,10 @@ import src.model.model as model
 import src.view.view as view
 
 def main():
-    controller.modelvar = model.Model()
-    view.View()
+    controller.Controller._modelvar = model.Model()
+    controller.Controller._viewvar = view.View()
+    
+    
     
 
     

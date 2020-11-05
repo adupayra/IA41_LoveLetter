@@ -6,7 +6,7 @@ Created on 26 oct. 2020
 '''
 import tkinter as tk
 import tkinter.font
-import src.controller.controller as controller
+from src.controller.controller import Controller
 import os
 
     
@@ -45,7 +45,6 @@ class View(tk.Tk):
         self._scenes = {"Menu scene":menu_scene, "Game scene":game_scene, 
                        "End game scene":end_game_scene}
         
-        #Premiere scène à afficher est la menu scene
         self.display_scene("Menu scene")
         
         self.mainloop()
@@ -87,12 +86,12 @@ class MenuScene(tk.Frame):
         start_button.pack(side = tk.TOP, fill = tk.BOTH)
         
         #Bouton renvoyant vers l'URL des règles
-        rules_button = tk.Button(self, text = "Règles", command = lambda:controller.consulter_regles(), pady = 75, bg = theme2, fg = theme1,
+        rules_button = tk.Button(self, text = "Règles", command = lambda:Controller.consulter_regles(), pady = 75, bg = theme2, fg = theme1,
                                  relief = tk.RIDGE, font = button_font)
         rules_button.pack(side = tk.TOP, fill = tk.BOTH)
         
         #Bouton pour quitter le jeu
-        exit_button = tk.Button(self, text = "Quitter", command = lambda:controller.quitter_jeu(), pady = 75, bg = theme2, fg = theme1,
+        exit_button = tk.Button(self, text = "Quitter", command = lambda:Controller.quitter_jeu(), pady = 75, bg = theme2, fg = theme1,
                                 relief = tk.RIDGE, font = button_font)
         exit_button.pack(side = tk.TOP, fill = tk.BOTH)
         
@@ -125,7 +124,7 @@ class MenuScene(tk.Frame):
         window.destroy()
         
         #Démarrage de la partie
-        controller.start_game(view, difficulty)
+        Controller.start_game(view, difficulty)
 
     
         
@@ -171,11 +170,11 @@ class GameScene(tk.Frame):
     def init_features(self, view, theme1, container):
         
         #Création du bouton transition test
-        button = tk.Button(self, text="Go to end game scene", command=lambda:controller.victory_test(view))
+        button = tk.Button(self, text="Go to end game scene", command=lambda:Controller.victory_test(view))
         button.place(relx=0, rely=0)
         
         #Création d'un bouton quittant l'application
-        button_quit = tk.Button(self, text="Quit game", command=lambda:controller.quitter_jeu())
+        button_quit = tk.Button(self, text="Quit game", command=lambda:Controller.quitter_jeu())
         button_quit.place(relx=0, rely=1, y=-button_quit.winfo_reqheight())
         
         #Création du label affichant les informations de jeu
@@ -189,7 +188,7 @@ class GameScene(tk.Frame):
         boutton_reminder = tk.Button(self, command = lambda:self._special_frame.display_reminder(), text = "Rappel des cartes")
         boutton_reminder.pack(side = tk.RIGHT)
         
-        boutton_played_cards = tk.Button(self, text = "Consulter cartes jouées", command = lambda:controller.get_played_cards(self._special_frame))
+        boutton_played_cards = tk.Button(self, text = "Consulter cartes jouées", command = lambda:Controller.get_played_cards(self._special_frame))
         boutton_played_cards.pack(side = tk.RIGHT)
 
     #Changement du répertoire courant afin de se trouver dans le répertoire où se trouvent les ressources
@@ -210,9 +209,9 @@ class GameScene(tk.Frame):
         self._ia_labels[0].place(rely=0, relx=0.5, x=-self._ia_labels[0].winfo_reqwidth())
         
         #Boutons de l'utilisateur, servent à choisir la carte à jouer
-        self._player_buttons = (tk.Button(self, command=lambda:controller.card_played(self, 0), borderwidth=0, highlightthickness=0),
-                                tk.Button(self, command=lambda:controller.card_played(self, 1), borderwidth=0, highlightthickness=0),
-                                tk.Button(self, command=lambda:controller.card_played(self, 2), borderwidth=0, highlightthickness=0))
+        self._player_buttons = (tk.Button(self, command=lambda:Controller.card_played(self, 0), borderwidth=0, highlightthickness=0),
+                                tk.Button(self, command=lambda:Controller.card_played(self, 1), borderwidth=0, highlightthickness=0),
+                                tk.Button(self, command=lambda:Controller.card_played(self, 2), borderwidth=0, highlightthickness=0))
         #Le 3e bouton est là pour couvrir le cas du chancelier
         
         self._player_buttons[0].place(rely=1, relx=0.5, x=-self._ia_labels[0].winfo_reqwidth(), y=-self._ia_labels[0].winfo_reqheight())
@@ -358,8 +357,8 @@ class SpecialFrame(tk.Frame):
             self._displayerslabels.append(tk.Label(self, bg = color))
         
         #Instantiation des boutons sur lesquels l'utilisateur pourra appuyer pour choisir quel camp doit défausser sa carte
-        self._prince_buttons = (tk.Button(self, text = "Votre jeu", command = lambda:controller.side_chosen(self, "current player")),
-                                tk.Button(self, text = "Le jeu adverse", command = lambda:controller.side_chosen(self, "other player")))
+        self._prince_buttons = (tk.Button(self, text = "Votre jeu", command = lambda:Controller.side_chosen(self, "current player")),
+                                tk.Button(self, text = "Le jeu adverse", command = lambda:Controller.side_chosen(self, "other player")))
         
         #Attribution des images aux boutons 
         self._actionbuttons[0]['image'] = self._gamescene.images['Espionne']
@@ -373,15 +372,15 @@ class SpecialFrame(tk.Frame):
         self._actionbuttons[8]['image'] = self._gamescene.images['Princesse']
         
         #Association des évènements à déclencher en cas de click
-        self._actionbuttons[0].configure(command = lambda:controller.card_chosen(self, self.search_card(0)))
-        self._actionbuttons[1].configure(command = lambda:controller.card_chosen(self, self.search_card(1)))
-        self._actionbuttons[2].configure(command = lambda:controller.card_chosen(self, self.search_card(2)))
-        self._actionbuttons[3].configure(command = lambda:controller.card_chosen(self, self.search_card(3)))
-        self._actionbuttons[4].configure(command = lambda:controller.card_chosen(self, self.search_card(4)))
-        self._actionbuttons[5].configure(command = lambda:controller.card_chosen(self, self.search_card(5)))
-        self._actionbuttons[6].configure(command = lambda:controller.card_chosen(self, self.search_card(6)))
-        self._actionbuttons[7].configure(command = lambda:controller.card_chosen(self, self.search_card(7)))
-        self._actionbuttons[8].configure(command = lambda:controller.card_chosen(self, self.search_card(8)))
+        self._actionbuttons[0].configure(command = lambda:Controller.card_chosen(self, self.search_card(0)))
+        self._actionbuttons[1].configure(command = lambda:Controller.card_chosen(self, self.search_card(1)))
+        self._actionbuttons[2].configure(command = lambda:Controller.card_chosen(self, self.search_card(2)))
+        self._actionbuttons[3].configure(command = lambda:Controller.card_chosen(self, self.search_card(3)))
+        self._actionbuttons[4].configure(command = lambda:Controller.card_chosen(self, self.search_card(4)))
+        self._actionbuttons[5].configure(command = lambda:Controller.card_chosen(self, self.search_card(5)))
+        self._actionbuttons[6].configure(command = lambda:Controller.card_chosen(self, self.search_card(6)))
+        self._actionbuttons[7].configure(command = lambda:Controller.card_chosen(self, self.search_card(7)))
+        self._actionbuttons[8].configure(command = lambda:Controller.card_chosen(self, self.search_card(8)))
     
     #Calcul le nombre de cartes que l'on peut mettre à la suite en ligne dans la frame avant de devoir passer à la ligne
     #suivante
@@ -531,9 +530,9 @@ class EndGameScene(tk.Frame):
         
         #Bouton pour revenir au menu/aller au prochain round
         retour_menu_button = tk.Button(self, text = "Retour au menu", 
-                                       command = lambda:controller.display_scene(view, "Menu scene"))
+                                       command = lambda:Controller.display_scene(view, "Menu scene"))
         self._next_round_button = tk.Button(self, text = "Prochain round", 
-                                      command = lambda:controller.start_game(view, -1))
+                                      command = lambda:Controller.start_game(view, -1))
         retour_menu_button.pack()
         self._next_round_button.pack()
         
