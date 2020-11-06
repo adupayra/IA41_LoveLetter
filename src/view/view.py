@@ -47,11 +47,17 @@ class View(tk.Tk):
         
         self.display_scene("Menu scene")
         
+        Controller.addgamescene(game_scene)
+        
         self.mainloop()
             
     def display_scene(self, scene_name):
         self._scenes[scene_name].tkraise()
         
+    @property
+    def game_scene(self):
+        return self._game_scene
+    
     @property
     def scenes(self):
         return self._scenes
@@ -317,8 +323,8 @@ class GameScene(tk.Frame):
         self._special_frame.display_guard_choice()
     
     #Pareil mais pour le prince
-    def display_prince_choice(self):
-        self._special_frame.display_prince_choice()
+    def display_prince_choice(self, jeu_joueur, jeu_ia):
+        self._special_frame.display_prince_choice(jeu_joueur, jeu_ia)
         
     #Fonction utilisée pour replacer le premier bouton lorsqu'il est place forget
     def replace_button(self):
@@ -358,8 +364,8 @@ class SpecialFrame(tk.Frame):
             self._displayerslabels.append(tk.Label(self, bg = color))
         
         #Instantiation des boutons sur lesquels l'utilisateur pourra appuyer pour choisir quel camp doit défausser sa carte
-        self._prince_buttons = (tk.Button(self, text = "Votre jeu", command = lambda:Controller.side_chosen(self, "current player")),
-                                tk.Button(self, text = "Le jeu adverse", command = lambda:Controller.side_chosen(self, "other player")))
+        self._prince_buttons = (tk.Button(self, text = "Votre jeu", command = lambda:Controller.side_chosen(self, self._prince_buttons[0]['text'])),
+                                tk.Button(self, text = "Le jeu adverse", command = lambda:Controller.side_chosen(self, self._prince_buttons[1]['text'])))
         
         #Attribution des images aux boutons 
         self._actionbuttons[0]['image'] = self._gamescene.images['Espionne']
@@ -470,10 +476,12 @@ class SpecialFrame(tk.Frame):
         self._leave_feature.grid(row = j+1, column = i%self._last_column)
         
     #Affichage des boutons permettant à l'utilisateur de choisir qui défausse sa carte
-    def display_prince_choice(self):
+    def display_prince_choice(self, jeu_joueur, jeu_ia):
         self.place(relwidth = 1, relheight = 1)
         self.tkraise()
         self._gamescene.place_forget()
+        self._prince_buttons[0]['text'] = jeu_joueur
+        self._prince_buttons[1]['text'] = jeu_ia
         self._prince_buttons[0].grid()
         self._prince_buttons[1].grid()
     

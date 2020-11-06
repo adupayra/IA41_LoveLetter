@@ -31,6 +31,8 @@ class Model(object):
         self._players = [] #Utilisé afin de connaitre le prochain joueur
         self._current_player = None #Utilisé pour savoir qui doit jouer 
         
+        cards.Card._model = self
+        
         #Instantiation de toutes les cartes
         self._cards.append(cards.Roi(self))
         self._cards.append(cards.Comtesse(self))
@@ -172,7 +174,7 @@ class Model(object):
         self._current_player.cards[index].action()#Action de la carte
         self._current_player.remove_card(index)#Suppression de la carte dans la main du joueur courrant
         self.next_turn(index)
-
+        
         return self._current_player
         
             

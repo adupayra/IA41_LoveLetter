@@ -8,11 +8,15 @@ Created on 27 oct. 2020
 import abc
 from abc import abstractmethod
 from builtins import classmethod
+import src.model.player as player
+from random import randrange
 
 class Card(metaclass = abc.ABCMeta):
     '''
     template pour toutes les cartes du jeu
     '''
+    
+    _model = None
     
     #Permet d'afficher la string retournée par __str__ lorsque l'on veut print une instance d'une carte
     def __repr__(self):
@@ -34,6 +38,14 @@ class Card(metaclass = abc.ABCMeta):
         pass
     
 
+class TwoActionCards(Card, metaclass = abc.ABCMeta):
+    '''
+    classe abstraite parente des classes se déroulant en deux temps du point de vue utilisateur (choix de la carte -> second choix -> action sur le modèle)
+    '''
+    
+    def __init__(self, model):
+        Card.__init__(self, model)
+        
 class Espionne(Card):
     '''
     Classe définissant la carte espionne
@@ -48,16 +60,16 @@ class Espionne(Card):
         Card.__init__(self, model)
     
     @classmethod
-    def value():
+    def value(cls):
         return 0
     
     
     @classmethod
-    def action(self):
+    def action(cls):
         pass
     
     
-class Garde(Card):
+class Garde(TwoActionCards):
     '''
     Classe définissant la carte garde
     '''
@@ -69,12 +81,23 @@ class Garde(Card):
         Card.__init__(self, model)
     
     @classmethod
-    def value(self):
+    def value(cls):
         return 1
     
     @classmethod
-    def action(self):
-        pass
+    def action(cls):
+        if(isinstance(Card._model.current_player, player.RealPlayer)):
+            Card._model.controller.display_guard_choice()
+        else:
+            #algo ia
+            pass
+    
+    @classmethod
+    def deuxieme_action(cls, chosen_card):
+        print("vous avez choisi " + chosen_card)
+        
+        
+            
     
 class Pretre(Card):
     '''
@@ -88,11 +111,11 @@ class Pretre(Card):
         Card.__init__(self, model)
     
     @classmethod
-    def value(self):
+    def value(cls):
         return 2
     
     @classmethod
-    def action(self):
+    def action(cls):
         pass
     
 class Baron(Card):
@@ -107,11 +130,11 @@ class Baron(Card):
         Card.__init__(self, model)
     
     @classmethod
-    def value(self):
+    def value(cls):
         return 3
     
     @classmethod
-    def action(self):
+    def action(cls):
         pass
     
 class Servante(Card):
@@ -125,14 +148,14 @@ class Servante(Card):
         Card.__init__(self, model)
     
     @classmethod
-    def value(self):
+    def value(cls):
         return 4
     
     @classmethod
-    def action(self):
+    def action(cls):
         pass
     
-class Prince(Card):
+class Prince(TwoActionCards):
     '''
     Classe définissant la carte prince
     '''
@@ -143,18 +166,34 @@ class Prince(Card):
     def __init__(self, model):
         Card.__init__(self, model)
     
+    _player_side = "Jeu joueur"
+    _ia_side = "Jeu IA"
+    
     @classmethod
-    def value(self):
+    def value(cls):
         return 5
     
     @classmethod
-    def action(self):
-        pass
+    def action(cls):
+        if(isinstance(Card._model.current_player, player.RealPlayer)):
+            Card._model.controller.display_prince_choice(Prince._player_side, Prince._ia_side)
+        else:
+            alea = randrange(2)
+            if(alea == 0):
+                Prince.deuxieme_action(Prince._player_side)
+            else:
+                Prince.deuxieme_action(Prince._ia_side)
     
+    @classmethod
+    def deuxieme_action(cls, chosen_side):
+        print(str(Card._model.current_player) + " a choisi " + chosen_side)
+        
 class Chancelier(Card):
     '''
     Classe définissant la carte chancelier
     '''
+    
+    _choix_cartes = None
     
     def __str__(self):
         return "Chancelier"
@@ -163,11 +202,11 @@ class Chancelier(Card):
         Card.__init__(self, model)
     
     @classmethod
-    def value(self):
+    def value(cls):
         return 6
     
     @classmethod
-    def action(self):
+    def action(cls):
         pass
 
 class Roi(Card):
@@ -182,11 +221,11 @@ class Roi(Card):
         Card.__init__(self, model)
     
     @classmethod
-    def value(self):
+    def value(cls):
         return 7
     
     @classmethod
-    def action(self):
+    def action(cls):
         pass
     
 class Comtesse(Card):
@@ -201,11 +240,11 @@ class Comtesse(Card):
         Card.__init__(self, model)
     
     @classmethod
-    def value(self):
+    def value(cls):
         return 8
     
     @classmethod
-    def action(self):
+    def action(cls):
         pass
     
 class Princesse(Card):
@@ -220,11 +259,11 @@ class Princesse(Card):
         Card.__init__(self, model)
     
     @classmethod
-    def value(self):
+    def value(cls):
         return 9
     
     @classmethod
-    def action(self):
+    def action(cls):
         pass
     
 

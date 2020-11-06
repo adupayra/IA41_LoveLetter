@@ -14,8 +14,12 @@ class Controller():
     #Ne pas appeler cette variable depuis un module de view afin de garder l'indépendance entre modèle et view    
     
     _modelvar = None
-    _viewvar = None
+    _game_scene = None
     
+    @classmethod
+    def addgamescene(cls, game_scene):
+        cls._game_scene = game_scene
+        
     @classmethod
     def consulter_regles(cls):
         webbrowser.open('https://fr.wikipedia.org/wiki/Love_Letter_(jeu)')
@@ -40,6 +44,7 @@ class Controller():
         #Affichage des 3 premieres cartes et du nom de la personne qui commence
         view.scenes["Game scene"].init_round(cls._modelvar.get_three_cards(), str(cls._modelvar.current_player))
         
+        
         #Début du premier tour
         cls.start_turn(current_player, view.scenes["Game scene"])
         
@@ -47,6 +52,7 @@ class Controller():
     @classmethod
     #Fonction permettant le déroulement d'un tour
     def start_turn(cls, current_player, gamescene):
+        
         #Actualisation de l'UI (nombre de cartes de l'IA)
         gamescene.update_iaUI(cls._modelvar.ia.cards.__len__())
         
@@ -55,8 +61,14 @@ class Controller():
         
         #Si le joueur actuel est l'IA, alors l'utilisateur ne peut pas jouer, et le process se fera sans UI, dans le modèle
         if(isinstance(current_player, model.player.IA)):
+            
+            #Vérification premier tour
+            if(cls._modelvar.player.last_card_played is not None):
+                gamescene.update_infolabel(str(cls._modelvar.player), str(cls._modelvar.player.last_card_played)) #Affichage de la carte jouée par le joueur au dernier tour
             cls.card_playedAI(gamescene)
         else:
+            if(cls._modelvar.ia.last_card_played is not None):
+                gamescene.update_infolabel(str(cls._modelvar.ia), str(cls._modelvar.ia.last_card_played)) #Affichage de la carte jouée par l'IA au dernier tour
             gamescene.unlock_buttons()
     
     @classmethod
@@ -71,20 +83,6 @@ class Controller():
     def card_played(cls, gamescene, index):
         #if(not isinstance(cls._modelvar.current_player.last_card_played, model.cards.Chancelier)):
         
-        #Si la carte est un garde et que c'est le tour de l'utilisateur, on va afficher une écran lui montrant quelles cartes il peut 
-        #deviner
-        if(str(cls._modelvar.current_player.cards[index]) == "Garde"):
-            gamescene.display_guard_choice()
-            gamescene.wait_visibility(gamescene)
-        
-        #Si la carte est un prince, alors il pourra choisir le camp qui défausse sa carte
-        if(str(cls._modelvar.current_player.cards[index]) == "Prince"):
-            gamescene.display_prince_choice()
-            gamescene.wait_visibility(gamescene)
-        
-            
-        #Actualisation du label indiquant la carte dernièrement jouée
-        gamescene.update_infolabel(str(cls._modelvar.current_player), str(cls._modelvar.current_player.cards[index])) 
         
         #Action de la carte et changement de joueur courant
         current_player = cls._modelvar.play(index)
@@ -97,23 +95,32 @@ class Controller():
     def get_played_cards(cls, special_frame):
         special_frame.display_allcards(cls._modelvar.cards_played)
     
-    '''
+    #Si la carte est un garde et que c'est le tour de l'utilisateur, on va afficher une écran lui montrant quelles cartes il peut 
+    #deviner
     @classmethod
     def display_guard_choice(cls):
-        gamescene.display_guard_choice()
-        gamescene.wait_visibility(gamescene)'''
-        
+        cls._game_scene.display_guard_choice()
+        cls._game_scene.wait_visibility(cls._game_scene)
+    
+    #Si la carte est un prince, alors il pourra choisir le camp qui défausse sa carte    
+    @classmethod
+    def display_prince_choice(cls, jeu_joueur, jeu_ia):
+        cls._game_scene.display_prince_choice(jeu_joueur, jeu_ia)
+        cls._game_scene.wait_visibility(cls._game_scene)
+    
+    
     @classmethod
     #Fonction appelée lorsque l'utilisateur a tenté de deviner une carte grâce au guarde
     def card_chosen(cls, special_frame, card):
-        print("vous avez choisi " + card)
+        
         special_frame.stop_display()
+        model.cards.Garde.deuxieme_action(card)
         
     @classmethod
     #Fonction appelée lorsque l'utilisateur a joué le prince et choisi le camp qui défausse sa carte
-    def side_chosen(special_frame, side):
-        print("vous avez choisi " + side)
+    def side_chosen(cls, special_frame, side):
         special_frame.stop_display()
+        model.cards.Prince.deuxieme_action(side)
         
         
     @classmethod
