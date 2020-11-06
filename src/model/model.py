@@ -15,12 +15,13 @@ class Model(object):
     '''
 
 
-    def __init__(self):
+    def __init__(self, controller):
         '''
         Le constructeur va permettre l'instantiation de toutes les cartes, seule donnée persistante du programme (afin de ne pas avoir à ré instancier les cartes
         à chaque début de partie/début de round
         '''
         #Définition des différents attributs
+        self._controller = controller
         self._cards = [] #Liste de toutes les cartes
         self._cards_played = [] #Liste des cartes jouées (comprenant les 3 cartes montrées au début)
         self._burnt_card = None #La carte inconnue
@@ -47,7 +48,9 @@ class Model(object):
         for _ in range(0, 4):
             self._cards.append(cards.Garde(self))
 
-    
+    @property
+    def controller(self):
+        return self._controller
     @property
     def cards(self):
         return self._cards
