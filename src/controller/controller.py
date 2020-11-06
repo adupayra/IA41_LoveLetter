@@ -64,11 +64,12 @@ class Controller():
             
             #Vérification premier tour
             if(cls._modelvar.player.last_card_played is not None):
-                gamescene.update_infolabel(str(cls._modelvar.player), str(cls._modelvar.player.last_card_played)) #Affichage de la carte jouée par le joueur au dernier tour
+                
+                gamescene.update_lastcardslabels(str(cls._modelvar.player), str(cls._modelvar.player.last_card_played)) #Affichage de la carte jouée par le joueur au dernier tour
             cls.card_playedAI(gamescene)
         else:
             if(cls._modelvar.ia.last_card_played is not None):
-                gamescene.update_infolabel(str(cls._modelvar.ia), str(cls._modelvar.ia.last_card_played)) #Affichage de la carte jouée par l'IA au dernier tour
+                gamescene.update_lastcardslabels(str(cls._modelvar.ia), str(cls._modelvar.ia.last_card_played)) #Affichage de la carte jouée par l'IA au dernier tour
             gamescene.unlock_buttons()
     
     @classmethod

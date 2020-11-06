@@ -186,15 +186,25 @@ class GameScene(tk.Frame):
         
         #Création du label affichant les informations de jeu
         self._info_label = tk.Label(self, text="Idle")
-        self._info_label.place(rely=0.5)
+        self._info_label.place(rely=0.325)
+        
+        #Création du label montrant la dernière carte jouée
+        self._last_card_label = tk.Label(self, bg = theme1, image = self._images["Cache"])
+        self._last_card_label.place(rely = 0.325, y = self._info_label.winfo_reqheight())
+        
+        #Création du label écrivant les détails de la dernière action du jeu
+        self._details_label = tk.Label(self, bg = theme1)
+        self._details_label.place(rely = 0.325, y = self._last_card_label.winfo_reqheight())
         
         #Création de la frame s'affichant par dessus la scène de jeu lorsque l'utilisateur veut consulter les cartes ou encore
         #qu'il doit faire un choix entre plusieurs options (après avoir joué le prince ou le garde)
         self._special_frame = SpecialFrame(container, theme1, self)
         
+        #Bouton permettant d'afficher la liste des cartes du jeu
         boutton_reminder = tk.Button(self, command = lambda:self._special_frame.display_reminder(), text = "Rappel des cartes")
         boutton_reminder.pack(side = tk.RIGHT)
         
+        #Bouton permettant d'afficher toutes les cartes jouées 
         boutton_played_cards = tk.Button(self, text = "Consulter cartes jouées", command = lambda:Controller.get_played_cards(self._special_frame))
         boutton_played_cards.pack(side = tk.RIGHT)
 
@@ -304,9 +314,10 @@ class GameScene(tk.Frame):
             for i in range(nbcards, number_cards_displayed):
                 self._ia_labels[i].config(image = "")
 
-    def update_infolabel(self, joueur, action):
-        self._info_label['text'] = joueur + " a joué la carte " + action
-        
+    def update_lastcardslabels(self, joueur, card):
+        self._info_label['text'] = joueur + " a joué la carte " + card
+        self._last_card_label['image'] = self._images[card]
+
     #Fonction permettant de vérouiller les boutons lorsque l'IA joue        
     def lock_buttons(self):
         for button in self._player_buttons:
@@ -317,6 +328,8 @@ class GameScene(tk.Frame):
         for button in self._player_buttons:
             button.config(state = 'normal')
     
+    
+        
     #Fonction permettant l'affichage de la fenêtre permettant à l'utilisateur de choisir quelle carte deviner (lorsqu'il a joué
     #un garde
     def display_guard_choice(self):
