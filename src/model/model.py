@@ -24,11 +24,12 @@ class Model(object):
         self._controller = controller
         self._cards = [] #Liste de toutes les cartes
         self._cards_played = [] #Liste des cartes jouées (comprenant les 3 cartes montrées au début)
+        self._cards_played_player = [] #Liste cartes jouées par le joueur
+        self._cards_played_ia = [] #Liste cartes jouées par l'ia
         self._burnt_card = None #La carte inconnue
         self._deck = [] #La pioche
         self._player = None #Le vrai joueur
         self._ia = None #l'ia
-        self._players = [] #Utilisé afin de connaitre le prochain joueur
         self._current_player = None #Utilisé pour savoir qui doit jouer 
         
         cards.Card._model = self
@@ -60,6 +61,14 @@ class Model(object):
     @property
     def cards_played(self):
         return self._cards_played
+    
+    @property
+    def cards_played_ia(self):
+        return self._cards_played_ia
+    
+    @property
+    def cards_played_player(self):
+        return self._cards_played_player
 
     @property
     def burnt_card(self):
@@ -87,6 +96,8 @@ class Model(object):
         
         #Réinitialisation des données du round précédent
         self._cards_played = []
+        self._cards_played_ia = []
+        self._cards_played_player = []
         self._burnt_card = None
         self._deck = [] 
         
@@ -109,17 +120,10 @@ class Model(object):
         
         if premier_joueur == 0:
             self._current_player = self._player
-            #a supprimer potentiellement
-            self._players.append(self._player)
-            self._players.append(self._ia)
         else:
             self._current_player = self._ia
-            
-            #A supprimer potentielement
-            self._players.append(self._ia)
-            self._players.append(self._player)
+
         self._current_player.add_card(self.pick_card(),1)
-        
         
         return self._current_player
         
@@ -172,7 +176,7 @@ class Model(object):
         self._current_player.last_card_played = self._current_player.cards[index]
         self._cards_played.append(self._current_player.cards[index])#Ajout de cette carte à la liste des cartes jouées
         self._current_player.cards[index].action()#Action de la carte
-        self._current_player.remove_card(index)#Suppression de la carte dans la main du joueur courrant
+        
         self.next_turn(index)
         
         return self._current_player
@@ -181,8 +185,12 @@ class Model(object):
     #Définition du prochain joueur
     def next_turn(self, index):
         if(isinstance(self._current_player, player.RealPlayer)):
+            self._cards_played_player.append(self._current_player.cards[index])
+            self._current_player.remove_card(index) #Suppression de la carte dans la main du joueur courrant
             self._current_player = self._ia
         else:
+            self._cards_played_ia.append(self._current_player.cards[index])
+            self._current_player.remove_card(index)#Suppression de la carte dans la main du joueur courrant
             self._current_player = self._player
         self._current_player.add_card(self.pick_card(), index)
     

@@ -116,7 +116,8 @@ class Pretre(Card):
     
     @classmethod
     def action(cls):
-        pass
+        if(isinstance(Card._model.current_player, player.RealPlayer)):
+            Card._model.controller.display_AI_card(Card._model.ia.cards[0])
     
 class Baron(Card):
     '''

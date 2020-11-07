@@ -77,8 +77,8 @@ class Controller():
     def card_playedAI(cls, gamescene):
         gamescene.lock_buttons()
         current_player = cls._modelvar.playAI()
-        gamescene.view.after(3000, cls.start_turn, current_player, gamescene) #Attente de 3 secondes avant de passer au tour suivant
-    
+        #gamescene.view.after(3000, cls.start_turn, current_player, gamescene) #Attente de 3 secondes avant de passer au tour suivant
+        cls.start_turn(current_player, gamescene)
     @classmethod
     #Fonction appelée lorsqu'un joueur a choisi une carte
     def card_played(cls, gamescene, index):
@@ -93,8 +93,8 @@ class Controller():
     
     @classmethod
     #Prend dans le modèle les cartes ayant été jouées lors du round afin de les redonner à la view qui va les afficher
-    def get_played_cards(cls, special_frame):
-        special_frame.display_allcards(cls._modelvar.cards_played)
+    def display_played_cards(cls, special_frame, call_from_special = False):
+        special_frame.display_allcards(cls._modelvar.cards_played_ia, cls._modelvar.cards_played_player, cls._modelvar.get_three_cards(), call_from_special)
     
     #Si la carte est un garde et que c'est le tour de l'utilisateur, on va afficher une écran lui montrant quelles cartes il peut 
     #deviner
@@ -123,6 +123,12 @@ class Controller():
         special_frame.stop_display()
         model.cards.Prince.deuxieme_action(side)
         
+    @classmethod
+    def display_AI_card(cls,card):
+        cls._game_scene.display_AI_card(str(card))
+        cls._game_scene.lock_buttons()
+        cls._game_scene.after(3000, cls._game_scene.update_iaUI, 1)
+        print("zizi")
         
     @classmethod
     #Fonction appelée en cas de fin de manche/partie

@@ -8,6 +8,7 @@ import tkinter as tk
 import tkinter.font
 from src.controller.controller import Controller
 import os
+from math import floor
 
     
 
@@ -205,7 +206,7 @@ class GameScene(tk.Frame):
         boutton_reminder.pack(side = tk.RIGHT)
         
         #Bouton permettant d'afficher toutes les cartes jouées 
-        boutton_played_cards = tk.Button(self, text = "Consulter cartes jouées", command = lambda:Controller.get_played_cards(self._special_frame))
+        boutton_played_cards = tk.Button(self, text = "Consulter cartes jouées", command = lambda:Controller.display_played_cards(self._special_frame))
         boutton_played_cards.pack(side = tk.RIGHT)
 
     #Changement du répertoire courant afin de se trouver dans le répertoire où se trouvent les ressources
@@ -305,7 +306,9 @@ class GameScene(tk.Frame):
     #Fonction permettant l'actualisation de l'UI en fonction du nombre de cartes de l'IA (meme principe que l'update player)
     def update_iaUI(self, nbcards):
         number_cards_displayed = sum(label["image"] != "" for label in self._ia_labels)
-
+        
+        self._ia_labels[0]['image'] = self.images["Cache"] #Sécurité car de toutes facons l'ia aura forcément une carte en main
+        
         if(nbcards > number_cards_displayed):
             for i in range(number_cards_displayed, nbcards):
                 self._ia_labels[i]['image'] = self._images["Cache"]
@@ -339,6 +342,10 @@ class GameScene(tk.Frame):
     def display_prince_choice(self, jeu_joueur, jeu_ia):
         self._special_frame.display_prince_choice(jeu_joueur, jeu_ia)
         
+    def display_AI_card(self, card):
+        self._ia_labels[0]['image'] = self._images[card]
+
+        
     #Fonction utilisée pour replacer le premier bouton lorsqu'il est place forget
     def replace_button(self):
         self._player_buttons[0].place(rely=1, relx=0.5, x=-self._ia_labels[0].winfo_reqwidth(), y=-self._ia_labels[0].winfo_reqheight())
@@ -346,6 +353,8 @@ class GameScene(tk.Frame):
     
 class SpecialFrame(tk.Frame):
     '''
+    Cette classe est un immondice, mais elle marche bien. Pas trop difficile à refaire, faire si on a le temps
+    
     classe correspondant à l'affichage d'une nouvelle Frame par dessus la scène de jeu. Permet d'afficher des informations
     comme les cartes jouées ou permet à l'utilisateur de faire des choix lorsqu'il a joué certaines cartes (garde et prince)
     '''
@@ -354,13 +363,13 @@ class SpecialFrame(tk.Frame):
         #Création de la fenetre
         tk.Frame.__init__(self, parent, bg = color)
         
+        #instance de la gamescene
         self._gamescene = gamescene
-        self._last_column = self.compute_last_column(gamescene.images['Espionne'].width())
         
         #Bouton permettant de revenir au jeu
         self._leave_feature = tk.Button(self, text = "Retourner au jeu", command = lambda:self.stop_display())
         
-        #Labels permettant d'afficher les cartes jouées ainsi que le rappel des cartes
+        #Labels permettant d'afficher les cartes jouées ainsi que le rappel des cartes (21 pour 21 cartes au total)
         self._displayerslabels = []
         
         #Boutons permettant de deviner la carte de l'IA lorsque l'utilisateur a joué un garde
@@ -380,7 +389,25 @@ class SpecialFrame(tk.Frame):
         self._prince_buttons = (tk.Button(self, text = "Votre jeu", command = lambda:Controller.side_chosen(self, self._prince_buttons[0]['text'])),
                                 tk.Button(self, text = "Le jeu adverse", command = lambda:Controller.side_chosen(self, self._prince_buttons[1]['text'])))
         
-        #Attribution des images aux boutons 
+        #Labels de textes utilisés lors de l'affichage des cartes jouées
+        self._side_labels = (tk.Label(self, text = "Cartes jouées par l'IA", bg = color),
+                             tk.Label(self, text = "Cartes jouées par vous", bg = color),
+                             tk.Label(self, text = "3 premières cartes", bg = color),
+                             tk.Label(self, text = "Choisissez une carte", bg = color))
+        
+        #Copie utilisée pour garder en mémoire des widgets dans le cas où l'on veut afficher une autre fenêtre tout en voulant revenir sur l'ancienne
+        self._copie = []
+        
+        #Bouton permettant de voir les cartes jouées depuis une autre fenêtre que celle de la gamescene
+        self._see_played_cards = tk.Button(self, text = "Voir cartes jouées", command = lambda:self.make_copy())
+        
+        #Bouton permettant de revenir à la frame précédente
+        self._return_last_frame = tk.Button(self, text = "Retour à la séléction", command = lambda:self.retour())
+        
+        #Error label, écran trop petit
+        self._error_label = tk.Label(self, text = "Votre écran est trop piti, disoulé :(")
+        
+        #Attribution des images aux boutons de choix du garde
         self._actionbuttons[0]['image'] = self._gamescene.images['Espionne']
         self._actionbuttons[1]['image'] = self._gamescene.images['Pretre']
         self._actionbuttons[2]['image'] = self._gamescene.images['Baron']
@@ -391,7 +418,7 @@ class SpecialFrame(tk.Frame):
         self._actionbuttons[7]['image'] = self._gamescene.images['Comtesse']
         self._actionbuttons[8]['image'] = self._gamescene.images['Princesse']
         
-        #Association des évènements à déclencher en cas de click
+        #Association des évènements à déclencher en cas de click lorsque le garde est joué
         self._actionbuttons[0].configure(command = lambda:Controller.card_chosen(self, self.search_card(0)))
         self._actionbuttons[1].configure(command = lambda:Controller.card_chosen(self, self.search_card(1)))
         self._actionbuttons[2].configure(command = lambda:Controller.card_chosen(self, self.search_card(2)))
@@ -401,20 +428,7 @@ class SpecialFrame(tk.Frame):
         self._actionbuttons[6].configure(command = lambda:Controller.card_chosen(self, self.search_card(6)))
         self._actionbuttons[7].configure(command = lambda:Controller.card_chosen(self, self.search_card(7)))
         self._actionbuttons[8].configure(command = lambda:Controller.card_chosen(self, self.search_card(8)))
-    
-    #Calcul le nombre de cartes que l'on peut mettre à la suite en ligne dans la frame avant de devoir passer à la ligne
-    #suivante
-    def compute_last_column(self, unite):
-        width_sum = 0
-        last_column = 0
         
-        #unite correspond à la largeur d'une carte, on va boucler en ajoutant chaque fois unite jusqu'à atteindre la taille de la 
-        #fenetre de l'application
-        while(width_sum + unite < self.winfo_screenwidth()):
-            width_sum += unite
-            last_column +=1
-
-        return last_column
     
     #Permet de renvoyer la chaine de caractère correspondant au bouton cliqué par l'utilisateur
     def search_card(self, index):
@@ -458,56 +472,99 @@ class SpecialFrame(tk.Frame):
         self._displayerslabels[9]['image'] = self._gamescene.images['Princesse']
         
         j= 0
+        last_column = self.compute_last_column(0, self._displayerslabels[0].winfo_reqwidth())
         #On boucle sur la longueur du dictionnaire d'images (-1 à cause de l'image face cachée)
         for i in range(0, self._gamescene.images.__len__() - 1):
             #Condition permettant de retourner à la ligne lorsqu'il n'y a plus de place sur l'écran
-            if(i != 0 and i%self._last_column == 0):
+            if(i != 0 and i%last_column == 0):
                 j+=1
                 
             #Affichage du label
-            self._displayerslabels[i].grid(row = j, column = i%self._last_column)
+            self._displayerslabels[i].grid(row = j, column = i%last_column)
         #Affichage du bouton retour au jeu
-        self._leave_feature.grid(row = j+1, column = i%self._last_column)
-   
+        self._leave_feature.grid(row = j+1, column = i%last_column)
+    
+    
+        
    
     #Affiche toutes les cartes ayant été jouées durant le round
-    def display_allcards(self, cards_to_display):
+    def display_allcards(self, ia_cards, player_cards, middle_cards, call_from_special = False):
         self.place(relwidth = 1, relheight = 1)
         self.tkraise()
         self._gamescene.place_forget()
         
-        j = 0
-        #On boucle sur toutes les cartes ayant été jouées
-        for i in range(0, cards_to_display.__len__()):
-            if(i != 0 and i%self._last_column == 0):
-                j+=1
-            #Attribution de l'image
-            self._displayerslabels[i]['image'] = self._gamescene.images[str(cards_to_display[i])]
+        #Affichage des cartes utilisées de l'ia en prenant en compte la largeur de l'écran
+        i = self.display_cards_side(ia_cards, 0, self._side_labels[0], 0, self._displayerslabels)
+        j = 1
+        
+        #Affichage des cartes du milieux à la ligne suivante
+        self._side_labels[2].grid(row = i, column=0)
+        for p in range(ia_cards.__len__(), ia_cards.__len__() + 3):
+            self._displayerslabels[p]['image'] = self._gamescene.images[str(middle_cards[j-1])]
+            self._displayerslabels[p].grid(row = i, column = j)
+            j+=1
+        
+        #Vérifie si la fonction est appelée via la gamescene ou via la specialframe
+        if(call_from_special):
+            self._return_last_frame.grid(row = i, column = j) #Si la fonction est appelée de la specialframe, on affiche le boutton
+                                                            #permettant de revenir à la specialframe précédente
+        else:
+            self._leave_feature.grid(row = i, column = j) #Boutton faisant revenir à la gamescene
+        i+=1
+        
+        #Affichage des cartes utilisées du joueur
+        self.display_cards_side(player_cards, i, self._side_labels[1], ia_cards.__len__() + 4, self._displayerslabels)
+     
+     
+    #Permet d'afficher les éléments UI de la spécial frame
+    #Suivant la taille de l'écran, il peut y avoir des problèmes d'affichage en hauteur
+    def display_cards_side(self, side, row, label, labelindex, widgets):
+        #Affichage du label descriptif
+        j=1
+        label.grid(row = row, column = 0)
+        
+        label_index = labelindex
+        
+        #Détermination du nombre de cartes que l'on peut placer en largeur avant d'être hors de l'écran en largeur
+        last_column = self.compute_last_column(widgets[0].winfo_reqwidth(), self._gamescene.images['Espionne'].width())
+        
+        #Affichage des cartes
+        for p in range(0, side.__len__()):
             
-            #Affichage
-            self._displayerslabels[i].grid(row = j, column = i%self._last_column)
-        self._leave_feature.grid(row = j+1, column = i%self._last_column)
+            widgets[label_index].configure(image = self._gamescene.images[str(side[p])])
+            widgets[label_index].grid(row = floor(j/(last_column+1)) + row, column = j%(last_column+1))
+            label_index += 1
+            j+=1
+        if self.grid_slaves(row = 3, column = 0) :
+            self.stop_display()
+            self.display_err()
+        return row + 1
+    
+
         
     #Affichage des boutons permettant à l'utilisateur de choisir qui défausse sa carte
     def display_prince_choice(self, jeu_joueur, jeu_ia):
         self.place(relwidth = 1, relheight = 1)
         self.tkraise()
         self._gamescene.place_forget()
+        
         self._prince_buttons[0]['text'] = jeu_joueur
         self._prince_buttons[1]['text'] = jeu_ia
         self._prince_buttons[0].grid()
         self._prince_buttons[1].grid()
-    
+        self._see_played_cards.grid()
+        
     #Affichage des possibilités de cartes que l'utilisateur peut deviner
     def display_guard_choice(self):
         self.place(relwidth = 1, relheight = 1)
         self.tkraise()
         self._gamescene.place_forget()
-        j = 0
-        for i in range(0, self._actionbuttons.__len__()):
-            if(i != 0 and i%self._last_column == 0):
-                j+=1
-            self._actionbuttons[i].grid(row = j, column = i%self._last_column)
+        
+        self.display_cards_side(["Espionne", "Pretre", "Baron", "Servante", "Prince", "Chancelier", "Roi", "Comtesse", 
+                                 "Princesse"], 0, self._side_labels[3], 0, self._actionbuttons)
+        
+        self._see_played_cards.grid()
+        
         
     #Enleve l'affichage de la frame, pour se faire, enleve l'affichage de tous les éléments qui se trouvent dans la frame,
     #puis enlève la frame
@@ -516,14 +573,43 @@ class SpecialFrame(tk.Frame):
         for widget in self.winfo_children():
                 widget.grid_forget() #"oubli" de ces éléments
         self.place_forget() #"oubli" de la frame
-        self._gamescene.tkraise()
         
         self._gamescene.place(relwidth = 1, relheight = 1)
         
         #Quand on place forget la gamescene, ses boutons sont place forget avec, on doit donc re place le premier bouton du joueur
         self._gamescene.replace_button()
+    
+    #Permet de déterminer la colonne maximale pouvant rentrer sur l'écran.
+    def compute_last_column(self, first_width, unite):
+        sum_width = first_width
+        last_column = 0
+        while(sum_width + unite < self.winfo_screenwidth()):
+            sum_width += unite
+            last_column +=1
+        return last_column
+    
+    #s'affiche quand il y a trop de cartes pour l'écran
+    def display_err(self):
+        self._error_label.grid(row = 0, column = 0)
+        self._leave_feature.grid(row = 1, column = 0)
         
+    #Permet d'effectuer une copie des éléments affichés à l'écran lorsque l'on voudra les rafficher plus tard
+    def make_copy(self):
+        for x in self.winfo_children():
+            if(x.winfo_ismapped()):
+                self._copie.append(x)
+                
+        self.stop_display() #Afin d'afficher de nouveaux éléments, on refresh la frame
+        Controller.display_played_cards(self, True) #Affichage des cartes jouées
         
+    #Permet de revenir à la configuration de la special frame précédente
+    def retour(self):
+        self.stop_display() #Actualisation
+        if(self._copie[0] is self._prince_buttons[0]): #On cherche quelles informations étaient affichées
+            Controller.display_prince_choice(self._copie[0]['text'], self._copie[1]['text'])
+        else:
+            Controller.display_guard_choice()
+        self._copie = [] #On clear le buffer
         
 class EndGameScene(tk.Frame):
     '''
