@@ -79,7 +79,7 @@ class Controller():
         gamescene.lock_buttons()
         current_player = cls._modelvar.playAI()
         gamescene.view.after(3000, cls.start_turn, current_player, gamescene) #Attente de 3 secondes avant de passer au tour suivant
-        
+
     @classmethod
     #Fonction appelée lorsqu'un joueur a choisi une carte
     def card_played(cls, gamescene, index):
@@ -126,11 +126,14 @@ class Controller():
         
     @classmethod
     def display_AI_card(cls,card):
+        var = tk.IntVar()
         cls._game_scene.display_AI_card(str(card))
         cls._game_scene.lock_buttons()
-        cls._game_scene._player_buttons[0].after(3000, cls._game_scene.test)
-     
-        
+        cls._game_scene.view.after(3000, var.set, 1)
+        cls._game_scene.wait_variable(var)
+        cls._game_scene.update_iaUI(1)
+        cls._game_scene.unlock_buttons()
+
     @classmethod
     #Fonction appelée en cas de fin de manche/partie
     def victory_test(cls, view):
