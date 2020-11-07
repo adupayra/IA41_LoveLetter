@@ -134,6 +134,10 @@ class Controller():
         cls._game_scene.wait_variable(var)
         cls._game_scene.update_iaUI(1)
         cls._game_scene.unlock_buttons()
+        
+    @classmethod
+    def display_baron(cls, firstcard, secondcard):
+        cls._game_scene.display_baron(firstcard, secondcard)
 
     @classmethod
     def update_details_label(cls, text):

@@ -139,7 +139,11 @@ class Baron(Card):
     
     @classmethod
     def action(cls):
-        pass
+        if(isinstance(Card._model.current_player.cards[0], Baron)):
+            print("coucou")
+            Card._model.controller.display_baron(Card._model.current_player.cards[1], Card._model.players_list.current_node.next().player.cards[0])
+        else:
+            Card._model.controller.display_baron(Card._model.current_player.cards[0], Card._model.players_list.current_node.next().player.cards[0])
     
 class Servante(Card):
     '''

@@ -10,6 +10,7 @@ from src.controller.controller import Controller
 import os
 from math import floor
 from tkinter.constants import BOTH
+from prompt_toolkit.application import current
 
     
 
@@ -369,10 +370,10 @@ class GameScene(tk.Frame):
     def replace_button(self):
         self._player_buttons[0].place(rely=1, relx=0.5, x=-self._ia_labels[0].winfo_reqwidth(), y=-self._ia_labels[0].winfo_reqheight())
     
-    def test(self):
-        test = tk.Button(self,text = "blabla")
-        test.pack(side = tk.RIGHT)
-        print("vcouilles")
+    def display_baron(self, player, ia):
+        self._special_frame.display_baron_screen(player, ia)
+        
+    
     
 class SpecialFrame(tk.Frame):
     '''
@@ -461,6 +462,9 @@ class SpecialFrame(tk.Frame):
                                            fg = theme2, font = cards_played_font)
         
         see_played_cards_garde.pack(expand = True, fill = tk.BOTH)
+        
+        #Label d'affichage de l'écran baron
+        self._baron_label = tk.Label(self, text = "Un baron a été joué, comparaison de vos cartes : ", bg = color, font = cards_played_font, fg = theme2)
         
         #Contenant du bouton retour à la dernière frame
         self._return_last_frame_frame = tk.Frame(self, bg = color, highlightbackground = theme2, highlightthickness = 3)
@@ -639,9 +643,22 @@ class SpecialFrame(tk.Frame):
         
         self._see_played_cards_frame_garde.grid()
         
+    #Affiche l'écran lorsqu'un baron est joué
+    def display_baron_screen(self, currentplayercard, othercard):
+        self.place(relwidth = 1, relheight = 1)
+        self.tkraise()
+        self._gamescene.place_forget()
         
+        self._baron_label.grid()
+        self._displayerslabels[0]['image'] = self._gamescene.images[str(currentplayercard)]
+        self._displayerslabels[1]['image'] = self._gamescene.images[str(othercard)]
+        self._displayerslabels[0].grid()
+        self._displayerslabels[1].grid()
         
-        
+        var = tk.IntVar()
+        self.after(3000, var.set, 1)
+        self.wait_variable(var)
+        self.stop_display()
     #Enleve l'affichage de la frame, pour se faire, enleve l'affichage de tous les éléments qui se trouvent dans la frame,
     #puis enlève la frame
     def stop_display(self):
