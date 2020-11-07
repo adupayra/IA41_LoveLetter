@@ -9,7 +9,7 @@ import src.model.model as model
 import webbrowser
 import sys
 import tkinter as tk
-import time
+
 
 class Controller():
     #Ne pas appeler cette variable depuis un module de view afin de garder l'indépendance entre modèle et view    
@@ -59,6 +59,7 @@ class Controller():
         
         #Actualisation de l'UI du vrai joueur (nombre de cartes et images associées du joueur)
         gamescene.update_playerUI(cls._modelvar.player.cards_to_string)
+        
         
         #Si le joueur actuel est l'IA, alors l'utilisateur ne peut pas jouer, et le process se fera sans UI, dans le modèle
         if(isinstance(current_player, model.player.IA)):
@@ -134,6 +135,10 @@ class Controller():
         cls._game_scene.update_iaUI(1)
         cls._game_scene.unlock_buttons()
 
+    @classmethod
+    def update_details_label(cls, text):
+        cls._game_scene.update_details_label(text)
+        
     @classmethod
     #Fonction appelée en cas de fin de manche/partie
     def victory_test(cls, view):

@@ -8,6 +8,67 @@ Created on 28 oct. 2020
 import abc
 from abc import abstractmethod
 
+class CircleLinkedList(object):
+
+    def __init__(self, head, tail):
+        self._real_player_node = head
+        self._ia_node = tail
+        self._current_node = None
+    
+    def next_player(self):
+        self._current_node = self._current_node.next()
+        return self._current_node
+    
+    @property
+    def real_player_node(self):
+        return self._real_player_node
+    
+    @property
+    def ia_node(self):
+        return self._ia_node
+    
+    @property
+    def real_player(self):
+        return self._real_player_node.player
+    
+    @property
+    def ia(self):
+        return self._ia_node.player
+    
+    @property
+    def current_node(self):
+        return self._current_node
+    
+    @current_node.setter
+    def current_node(self, player):
+        if(self._current_node is None):
+            self._current_node = player
+        
+    @property
+    def current(self):
+        return self._current_node.player
+    
+    
+class Node(object):
+    
+    def __init__(self, player):
+        self._player = player
+    
+    def next(self):
+        return self._next_player
+    
+    @property
+    def next_player(self):
+        return self._next_player
+    
+    @next_player.setter
+    def next_player(self, next_player):
+        self._next_player = next_player
+        
+    @property
+    def player(self):
+        return self._player
+    
 class Player(metaclass = abc.ABCMeta):
     '''
     Classe servant de template pour la classe vraie joueur et les classes d'IA

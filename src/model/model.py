@@ -28,9 +28,7 @@ class Model(object):
         self._cards_played_ia = [] #Liste cartes jouées par l'ia
         self._burnt_card = None #La carte inconnue
         self._deck = [] #La pioche
-        self._player = None #Le vrai joueur
-        self._ia = None #l'ia
-        self._current_player = None #Utilisé pour savoir qui doit jouer 
+        self._players_list = None #Liste chainée contenant le joueur courant, le vrai joueur et l'ia
         
         cards.Card._model = self
         
@@ -54,6 +52,7 @@ class Model(object):
     @property
     def controller(self):
         return self._controller
+    
     @property
     def cards(self):
         return self._cards
@@ -79,16 +78,20 @@ class Model(object):
         return self._deck
 
     @property
+    def players_list(self):
+        return self._players_list
+    
+    @property
     def player(self):
-        return self._player
+        return self._players_list.real_player
         
     @property
     def ia(self):
-        return self._ia
+        return self._players_list.ia
     
     @property
     def current_player(self):
-        return self._current_player
+        return self._players_list.current
         
         
     #Fonction permettant l'initialisation des données non persistantes (appel à chaque début de partie et début de round)
@@ -109,9 +112,8 @@ class Model(object):
                             #partie
             self.creer_joueurs(difficulty)
         else: #Nouveau round, on réinitialise donc la main de l'ia et du joueur
-            self._ia.reset_values()
-            self._player.reset_values()
-        
+            self.ia.reset_values()
+            self.player.reset_values()
         #distribution des cartes dans les différentes listes
         self.distribution()
         
@@ -119,28 +121,35 @@ class Model(object):
         premier_joueur = randrange(0,2)
         
         if premier_joueur == 0:
-            self._current_player = self._player
+            self._players_list.current_node = self._players_list.real_player_node
+            #self._current_player = self._player
         else:
-            self._current_player = self._ia
+            self._players_list.current_node = self._players_list.ia_node
+            #self._current_player = self._ia
 
-        self._current_player.add_card(self.pick_card(),1)
-        
-        return self._current_player
+        self._players_list.current.add_card(self.pick_card(),1)
+
+        return self._players_list.current
         
     #Instanciation des joueurs
     def creer_joueurs(self, difficulty = 0):
-        self._player = player.RealPlayer()
+        player_node = player.Node(player.RealPlayer())
+        ia = None
         if difficulty == 0:
-            self._ia = player.IAFacile(self)
+            ia = player.IAFacile(self)
         elif difficulty == 1:
-            self._ia = player.IAMoyenne(self)
+            ia = player.IAMoyenne(self)
         else:
-            self._ia = player.IADifficile(self)
+            ia = player.IADifficile(self)
+        ia_node = player.Node(ia)
+        player_node.next_player = ia_node
+        ia_node.next_player = player_node
+        self._players_list = player.CircleLinkedList(player_node, ia_node)
     
     #Distribution des cartes dans les différentes listes
     def distribution(self):
-        self._player.add_card(self._cards[0], 0) #Une carte au joueur
-        self._ia.add_card(self._cards[1],0) #Une à l'IA
+        self.player.add_card(self._cards[0], 0) #Une carte au joueur
+        self.ia.add_card(self._cards[1],0) #Une à l'IA
         self._burnt_card = self._cards[2] #La carte qui restera cachée le long de la partie
         
         #Les 3 cartes visibles dès le début
@@ -173,30 +182,25 @@ class Model(object):
     
     #Effectue l'action de la carte à l'index associée du joueur courrant
     def play(self, index):
-        self._current_player.last_card_played = self._current_player.cards[index]
-        self._cards_played.append(self._current_player.cards[index])#Ajout de cette carte à la liste des cartes jouées
-        self._current_player.cards[index].action()#Action de la carte
-        
+        self.current_player.last_card_played = self.current_player.cards[index]
+        self._cards_played.append(self.current_player.cards[index])#Ajout de cette carte à la liste des cartes jouées
+        self.current_player.cards[index].action()#Action de la carte
+    
         self.next_turn(index)
         
-        return self._current_player
+        return self._players_list.current
         
             
     #Définition du prochain joueur
     def next_turn(self, index):
-        if(isinstance(self._current_player, player.RealPlayer)):
-            self._cards_played_player.append(self._current_player.cards[index])
-            self._current_player.remove_card(index) #Suppression de la carte dans la main du joueur courrant
-            self._current_player = self._ia
+        if(isinstance(self.current_player, player.RealPlayer)):
+            self._cards_played_player.append(self.current_player.cards[index])
         else:
-            self._cards_played_ia.append(self._current_player.cards[index])
-            self._current_player.remove_card(index)#Suppression de la carte dans la main du joueur courrant
-            self._current_player = self._player
-        self._current_player.add_card(self.pick_card(), index)
+            self._cards_played_ia.append(self.current_player.cards[index])
+        self.current_player.remove_card(index)#Suppression de la carte dans la main du joueur courrant
+        self._players_list.next_player()
+        self.current_player.add_card(self.pick_card(), index)
     
     
     def victory(self, joueur, condition):
         pass
-    
-        
-        
