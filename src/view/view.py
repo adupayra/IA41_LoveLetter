@@ -343,13 +343,19 @@ class GameScene(tk.Frame):
         self._special_frame.display_prince_choice(jeu_joueur, jeu_ia)
         
     def display_AI_card(self, card):
+        print("zizi")
         self._ia_labels[0]['image'] = self._images[card]
+
 
         
     #Fonction utilisée pour replacer le premier bouton lorsqu'il est place forget
     def replace_button(self):
         self._player_buttons[0].place(rely=1, relx=0.5, x=-self._ia_labels[0].winfo_reqwidth(), y=-self._ia_labels[0].winfo_reqheight())
     
+    def test(self):
+        test = tk.Button(self,text = "blabla")
+        test.pack(side = tk.RIGHT)
+        print("vcouilles")
     
 class SpecialFrame(tk.Frame):
     '''

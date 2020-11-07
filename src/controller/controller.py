@@ -9,6 +9,7 @@ import src.model.model as model
 import webbrowser
 import sys
 import tkinter as tk
+import time
 
 class Controller():
     #Ne pas appeler cette variable depuis un module de view afin de garder l'indépendance entre modèle et view    
@@ -77,8 +78,8 @@ class Controller():
     def card_playedAI(cls, gamescene):
         gamescene.lock_buttons()
         current_player = cls._modelvar.playAI()
-        #gamescene.view.after(3000, cls.start_turn, current_player, gamescene) #Attente de 3 secondes avant de passer au tour suivant
-        cls.start_turn(current_player, gamescene)
+        gamescene.view.after(3000, cls.start_turn, current_player, gamescene) #Attente de 3 secondes avant de passer au tour suivant
+        
     @classmethod
     #Fonction appelée lorsqu'un joueur a choisi une carte
     def card_played(cls, gamescene, index):
@@ -127,8 +128,8 @@ class Controller():
     def display_AI_card(cls,card):
         cls._game_scene.display_AI_card(str(card))
         cls._game_scene.lock_buttons()
-        cls._game_scene.after(3000, cls._game_scene.update_iaUI, 1)
-        print("zizi")
+        cls._game_scene._player_buttons[0].after(3000, cls._game_scene.test)
+     
         
     @classmethod
     #Fonction appelée en cas de fin de manche/partie
@@ -138,4 +139,3 @@ class Controller():
         score = [4,5]
         view._scenes["End game scene"].victory_screen("joueur", score)
         
-            
