@@ -587,7 +587,7 @@ class SpecialFrame(tk.Frame):
         #Affichage du bouton retour au jeu
         self._leave_feature_frame.grid(row = j+1, column = i%last_column)
     
-    
+        self._gamescene.wait_visibility()
         
    
     #Affiche toutes les cartes ayant été jouées durant le round
@@ -595,6 +595,8 @@ class SpecialFrame(tk.Frame):
         self.place(relwidth = 1, relheight = 1)
         self.tkraise()
         self._gamescene.place_forget()
+        
+        
         
         self.grid_columnconfigure(0, weight = 0)
         self.grid_columnconfigure(1, weight = 0)
@@ -620,7 +622,8 @@ class SpecialFrame(tk.Frame):
         
         #Affichage des cartes utilisées du joueur
         self.display_cards_side(player_cards, i, self._side_labels[1], ia_cards.__len__() + 4, self._displayerslabels)
-     
+        
+        self._gamescene.wait_visibility()
      
     #Permet d'afficher les éléments UI de la spécial frame
     #Suivant la taille de l'écran, il peut y avoir des problèmes d'affichage en hauteur
