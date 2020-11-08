@@ -38,13 +38,15 @@ class Controller():
     #Fonction lancée lorsque l'utilisateur à choisi la difficulté de la partie
     def start_game(cls, view, difficulty): #difficulty = -1 : nouveau round, difficulté != -1 : nouvelle partie
         current_player = cls._modelvar.init_data(difficulty)
-    
+        
         #Affichage du plateau de jeu
         cls.display_scene(view, "Game scene")
     
         #Affichage des 3 premieres cartes et du nom de la personne qui commence
         view.scenes["Game scene"].init_round(cls._modelvar.get_three_cards(), str(cls._modelvar.current_player))
         
+        #Actualisation/Réinitialisation game scene
+        view.scenes["Game scene"].update_tokens(cls._modelvar.ia.score, cls._modelvar.player.score)
         view.scenes["Game scene"].unlock_buttons()
         
         #Début du premier tour

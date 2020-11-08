@@ -9,8 +9,6 @@ import tkinter.font
 from src.controller.controller import Controller
 import os
 from math import floor
-from tkinter.constants import BOTH
-from prompt_toolkit.application import current
 
     
 
@@ -157,9 +155,7 @@ class GameScene(tk.Frame):
         text_font = tk.font.Font(family = "Times", size = "14", weight = "bold")
         
         self._view = view
-        
-        self.change_dir_resources()
-        
+
         #Création des différentes images des cartes
         self._images = {"Espionne":tk.PhotoImage(file = "Espionne.png"), "Garde":tk.PhotoImage(file = "Garde.png"),
                         "Pretre":tk.PhotoImage(file = "Pretre.png"),"Baron":tk.PhotoImage(file = "Baron.png"), "Servante":tk.PhotoImage(file = "Servante.png"),
@@ -225,15 +221,31 @@ class GameScene(tk.Frame):
         boutton_played_cards = tk.Button(container_features, text = "Consulter cartes jouées", command = lambda:Controller.display_played_cards(self._special_frame),
                                          bg = theme1, fg = theme, font = text_font)
         boutton_played_cards.pack()
-
-    #Changement du répertoire courant afin de se trouver dans le répertoire où se trouvent les ressources
-    def change_dir_resources(self):
         
-        path_ressources = os.path.dirname(os.path.abspath(__file__))
-        os.chdir(path_ressources)
-        os.chdir(os.pardir)
-        os.chdir(os.pardir)
-        os.chdir("resources")
+        
+        #Frames contenant les jetons des joueurs
+        self._token_frames = (tk.Frame(self, bg = theme1, highlightbackground = theme, highlightthickness = 3),
+                              tk.Frame(self, bg = theme1, highlightbackground = theme, highlightthickness = 3))
+        
+        self._tokenimage = tk.PhotoImage(file = "Jeton.png")
+        
+        self._token_frames[0].place(relx = 0.75, rely = 0.05)
+        self._token_frames[1].place(relx = 0.75, rely = 0.7)
+        points_label = (tk.Label(self._token_frames[0], text = "points : ", bg = theme1, fg = theme, font = text_font),
+                        tk.Label(self._token_frames[1], text = "points : ", bg = theme1, fg = theme, font = text_font))
+        points_label[0].grid(row = 0, column = 0)
+        points_label[1].grid(row = 0, column = 0)
+        
+        self._token_labels = []
+        
+        for i in range (0,2):
+            temp = []
+            for j in range(0,5):
+                temp.append(tk.Label(self._token_frames[i], bg = theme1, fg = theme, image = self._tokenimage))
+                #temp[j].grid(row = floor(j/3), column = j%3 + 1)
+            self._token_labels.append(temp)
+        
+        
 
     #Initialisation des éléments UI du joueur et de l'IA
     def init_playersUI(self, theme1):
@@ -349,6 +361,18 @@ class GameScene(tk.Frame):
         
     def update_tour_label(self, text):
         self._tour_label['text'] = text
+        
+    def update_tokens(self, score_ia, score_player):
+        sum_ia = sum(button.winfo_ismapped() for button in self._token_labels[0])
+        sum_player = sum(button.winfo_ismapped() for button in self._token_labels[1])
+        for i in range(0, score_ia):
+            self._token_labels[0][i].grid(row = floor(i/3), column = i%3 + 1)
+        for i in range(score_ia, sum_ia):
+            self._token_labels[0][i].grid_forget()
+        for i in range(0, score_player):
+            self._token_labels[1][i].grid(row = floor(i/3), column = i%3 + 1)
+        for i in range(score_player, sum_player):
+            self._token_labels[1][i].grid_forget()
 
     #Fonction permettant de vérouiller les boutons lorsque l'IA joue        
     def lock_buttons(self):
@@ -734,14 +758,33 @@ class EndGameScene(tk.Frame):
         self._label_victory = tk.Label(self, text = "", bg = theme1, fg = theme2, font = text_font)
         self._label_victory.pack()
         
-        #Score label et texte
-        self._label_score = tk.Label(self, text = "", bg = theme1, fg = theme2, font = text_font)
-        self._label_score.pack()
+        #Image du jeton
+        self._image = tk.PhotoImage(file = "Jeton.png")
+        
+        #Container des jetons du joueur et de l'ia
+        player_container = (tk.Frame(self, bg = theme1), tk.Frame(self, bg = theme1))
+        player_container[0].pack()
+        player_container[1].pack()
+        
+        #Labels du joueur et de l'ia
+        player_labels = (tk.Label(player_container[0], text = "Vos points : ", bg = theme1, font = text_font), 
+                         tk.Label(player_container[1], text = "Points de l'IA : ", bg = theme1, font = text_font))
+        player_labels[0].pack(side = tk.LEFT)
+        player_labels[1].pack(side = tk.LEFT)
+        
+        #Labels des jetons
+        self._tokenlabels = []
+        for i in range(0,2):
+            temp = []
+            for _ in range(0,6):
+                temp.append(tk.Label(player_container[i], bg = theme1, image = self._image))
+            self._tokenlabels.append(temp)
+        
         
         
         #Bouton pour revenir au menu/aller au prochain round
         retour_menu_button = tk.Button(self, text = "Retour au menu", 
-                                       command = lambda:Controller.display_scene(view, "Menu scene"))
+                                      command = lambda:Controller.display_scene(view, "Menu scene"))
         self._next_round_button = tk.Button(self, text = "Prochain round", 
                                       command = lambda:Controller.start_game(view, -1))
         retour_menu_button.pack()
@@ -749,13 +792,25 @@ class EndGameScene(tk.Frame):
         
     #Fonction qui permet l'affichage du vainqueur
     def victory_screen(self, text, score):
-        self.display()
+        self.tkraise()
         self._label_victory['text'] = text
+        
+        #Si plus d'une partie a été effectuée, le bouton sera unpack, il faut donc le ré afficher
+        self._next_round_button.pack()
+        
+        #Clear les tokens (au cas où il y en ait en trop)
+        for i in range(0, self._tokenlabels.__len__()):
+            for j in range(0, self._tokenlabels[i].__len__()):
+                self._tokenlabels[i][j].pack_forget()
+        
+        #Affichage du score
+        for i in range(0, score[0]):
+            self._tokenlabels[0][i].pack(side = tk.LEFT)
+            
+        for i in range(0, score[1]):
+            self._tokenlabels[1][i].pack(side = tk.LEFT)
+            
         #Dissociation des cas entre fin de round et fin de partie
         if score[0] == 6 or score[1] == 6:
             self._next_round_button.pack_forget() #Désactivation du bouton next round si fin de partie
 
-        self._label_score['text'] = "Joueur : " + str(score[0]) + "points\nIA : " + str(score[1]) + " points"
-        
-    def display(self):
-        self.tkraise()
