@@ -76,8 +76,9 @@ class MenuScene(tk.Frame):
         Constructor
         '''
         
-        theme1 = "dark goldenrod1"
-        theme2 = "red3"
+        theme1 = "orange2"
+        theme2 = "orange2"
+        theme3 = "#B00B1E"
         button_font = tk.font.Font(family = "Times", size = "20")
         
         #Création scène        
@@ -86,21 +87,21 @@ class MenuScene(tk.Frame):
         
         #Création label titre
         titre = tk.Label(self, text = "Love Letters", font = tk.font.Font(family = "Times", size = "35", weight = "bold", slant = "italic"),
-                         bg = theme1, fg = theme2, pady = 25)
+                         bg = theme1, fg = theme3, pady = 25)
         titre.pack(side = tk.TOP, fill = tk.BOTH)
         
         #Création bouton transition
-        start_button = tk.Button(self, text = "Commencer partie", command = lambda:self.display_difficulty_choice(view), pady = 75, bg = theme2, fg = theme1,
+        start_button = tk.Button(self, text = "Commencer partie", command = lambda:self.display_difficulty_choice(view), pady = 75, bg = theme3, fg = theme2,
                                  relief = tk.RIDGE, font = button_font)
         start_button.pack(side = tk.TOP, fill = tk.BOTH)
         
         #Bouton renvoyant vers l'URL des règles
-        rules_button = tk.Button(self, text = "Règles", command = lambda:Controller.consulter_regles(), pady = 75, bg = theme2, fg = theme1,
+        rules_button = tk.Button(self, text = "Règles", command = lambda:Controller.consulter_regles(), pady = 75, bg = theme3, fg = theme2,
                                  relief = tk.RIDGE, font = button_font)
         rules_button.pack(side = tk.TOP, fill = tk.BOTH)
         
         #Bouton pour quitter le jeu
-        exit_button = tk.Button(self, text = "Quitter", command = lambda:Controller.quitter_jeu(), pady = 75, bg = theme2, fg = theme1,
+        exit_button = tk.Button(self, text = "Quitter", command = lambda:Controller.quitter_jeu(), pady = 75, bg = theme3, fg = theme2,
                                 relief = tk.RIDGE, font = button_font)
         exit_button.pack(side = tk.TOP, fill = tk.BOTH)
         
@@ -184,7 +185,7 @@ class GameScene(tk.Frame):
         theme = 'goldenrod'
         
         #Création du bouton transition test
-        button = tk.Button(self, text="Go to end game scene", command=lambda:Controller.victory_test(view))
+        button = tk.Button(self, text="Go to end game scene", command=lambda:Controller.display_victory("Test de victoire", [4,5]))
         button.place(relx=0, rely=0)
         
         #Container du quit button
@@ -195,6 +196,10 @@ class GameScene(tk.Frame):
         quit_frame.place(relx = 0, rely = 1, y =-button_quit.winfo_reqheight() - 5)
         button_quit.pack()
         
+        #Création du label affichant le joueur dont c'est le tour
+        self._tour_label = tk.Label(self, font = text_font, fg = theme, bg = theme1)
+        self._tour_label.place(relx = 0.2, rely = 0.7)
+        
         #Création du label affichant les informations de jeu
         self._info_label = tk.Label(self, text="Idle", font = text_font, fg = theme, bg = theme1)
         self._info_label.place(rely=0.325)
@@ -202,10 +207,6 @@ class GameScene(tk.Frame):
         #Création du label montrant la dernière carte jouée
         self._last_card_label = tk.Label(self, bg = theme1, image = self._images["Cache"])
         self._last_card_label.place(rely = 0.325, y = self._info_label.winfo_reqheight())
-        
-        #Création du label écrivant les détails de la dernière action du jeu
-        self._details_label = tk.Label(self, bg = theme1, fg = theme)
-        self._details_label.place(rely = 0.4, y = self._last_card_label.winfo_reqheight())
         
         #Création de la frame s'affichant par dessus la scène de jeu lorsque l'utilisateur veut consulter les cartes ou encore
         #qu'il doit faire un choix entre plusieurs options (après avoir joué le prince ou le garde)
@@ -296,29 +297,37 @@ class GameScene(tk.Frame):
              
     #Fonction permettant l'actualisation de l'UI en fonction des cartes du joueur
     def update_playerUI(self, cards):
-        number_cards_displayed = sum(button.winfo_ismapped() for button in self._player_buttons) #Compte le nombre de boutons de l'utilisateurs
+        
+        #Ca ne marche pas avec la fonction winfo_ismapped, donc on met un identificateur pour différencier les boutons affichés à l'écran et ceux qui ne le sont pas
+        number_cards_displayed = sum(button['text'] != "" for button in self._player_buttons) #Compte le nombre de boutons de l'utilisateurs
         number_cards_todisplay = cards.__len__() #Nombre de cartes à afficher
-
+        
+        self._player_buttons[0].config(image = self.images[str(cards[0])])
         #Disjonction de cas entre les cas où il y a plus de cartes à afficher que de boutons disponibles et les cas où il y a trop de boutons
         #disponibles à l'écran pour le nombre de cartes à afficher
         if(number_cards_todisplay >= number_cards_displayed ):
             #Dans ce cas, on update les cartes sur les boutons déjà disponibles
             for i in range(0,number_cards_displayed):
                 self._player_buttons[i].config(image = self._images[cards[i]])
+                self._player_buttons[i]['text'] = " "
             
             #Puis affiche le nombre de boutons nécessaires afin d'afficher toutes les cartes
             for i in range(number_cards_displayed, number_cards_todisplay):
                 self._player_buttons[i].config(image = self._images[cards[i]])
+                self._player_buttons[i]['text'] = " "
                 self._player_buttons[i].place(rely = 1, relx = 0.5, x = (i-1) * self._ia_labels[0].winfo_reqwidth(), y = -self._ia_labels[0].winfo_reqheight())
                 
                 
         elif(number_cards_displayed > number_cards_todisplay):
             #Actualisation des boutons dont on a besoin
             for i in range(0, number_cards_todisplay):
+                self._player_buttons[i]['text'] = " "
                 self._player_buttons[i].config(image = self._images[cards[i]])
             #On retire les boutons dont on n'a plus besoin
             for i in range(number_cards_todisplay, number_cards_displayed):
+                self._player_buttons[i]['text'] = ""
                 self._player_buttons[i].place_forget()
+
         
     #Fonction permettant l'actualisation de l'UI en fonction du nombre de cartes de l'IA (meme principe que l'update player)
     def update_iaUI(self, nbcards):
@@ -338,8 +347,8 @@ class GameScene(tk.Frame):
         self._info_label['text'] = joueur + " a joué la carte " + card
         self._last_card_label['image'] = self._images[card]
         
-    def update_details_label(self, text):
-        self._details_label['text'] = text
+    def update_tour_label(self, text):
+        self._tour_label['text'] = text
 
     #Fonction permettant de vérouiller les boutons lorsque l'IA joue        
     def lock_buttons(self):
@@ -350,7 +359,6 @@ class GameScene(tk.Frame):
     def unlock_buttons(self):
         for button in self._player_buttons:
             button.config(state = 'normal')
-    
     
         
     #Fonction permettant l'affichage de la fenêtre permettant à l'utilisateur de choisir quelle carte deviner (lorsqu'il a joué
@@ -368,6 +376,7 @@ class GameScene(tk.Frame):
 
     #Fonction utilisée pour replacer le premier bouton lorsqu'il est place forget
     def replace_button(self):
+        self._player_buttons[0].tkraise()
         self._player_buttons[0].place(rely=1, relx=0.5, x=-self._ia_labels[0].winfo_reqwidth(), y=-self._ia_labels[0].winfo_reqheight())
     
     def display_baron(self, player, ia):
@@ -652,8 +661,9 @@ class SpecialFrame(tk.Frame):
         self._baron_label.grid()
         self._displayerslabels[0]['image'] = self._gamescene.images[str(currentplayercard)]
         self._displayerslabels[1]['image'] = self._gamescene.images[str(othercard)]
-        self._displayerslabels[0].grid()
-        self._displayerslabels[1].grid()
+        self._displayerslabels[1].grid(row = 0, column = 1)
+        self._displayerslabels[0].grid(row = 0, column = 2)
+        
         
         var = tk.IntVar()
         self.after(3000, var.set, 1)
@@ -669,7 +679,7 @@ class SpecialFrame(tk.Frame):
         
         self._gamescene.place(relwidth = 1, relheight = 1)
         
-        #Quand on place forget la gamescene, ses boutons sont place forget avec, on doit donc re place le premier bouton du joueur
+        #Quand on place_forget la gamescene, ses boutons sont place_forget avec, on doit donc re place le premier bouton du joueur
         self._gamescene.replace_button()
     
     #Permet de déterminer la colonne maximale pouvant rentrer sur l'écran.
@@ -738,15 +748,13 @@ class EndGameScene(tk.Frame):
         self._next_round_button.pack()
         
     #Fonction qui permet l'affichage du vainqueur
-    def victory_screen(self, winner_name, score):
+    def victory_screen(self, text, score):
         self.display()
+        self._label_victory['text'] = text
         #Dissociation des cas entre fin de round et fin de partie
         if score[0] == 6 or score[1] == 6:
-            self._label_victory['text'] = winner_name + " a gagné la partie !"
             self._next_round_button.pack_forget() #Désactivation du bouton next round si fin de partie
-        else:
-            self._label_victory['text'] = winner_name + " a gagné le round !"
-        
+
         self._label_score['text'] = "Joueur : " + str(score[0]) + "points\nIA : " + str(score[1]) + " points"
         
     def display(self):

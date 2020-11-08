@@ -79,6 +79,7 @@ class Player(metaclass = abc.ABCMeta):
         '''
         Constructor
         '''
+        self._score = 0
         self._cards = []
         self._last_card_played = None #Utilisé pour le chancelier
         self._cards_to_string = []
@@ -112,6 +113,13 @@ class Player(metaclass = abc.ABCMeta):
         self._immune = not self._immune
         return self._immune
     
+    @property
+    def score(self):
+        return self._score
+    
+    def win(self, value):
+        self._score += value
+        
     def add_card(self, new_card, index):
         self._cards.insert(index, new_card)
         

@@ -29,7 +29,7 @@ class Model(object):
         self._burnt_card = None #La carte inconnue
         self._deck = [] #La pioche
         self._players_list = None #Liste chainée contenant le joueur courant, le vrai joueur et l'ia
-        
+        self._victory = False
         cards.Card._model = self
         
         #Instantiation de toutes les cartes
@@ -93,7 +93,10 @@ class Model(object):
     def current_player(self):
         return self._players_list.current
         
-        
+    @property
+    def victory(self):
+        return self._victory
+    
     #Fonction permettant l'initialisation des données non persistantes (appel à chaque début de partie et début de round)
     def init_data(self,difficulty = -1):
         
@@ -103,6 +106,7 @@ class Model(object):
         self._cards_played_player = []
         self._burnt_card = None
         self._deck = [] 
+        self._victory = False
         
         #Mélange des cartes
         shuffle(self._cards)
@@ -122,11 +126,8 @@ class Model(object):
         
         if premier_joueur == 0:
             self._players_list.current_node = self._players_list.real_player_node
-            #self._current_player = self._player
         else:
             self._players_list.current_node = self._players_list.ia_node
-            #self._current_player = self._ia
-
         self._players_list.current.add_card(self.pick_card(),1)
 
         return self._players_list.current
@@ -168,7 +169,12 @@ class Model(object):
 
     #Pioche une carte
     def pick_card(self):
-        return self._deck.pop(0)
+        if(self._deck):
+            return self._deck.pop(0)
+        else:
+            self._victory = True
+            self.victory_emptydeck()
+            
         
     #Retourne les 3 première cartes de jeu (celles affichées au milieu du plateau)
     def get_three_cards(self):
@@ -201,6 +207,32 @@ class Model(object):
         self._players_list.next_player()
         self.current_player.add_card(self.pick_card(), index)
     
-    
-    def victory(self, joueur, condition):
-        pass
+    #Fonction appelée lorsque la pioche est vide
+    def victory_emptydeck(self):
+        string_to_pass = ""
+        
+        #Exception à cause du cas du prince : dernière carte jouée est un prince donc l'un des deux joueurs n'a plus de carte en main
+        if(self.player.cards.__len__() == 0):
+            if(self.cards_played_player[self.cards_played_player.__len__() - 1].value() > self.ia.cards[0].value()):
+                self.player.win(1)
+                string_to_pass = "Pioche vide : \nJoueur a gagné car sa dernière carte jouée était plus forte"
+            else:
+                self.ia.win(1)
+                string_to_pass = "Pioche vide : \nIA a gagné car sa dernière carte jouée était plus forte"
+        elif(self.ia.cards.__len__() == 0):
+            if(self.cards_played_ia[self.cards_played_ia.__len__() - 1].value() > self.player.cards[0].value()):
+                self.ia.win(1)
+                string_to_pass = "Pioche vide : \nIA a gagné car sa dernière carte jouée était plus forte"
+            else:
+                self.player.win(1)
+                string_to_pass = "Pioche vide : \nJoueur a gagné car sa dernière carte jouée était plus forte"
+        else:
+            #Cas usuel
+            if(self.ia.cards[0].value() > self.player.cards[0].value()):
+                self.ia.win(1)
+                string_to_pass = "Pioche vide : \nIA a gagné car sa carte était plus forte"
+            else:
+                self.player.win(1)
+                string_to_pass = "Pioche vide : \nJoueur a gagné car sa carte était plus forte"
+
+        self.controller.display_victory(string_to_pass, [self.player.score, self.ia.score])

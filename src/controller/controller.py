@@ -45,6 +45,7 @@ class Controller():
         #Affichage des 3 premieres cartes et du nom de la personne qui commence
         view.scenes["Game scene"].init_round(cls._modelvar.get_three_cards(), str(cls._modelvar.current_player))
         
+        view.scenes["Game scene"].unlock_buttons()
         
         #Début du premier tour
         cls.start_turn(current_player, view.scenes["Game scene"])
@@ -53,34 +54,38 @@ class Controller():
     @classmethod
     #Fonction permettant le déroulement d'un tour
     def start_turn(cls, current_player, gamescene):
-        
-        #Actualisation de l'UI (nombre de cartes de l'IA)
-        gamescene.update_iaUI(cls._modelvar.ia.cards.__len__())
-        
-        #Actualisation de l'UI du vrai joueur (nombre de cartes et images associées du joueur)
-        gamescene.update_playerUI(cls._modelvar.player.cards_to_string)
-        
-        
-        #Si le joueur actuel est l'IA, alors l'utilisateur ne peut pas jouer, et le process se fera sans UI, dans le modèle
-        if(isinstance(current_player, model.player.IA)):
+        if(not cls._modelvar.victory):
+            #Actualisation de l'UI (nombre de cartes de l'IA)
+            gamescene.update_iaUI(cls._modelvar.ia.cards.__len__())
             
-            #Vérification premier tour
-            if(cls._modelvar.player.last_card_played is not None):
-                
-                gamescene.update_lastcardslabels(str(cls._modelvar.player), str(cls._modelvar.player.last_card_played)) #Affichage de la carte jouée par le joueur au dernier tour
-            cls.card_playedAI(gamescene)
-        else:
-            if(cls._modelvar.ia.last_card_played is not None):
-                gamescene.update_lastcardslabels(str(cls._modelvar.ia), str(cls._modelvar.ia.last_card_played)) #Affichage de la carte jouée par l'IA au dernier tour
-            gamescene.unlock_buttons()
+            #Actualisation de l'UI du vrai joueur (nombre de cartes et images associées du joueur)
+            gamescene.update_playerUI(cls._modelvar.player.cards_to_string)
+            
+            #Si le joueur actuel est l'IA, alors l'utilisateur ne peut pas jouer, et le process se fera sans UI, dans le modèle
+            if(isinstance(current_player, model.player.IA)):
+                gamescene.update_tour_label("C'est le tour de l'IA")
+                #Vérification premier tour
+                if(cls._modelvar.player.last_card_played is not None):
+                    
+                    gamescene.update_lastcardslabels(str(cls._modelvar.player), str(cls._modelvar.player.last_card_played)) #Affichage de la carte jouée par le joueur au dernier tour
+                cls.card_playedAI(gamescene)
+            else:
+                gamescene.update_tour_label("C'est votre tour")
+                if(cls._modelvar.ia.last_card_played is not None):
+                    gamescene.update_lastcardslabels(str(cls._modelvar.ia), str(cls._modelvar.ia.last_card_played)) #Affichage de la carte jouée par l'IA au dernier tour
+                gamescene.unlock_buttons()
     
     @classmethod
     #L'IA joue une carte
     def card_playedAI(cls, gamescene):
+        var = tk.IntVar()
         gamescene.lock_buttons()
+        gamescene.view.after(3000, var.set, 1)
+        gamescene.view.wait_variable(var)
+        gamescene.unlock_buttons()
         current_player = cls._modelvar.playAI()
-        gamescene.view.after(3000, cls.start_turn, current_player, gamescene) #Attente de 3 secondes avant de passer au tour suivant
-
+        cls.start_turn(current_player, gamescene)
+       
     @classmethod
     #Fonction appelée lorsqu'un joueur a choisi une carte
     def card_played(cls, gamescene, index):
@@ -139,15 +144,8 @@ class Controller():
     def display_baron(cls, firstcard, secondcard):
         cls._game_scene.display_baron(firstcard, secondcard)
 
-    @classmethod
-    def update_details_label(cls, text):
-        cls._game_scene.update_details_label(text)
         
     @classmethod
-    #Fonction appelée en cas de fin de manche/partie
-    def victory_test(cls, view):
-        
-        #Simulation d'une victoire de partie/manche
-        score = [4,5]
-        view._scenes["End game scene"].victory_screen("joueur", score)
+    def display_victory(cls, victory_condition, score):
+        cls._game_scene.view.scenes["End game scene"].victory_screen(victory_condition, score)
         

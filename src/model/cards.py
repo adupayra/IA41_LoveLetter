@@ -118,10 +118,7 @@ class Pretre(Card):
     def action(cls):
         if(isinstance(Card._model.current_player, player.RealPlayer)):
             Card._model.controller.display_AI_card(Card._model.ia.cards[0])
-        
-        Card._model.controller.update_details_label(str(Card._model.current_player) + " a joué un Prêtre.\n" + 
-                                                    str(Card._model.players_list.next_player().player) + " a la carte " + 
-                                                    str(Card._model.players_list.next_player().player.cards[0]))
+            
 class Baron(Card):
     '''
     Classe définissant la carte baron
@@ -140,7 +137,6 @@ class Baron(Card):
     @classmethod
     def action(cls):
         if(isinstance(Card._model.current_player.cards[0], Baron)):
-            print("coucou")
             Card._model.controller.display_baron(Card._model.current_player.cards[1], Card._model.players_list.current_node.next().player.cards[0])
         else:
             Card._model.controller.display_baron(Card._model.current_player.cards[0], Card._model.players_list.current_node.next().player.cards[0])
