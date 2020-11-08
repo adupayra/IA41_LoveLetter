@@ -66,7 +66,7 @@ class Espionne(Card):
     
     @classmethod
     def action(cls):
-        pass
+        cls._model._victory = True
     
     
 class Garde(TwoActionCards):
