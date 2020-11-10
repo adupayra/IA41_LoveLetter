@@ -76,6 +76,8 @@ class Controller():
                 if(cls._modelvar.ia.last_card_played is not None):
                     gamescene.update_lastcardslabels(str(cls._modelvar.ia), str(cls._modelvar.ia.last_card_played)) #Affichage de la carte jouée par l'IA au dernier tour
                 gamescene.unlock_buttons()
+                
+       
     
     @classmethod
     #L'IA joue une carte

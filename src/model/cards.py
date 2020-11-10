@@ -66,7 +66,7 @@ class Espionne(Card):
     
     @classmethod
     def action(cls):
-        cls._model._victory = True
+        pass
     
     
 class Garde(TwoActionCards):
@@ -136,11 +136,50 @@ class Baron(Card):
     
     @classmethod
     def action(cls):
+        
+        
+        
+        
+        
         if(isinstance(Card._model.current_player.cards[0], Baron)):
             Card._model.controller.display_baron(Card._model.current_player.cards[1], Card._model.players_list.current_node.next().player.cards[0])
+            if(Card._model.current_player.cards[1].value() > Card._model.players_list.current_node.next().player.cards[0].value()):
+                Card._model.current_player.win(1)
+                if(isinstance(Card._model.current_player, player.RealPlayer)):
+                    chaine = "Le vrai joueur "
+                else:
+                    chaine = "L'IA "
+                Card._model.controller.display_victory(chaine + "gagne 1 point, en ayant joué un baron", [Card._model.players_list.real_player.score,Card._model.players_list.ia.score])
+                
+            elif(Card._model.current_player.cards[1].value() < Card._model.players_list.current_node.next().player.cards[0].value()):
+                Card._model.players_list.current_node.next().player.win(1)
+                if(isinstance(Card._model.current_player, player.RealPlayer)):
+                    chaine = "L'IA "
+                else:
+                    chaine = "Le vrai joueur "
+                    
+                Card._model.controller.display_victory(chaine + "gagne 1 point, en ayant joué un baron", [Card._model.players_list.real_player.score,Card._model.players_list.ia.score])
+                
         else:
             Card._model.controller.display_baron(Card._model.current_player.cards[0], Card._model.players_list.current_node.next().player.cards[0])
-    
+            if(Card._model.current_player.cards[0].value() > Card._model.players_list.current_node.next().player.cards[0].value()):
+                Card._model.current_player.win(1)
+                if(isinstance(Card._model.current_player, player.RealPlayer)):
+                    chaine = "Le vrai joueur "
+                else:
+                    chaine = "L'IA "
+                Card._model.controller.display_victory(chaine + "gagne 1 point, en ayant joué un baron", [Card._model.players_list.real_player.score,Card._model.players_list.ia.score])
+                
+            elif(Card._model.current_player.cards[0].value() < Card._model.players_list.current_node.next().player.cards[0].value()):
+                Card._model.players_list.current_node.next().player.win(1)
+                if(isinstance(Card._model.current_player, player.RealPlayer)):
+                    chaine = "L'IA "
+                else:
+                    chaine = "Le vrai joueur "
+                Card._model.controller.display_victory(chaine + "gagne 1 point, en ayant joué un baron", [Card._model.players_list.real_player.score,Card._model.players_list.ia.score])
+        
+        
+        
 class Servante(Card):
     '''
     Classe définissant la carte servante

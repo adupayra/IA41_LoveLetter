@@ -47,7 +47,7 @@ class Model(object):
             self._cards.append(cards.Chancelier(self))
             
         for _ in range(0, 4):
-            self._cards.append(cards.Garde(self))
+            self._cards.append(cards.Baron(self))
 
     @property
     def controller(self):
@@ -96,6 +96,11 @@ class Model(object):
     @property
     def victory(self):
         return self._victory
+    
+    @victory.setter
+    def victory(self):
+        self.victory=True
+                
     
     #Fonction permettant l'initialisation des données non persistantes (appel à chaque début de partie et début de round)
     def init_data(self,difficulty = -1):
