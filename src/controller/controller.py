@@ -42,12 +42,9 @@ class Controller():
         #Affichage du plateau de jeu
         cls.display_scene(view, "Game scene")
     
-        #Affichage des 3 premieres cartes et du nom de la personne qui commence
-        view.scenes["Game scene"].init_round(cls._modelvar.get_three_cards(), str(cls._modelvar.current_player))
-        
-        #Actualisation/Réinitialisation game scene
-        view.scenes["Game scene"].update_tokens(cls._modelvar.ia.score, cls._modelvar.player.score)
-        view.scenes["Game scene"].unlock_buttons()
+        #Affichage des 3 premieres cartes et du nom de la personne qui commence et réinitialisation de la game scene
+        view.scenes["Game scene"].init_round(cls._modelvar.get_three_cards(), str(cls._modelvar.current_player), cls._modelvar.ia.score, cls._modelvar.player.score)
+
         
         #Début du premier tour
         cls.start_turn(current_player, view.scenes["Game scene"])

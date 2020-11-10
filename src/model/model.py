@@ -98,8 +98,8 @@ class Model(object):
         return self._victory
     
     @victory.setter
-    def victory(self):
-        self.victory=True
+    def victory(self, value):
+        self._victory=value
                 
     
     #Fonction permettant l'initialisation des données non persistantes (appel à chaque début de partie et début de round)
@@ -219,25 +219,31 @@ class Model(object):
         #Exception à cause du cas du prince : dernière carte jouée est un prince donc l'un des deux joueurs n'a plus de carte en main
         if(self.player.cards.__len__() == 0):
             if(self.cards_played_player[self.cards_played_player.__len__() - 1].value() > self.ia.cards[0].value()):
-                self.player.win(1)
+                winner = self.player
                 string_to_pass = "Pioche vide : \nJoueur a gagné car sa dernière carte jouée était plus forte"
             else:
-                self.ia.win(1)
+                winner = self.ia
                 string_to_pass = "Pioche vide : \nIA a gagné car sa dernière carte jouée était plus forte"
         elif(self.ia.cards.__len__() == 0):
             if(self.cards_played_ia[self.cards_played_ia.__len__() - 1].value() > self.player.cards[0].value()):
-                self.ia.win(1)
+                winner = self.ia
                 string_to_pass = "Pioche vide : \nIA a gagné car sa dernière carte jouée était plus forte"
             else:
-                self.player.win(1)
+                winner = self.player
                 string_to_pass = "Pioche vide : \nJoueur a gagné car sa dernière carte jouée était plus forte"
         else:
             #Cas usuel
             if(self.ia.cards[0].value() > self.player.cards[0].value()):
-                self.ia.win(1)
+                winner = self.ia
                 string_to_pass = "Pioche vide : \nIA a gagné car sa carte était plus forte"
             else:
-                self.player.win(1)
+                winner = self.player
                 string_to_pass = "Pioche vide : \nJoueur a gagné car sa carte était plus forte"
 
-        self.controller.display_victory(string_to_pass, [self.player.score, self.ia.score])
+        self.game_victory(winner, string_to_pass, [self.player.score, self.ia.score])
+        
+    def game_victory(self, winner, chaine):
+        winner.win(1)
+        self.victory = True
+        self.controller.display_victory(chaine, [self.player.score, self.ia.score])
+        

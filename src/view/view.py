@@ -300,8 +300,14 @@ class GameScene(tk.Frame):
         
     
     
-    #Fonction appelée en début de round : elle affiche les 3 cartes montrées en début de jeu
-    def init_round(self, three_cards, string_joueur):
+    #Fonction appelée en début de round : elle affiche les 3 cartes montrées en début de jeu, elle réinitialise aussi la gamescene en cas de nouveau round
+    def init_round(self, three_cards, string_joueur, score_ia, score_player):
+        #Réinitialisation de la gamescene
+        self.update_tokens(score_ia, score_player)
+        self.unlock_buttons()
+        self._last_card_label['image'] = self._images["Cache"]
+        
+        #Affichage des 3 cartes et du label de début de round
         for i in range(0,3):
             self._label_milieux[i].config(image = self._images[three_cards[i]])
         

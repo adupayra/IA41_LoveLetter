@@ -135,48 +135,25 @@ class Baron(Card):
         return 3
     
     @classmethod
-    def action(cls):
-        
-        
-        
-        
+    def action(cls):        
+        current_player = Card._model.current_player
+        next_player= Card._model.players_list.current_node.next_player.player
+        chaine = " gange 1 point, en ayant joué un baron"
         
         if(isinstance(Card._model.current_player.cards[0], Baron)):
-            Card._model.controller.display_baron(Card._model.current_player.cards[1], Card._model.players_list.current_node.next().player.cards[0])
-            if(Card._model.current_player.cards[1].value() > Card._model.players_list.current_node.next().player.cards[0].value()):
-                Card._model.current_player.win(1)
-                if(isinstance(Card._model.current_player, player.RealPlayer)):
-                    chaine = "Le vrai joueur "
-                else:
-                    chaine = "L'IA "
-                Card._model.controller.display_victory(chaine + "gagne 1 point, en ayant joué un baron", [Card._model.players_list.real_player.score,Card._model.players_list.ia.score])
-                
-            elif(Card._model.current_player.cards[1].value() < Card._model.players_list.current_node.next().player.cards[0].value()):
-                Card._model.players_list.current_node.next().player.win(1)
-                if(isinstance(Card._model.current_player, player.RealPlayer)):
-                    chaine = "L'IA "
-                else:
-                    chaine = "Le vrai joueur "
-                    
-                Card._model.controller.display_victory(chaine + "gagne 1 point, en ayant joué un baron", [Card._model.players_list.real_player.score,Card._model.players_list.ia.score])
-                
+            Card._model.controller.display_baron(current_player.cards[1], next_player.cards[0])
+            if(current_player.cards[1].value() > next_player.cards[0].value()):
+                Card._model.game_victory(current_player, str(current_player) + chaine)
+                                         
+            elif(current_player.cards[1].value() < next_player.cards[0].value()):
+                Card._model.game_victory(next_player, str(next_player) + chaine)  
         else:
-            Card._model.controller.display_baron(Card._model.current_player.cards[0], Card._model.players_list.current_node.next().player.cards[0])
-            if(Card._model.current_player.cards[0].value() > Card._model.players_list.current_node.next().player.cards[0].value()):
-                Card._model.current_player.win(1)
-                if(isinstance(Card._model.current_player, player.RealPlayer)):
-                    chaine = "Le vrai joueur "
-                else:
-                    chaine = "L'IA "
-                Card._model.controller.display_victory(chaine + "gagne 1 point, en ayant joué un baron", [Card._model.players_list.real_player.score,Card._model.players_list.ia.score])
+            Card._model.controller.display_baron(current_player.cards[0], next_player.cards[0])
+            if(current_player.cards[0].value() > next_player.cards[0].value()):
+                Card._model.game_victory(current_player, str(current_player) + chaine)
                 
-            elif(Card._model.current_player.cards[0].value() < Card._model.players_list.current_node.next().player.cards[0].value()):
-                Card._model.players_list.current_node.next().player.win(1)
-                if(isinstance(Card._model.current_player, player.RealPlayer)):
-                    chaine = "L'IA "
-                else:
-                    chaine = "Le vrai joueur "
-                Card._model.controller.display_victory(chaine + "gagne 1 point, en ayant joué un baron", [Card._model.players_list.real_player.score,Card._model.players_list.ia.score])
+            elif(current_player.cards[0].value() < next_player.cards[0].value()):
+                Card._model.game_victory(next_player, str(next_player) + chaine)  
         
         
         

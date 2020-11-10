@@ -16,7 +16,7 @@ class CircleLinkedList(object):
         self._current_node = None
     
     def next_player(self):
-        self._current_node = self._current_node.next()
+        self._current_node = self._current_node.next_player
         return self._current_node
     
     @property
@@ -53,9 +53,6 @@ class Node(object):
     
     def __init__(self, player):
         self._player = player
-    
-    def next(self):
-        return self._next_player
     
     @property
     def next_player(self):
