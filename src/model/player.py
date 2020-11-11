@@ -8,6 +8,7 @@ Created on 28 oct. 2020
 import abc
 from abc import abstractmethod
 
+#Liste circulairement chainée, contenant les noeuds contenant chaque joueur, ainsi que le noeud du joueur courant
 class CircleLinkedList(object):
 
     def __init__(self, head, tail):
@@ -15,7 +16,8 @@ class CircleLinkedList(object):
         self._ia_node = tail
         self._current_node = None
     
-    def next_player(self):
+    #Passe au prochain joueur
+    def next_turn(self):
         self._current_node = self._current_node.next_player
         return self._current_node
     
@@ -48,7 +50,16 @@ class CircleLinkedList(object):
     def current(self):
         return self._current_node.player
     
+    @property
+    def next_player_node(self):
+        return self._current_node.next_player
     
+    @property
+    def next_player(self):
+        return self._current_node.next_player.player
+    
+
+#Noeud contenant l'instance d'un joueur et la référence vers le noeud suivant
 class Node(object):
     
     def __init__(self, player):
@@ -65,7 +76,8 @@ class Node(object):
     @property
     def player(self):
         return self._player
-    
+
+
 class Player(metaclass = abc.ABCMeta):
     '''
     Classe servant de template pour la classe vraie joueur et les classes d'IA

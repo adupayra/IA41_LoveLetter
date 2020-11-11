@@ -80,9 +80,14 @@ class Controller():
     #L'IA joue une carte
     def card_playedAI(cls, gamescene):
         var = tk.IntVar()
+        #Lock des boutons
         gamescene.lock_buttons()
+        
+        #Attente de 3 secondes
         gamescene.view.after(3000, var.set, 1)
         gamescene.view.wait_variable(var)
+        
+        #unlock des boutons et lancement du tour de l'ia
         gamescene.unlock_buttons()
         current_player = cls._modelvar.playAI()
         cls.start_turn(current_player, gamescene)
@@ -109,30 +114,36 @@ class Controller():
     @classmethod
     def display_guard_choice(cls):
         cls._game_scene.display_guard_choice()
+        
+        #Attend que le joueur ait fait son choix
         cls._game_scene.wait_visibility(cls._game_scene)
     
     #Si la carte est un prince, alors il pourra choisir le camp qui défausse sa carte    
     @classmethod
     def display_prince_choice(cls, jeu_joueur, jeu_ia):
         cls._game_scene.display_prince_choice(jeu_joueur, jeu_ia)
+        
+        #Attend que le joueur ait fait son choix
         cls._game_scene.wait_visibility(cls._game_scene)
     
     
     @classmethod
     #Fonction appelée lorsque l'utilisateur a tenté de deviner une carte grâce au guarde
     def card_chosen(cls, special_frame, card):
-        
+        #On retire la special frame et on continue l'action du garde
         special_frame.stop_display()
         model.cards.Garde.deuxieme_action(card)
         
     @classmethod
     #Fonction appelée lorsque l'utilisateur a joué le prince et choisi le camp qui défausse sa carte
     def side_chosen(cls, special_frame, side):
+        #On retir la special frame et on continue l'action du prince
         special_frame.stop_display()
         model.cards.Prince.deuxieme_action(side)
         
     @classmethod
     def display_AI_card(cls,card):
+        #Affichage de la carte de l'ia, verouillage des boutons, attente de 3 secondes, déverouillage des boutons et ré affichage de la carte cachée
         var = tk.IntVar()
         cls._game_scene.display_AI_card(str(card))
         cls._game_scene.lock_buttons()
@@ -143,10 +154,12 @@ class Controller():
         
     @classmethod
     def display_baron(cls, firstcard, secondcard):
+        #Affichage des cartes du joueur et de l'ia pendant 3 secondes
         cls._game_scene.display_baron(firstcard, secondcard)
 
         
     @classmethod
+    #Affichage de l'écran de fin, de la manière dont s'est fini la partie, et du score de chaque joueur
     def display_victory(cls, victory_condition, score):
         cls._game_scene.view.scenes["End game scene"].victory_screen(victory_condition, score)
         
