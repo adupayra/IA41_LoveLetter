@@ -204,6 +204,7 @@ class Model(object):
         #Appeler algo de l'IA ici
         self.play(randrange(0,2))
     
+    
     #Effectue l'action de la carte à l'index associée du joueur courrant
     def play(self, index):
         self.current_player.last_card_played = self.current_player.cards[index]
@@ -221,6 +222,7 @@ class Model(object):
             self._cards_played_player.append(self.current_player.cards[index])
         else:
             self._cards_played_ia.append(self.current_player.cards[index])
+        self.current_player.last_card_played = self.current_player.cards[index]
         self.current_player.remove_card(index)#Suppression de la carte dans la main du joueur courrant
         self._players_list.next_turn() #On passe au prochain joueur
         self.current_player.add_card(self.pick_card(), index)
@@ -255,7 +257,7 @@ class Model(object):
 
         #Victoire
         self.game_victory(winner, string_to_pass, [self.player.score, self.ia.score])
-        
+    
     #Fonction appelée chaque foiqu'il y a victoire
     def game_victory(self, winner, chaine):
         winner.win(1) #Le joueur ayant gagné gagne un point de score

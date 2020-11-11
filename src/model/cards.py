@@ -45,6 +45,7 @@ class TwoActionCards(Card, metaclass = abc.ABCMeta):
     def __init__(self, model):
         Card.__init__(self, model)
         
+
 class Espionne(Card):
     '''
     Classe définissant la carte espionne
@@ -96,7 +97,6 @@ class Garde(TwoActionCards):
     @classmethod
     def deuxieme_action(cls, chosen_card):
         print("vous avez choisi " + chosen_card)
-        
         
             
     

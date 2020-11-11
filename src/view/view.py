@@ -10,7 +10,6 @@ from src.controller.controller import Controller
 from math import floor
 
     
-
 class View(tk.Tk):
     '''
     Classe qui gère la création de la fenêtre ainsi que les transitions entre les différentes scènes UI (entre le menu de 

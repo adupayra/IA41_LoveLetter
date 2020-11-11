@@ -90,7 +90,7 @@ class Player(metaclass = abc.ABCMeta):
         '''
         self._score = 0
         self._cards = []
-        self._last_card_played = None #Utilisé pour le chancelier
+        self._last_card_played = None
         self._cards_to_string = []
         self._immune = False
         
