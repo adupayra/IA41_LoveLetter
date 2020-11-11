@@ -87,9 +87,11 @@ class Garde(TwoActionCards):
     @classmethod
     def action(cls):
         #Vérification du joueur courant afin d'afficher ou non quelque chose sur l'UI
-        if(isinstance(Card._model.current_player, player.RealPlayer)):
-            Card._model.controller.display_guard_choice()
+        if(isinstance(cls._model.current_player, player.RealPlayer)):
+            cls._model.controller.display_guard_choice()
+            print(cls.__name__())
         else:
+            
             #algo ia
             pass
     
@@ -117,8 +119,9 @@ class Pretre(Card):
     
     @classmethod
     def action(cls):
-        if(isinstance(Card._model.current_player, player.RealPlayer)):
-            Card._model.controller.display_AI_card(Card._model.ia.cards[0])
+        if(isinstance(cls._model.current_player, player.RealPlayer)):
+            cls._model.controller.display_AI_card(cls._model.ia.cards[0])
+            
             
 class Baron(Card):
     '''
@@ -138,35 +141,35 @@ class Baron(Card):
     @classmethod
     def action(cls):
         #Caching des valeurs auxquelles on va beaucoup accéder dans la fonction
-        current_player = Card._model.current_player
-        next_player= Card._model.next_player
+        current_player = cls._model.current_player
+        next_player= cls._model.next_player
         
         #Chaine de caractere de victoire
         chaine = " gagne 1 point, en ayant joué un baron"
         
         #Vérifie quelle carte n'est pas un baron dans la main du joueur courant (afin de ne pas comparer le baron joué avec la carte de l'autre joueur)
         #Ici, on veut comparer la deuxieme carte du joueur courant (la première étant le baron joué)
-        if(isinstance(Card._model.current_player.cards[0], Baron)):
+        if(isinstance(cls._model.current_player.cards[0], Baron)):
             #Affichage de l'écran
-            Card._model.controller.display_baron(current_player.cards[1], next_player.cards[0])
+            cls._model.controller.display_baron(current_player.cards[1], next_player.cards[0])
             
             #Check du gagnant
             if(current_player.cards[1].value() > next_player.cards[0].value()):
-                Card._model.game_victory(current_player, str(current_player) + chaine)
+                cls._model.game_victory(current_player, str(current_player) + chaine)
                                          
             elif(current_player.cards[1].value() < next_player.cards[0].value()):
-                Card._model.game_victory(next_player, str(next_player) + chaine)  
+                cls._model.game_victory(next_player, str(next_player) + chaine)  
         else:
             #Ici, on veut comparer la première carte du joueur courant (la deuxieme étant le baron joué)
             #Affichage de l'écran
-            Card._model.controller.display_baron(current_player.cards[0], next_player.cards[0])
+            cls._model.controller.display_baron(current_player.cards[0], next_player.cards[0])
             
             #Check du gagnant
             if(current_player.cards[0].value() > next_player.cards[0].value()):
-                Card._model.game_victory(current_player, str(current_player) + chaine)
+                cls._model.game_victory(current_player, str(current_player) + chaine)
                 
             elif(current_player.cards[0].value() < next_player.cards[0].value()):
-                Card._model.game_victory(next_player, str(next_player) + chaine)  
+                cls._model.game_victory(next_player, str(next_player) + chaine)  
         
         
         
@@ -208,18 +211,18 @@ class Prince(TwoActionCards):
     
     @classmethod
     def action(cls):
-        if(isinstance(Card._model.current_player, player.RealPlayer)):
-            Card._model.controller.display_prince_choice(Prince._player_side, Prince._ia_side)
+        if(isinstance(cls._model.current_player, player.RealPlayer)):
+            cls._model.controller.display_prince_choice(cls._player_side, cls._ia_side)
         else:
             alea = randrange(2)
             if(alea == 0):
-                Prince.deuxieme_action(Prince._player_side)
+                cls.deuxieme_action(cls._player_side)
             else:
-                Prince.deuxieme_action(Prince._ia_side)
+                cls.deuxieme_action(cls._ia_side)
     
     @classmethod
     def deuxieme_action(cls, chosen_side):
-        print(str(Card._model.current_player) + " a choisi " + chosen_side)
+        print(str(cls._model.current_player) + " a choisi " + chosen_side)
         
 class Chancelier(Card):
     '''

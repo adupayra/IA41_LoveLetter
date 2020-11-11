@@ -4,6 +4,7 @@ Created on 28 oct. 2020
 
 @author: Antoine
 '''
+
 import src.model.cards as cards
 from random import shuffle
 from random import randrange

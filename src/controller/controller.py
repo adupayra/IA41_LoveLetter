@@ -54,6 +54,7 @@ class Controller():
     #Fonction permettant le déroulement d'un tour
     def start_turn(cls, current_player, gamescene):
         if(not cls._modelvar.victory):
+            
             #Actualisation de l'UI (nombre de cartes de l'IA)
             gamescene.update_iaUI(cls._modelvar.ia.cards.__len__())
             
