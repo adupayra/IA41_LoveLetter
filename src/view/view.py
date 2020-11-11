@@ -7,7 +7,6 @@ Created on 26 oct. 2020
 import tkinter as tk
 import tkinter.font
 from src.controller.controller import Controller
-import os
 from math import floor
 
     
@@ -48,6 +47,7 @@ class View(tk.Tk):
         
         self.display_scene("Menu scene")
         
+        #Une fois que la gamescene est crée, on notifie le controller afin qu'il puisse en garder l'instance et y accéder quand il veut
         Controller.addgamescene(game_scene)
         
         self.mainloop()
@@ -79,6 +79,9 @@ class MenuScene(tk.Frame):
         theme3 = "#B00B1E"
         button_font = tk.font.Font(family = "Times", size = "20")
         
+        #Fenêtre qui s'affichera lorsque le joueur voudra démarrer le jeu
+        self._difficulty_window = None
+        
         #Création scène        
         tk.Frame.__init__(self, parent, bg = theme1)
         self.place(relwidth = 1, relheight = 1)
@@ -104,30 +107,35 @@ class MenuScene(tk.Frame):
         exit_button.pack(side = tk.TOP, fill = tk.BOTH)
         
         
-        
+    #Affichage de la fenêtre permettant de choisirla difficulté
     def display_difficulty_choice(self, view):
-        '''
-        choix de difficulté
-        '''
-        #Création fenetre
         
-        difficulty_window = tk.Toplevel()
-        difficulty_window.title("Choix difficulté")
+        #Création fenetre si elle n'est pas déjà affichée
+        if(self._difficulty_window is None):
+            self._difficulty_window = tk.Toplevel()
+            self._difficulty_window.title("Choix difficulté")
+            self._difficulty_window.protocol("WM_DELETE_WINDOW", self.window_closed)
         
-        #Création des radio buttons
-        var = tk.IntVar()
-        radio1 = tk.Radiobutton(difficulty_window, text = "Facile", value = 0, 
-                                variable = var)
-        radio2 = tk.Radiobutton(difficulty_window, text = "Intermédiare", value = 1, 
-                                variable = var)
-        radio3 = tk.Radiobutton(difficulty_window, text = "Difficile", value = 2, 
-                                variable = var)
-        radio1.pack(anchor = tk.W)
-        radio2.pack(anchor = tk.W)
-        radio3.pack(anchor = tk.W)
-        validate = tk.Button(difficulty_window, text = "OK", command =lambda:self.validate(difficulty_window, view, var.get()))
-        validate.pack(anchor = tk.SE)
+            #Création des radio buttons
+            var = tk.IntVar()
+            radio1 = tk.Radiobutton(self._difficulty_window, text = "Facile", value = 0, 
+                                    variable = var)
+            radio2 = tk.Radiobutton(self._difficulty_window, text = "Intermédiare", value = 1, 
+                                    variable = var)
+            radio3 = tk.Radiobutton(self._difficulty_window, text = "Difficile", value = 2, 
+                                    variable = var)
+            radio1.pack(anchor = tk.W)
+            radio2.pack(anchor = tk.W)
+            radio3.pack(anchor = tk.W)
+            validate = tk.Button(self._difficulty_window, text = "OK", command =lambda:self.validate(self._difficulty_window, view, var.get()))
+            validate.pack(anchor = tk.SE)
     
+    #Si la fenêtre est fermée sans avoir fait de choix, on la détruit
+    def window_closed(self):
+        self._difficulty_window.destroy()
+        self._difficulty_window = None
+        
+        
     def validate(self, window, view, difficulty):
         #Destruction de la seconde fenetre
         window.destroy()
@@ -227,22 +235,26 @@ class GameScene(tk.Frame):
         self._token_frames = (tk.Frame(self, bg = theme1, highlightbackground = theme, highlightthickness = 3),
                               tk.Frame(self, bg = theme1, highlightbackground = theme, highlightthickness = 3))
         
+        #Image du jeton
         self._tokenimage = tk.PhotoImage(file = "Jeton.png")
         
+        #Frames contenant les labels (une pour le joueur une pour l'ia)
         self._token_frames[0].place(relx = 0.75, rely = 0.05)
         self._token_frames[1].place(relx = 0.75, rely = 0.7)
+        #Labels "points"
         points_label = (tk.Label(self._token_frames[0], text = "points : ", bg = theme1, fg = theme, font = text_font),
                         tk.Label(self._token_frames[1], text = "points : ", bg = theme1, fg = theme, font = text_font))
         points_label[0].grid(row = 0, column = 0)
         points_label[1].grid(row = 0, column = 0)
         
+        #Labels des jetons
         self._token_labels = []
         
+        #Création de la liste contenant une liste pour les labels du joueur et une liste pour les boutons de l'ia
         for i in range (0,2):
             temp = []
-            for j in range(0,5):
+            for _ in range(0,5):
                 temp.append(tk.Label(self._token_frames[i], bg = theme1, fg = theme, image = self._tokenimage))
-                #temp[j].grid(row = floor(j/3), column = j%3 + 1)
             self._token_labels.append(temp)
         
         
@@ -361,20 +373,29 @@ class GameScene(tk.Frame):
             for i in range(nbcards, number_cards_displayed):
                 self._ia_labels[i].config(image = "")
 
+    #Update du label affichant la dernière carte jouée
     def update_lastcardslabels(self, joueur, card):
         self._info_label['text'] = joueur + " a joué la carte " + card
         self._last_card_label['image'] = self._images[card]
         
+    #Update du label indiquant qui doit jouer
     def update_tour_label(self, text):
         self._tour_label['text'] = text
         
+    #Update des labels des images des jetons
     def update_tokens(self, score_ia, score_player):
+        #On regarde le nombre de jetons affichés pour l'ia et le player
         sum_ia = sum(button.winfo_ismapped() for button in self._token_labels[0])
         sum_player = sum(button.winfo_ismapped() for button in self._token_labels[1])
+        
+        #On affiche le nombre de jetons qu'il faut pour l'ia
         for i in range(0, score_ia):
             self._token_labels[0][i].grid(row = floor(i/3), column = i%3 + 1)
+        #On enlève les jetons affichés en trop (en cas de nouvelle parti
         for i in range(score_ia, sum_ia):
             self._token_labels[0][i].grid_forget()
+            
+        #Pareil mais pour le joueur
         for i in range(0, score_player):
             self._token_labels[1][i].grid(row = floor(i/3), column = i%3 + 1)
         for i in range(score_player, sum_player):
@@ -602,11 +623,11 @@ class SpecialFrame(tk.Frame):
         self.tkraise()
         self._gamescene.place_forget()
         
-        
-        
+        #Configuration de grid purement visuel
         self.grid_columnconfigure(0, weight = 0)
         self.grid_columnconfigure(1, weight = 0)
         self.grid_columnconfigure(2, weight = 0)
+        
         #Affichage des cartes utilisées de l'ia en prenant en compte la largeur de l'écran
         i = self.display_cards_side(ia_cards, 0, self._side_labels[0], 0, self._displayerslabels)
         j = 1
@@ -645,11 +666,12 @@ class SpecialFrame(tk.Frame):
         
         #Affichage des cartes
         for p in range(0, side.__len__()):
-            
             widgets[label_index].configure(image = self._gamescene.images[str(side[p])])
             widgets[label_index].grid(row = floor(j/(last_column+1)) + row, column = j%(last_column+1))
             label_index += 1
             j+=1
+        
+        #Si il y a plus de 3 lignes, erreur
         if self.grid_slaves(row = 3, column = 0) :
             self.stop_display()
             self.display_err()
@@ -663,6 +685,7 @@ class SpecialFrame(tk.Frame):
         self.tkraise()
         self._gamescene.place_forget()
         
+        #Configuration visuelle de la grille
         self.grid_columnconfigure(0, weight = 1)
         self.grid_columnconfigure(1, weight = 1)
         self.grid_columnconfigure(2, weight = 1)
@@ -672,6 +695,7 @@ class SpecialFrame(tk.Frame):
         
         self._prince_frames[0].grid(sticky = 'nesw', columnspan = 10, ipady = 50)
         self._prince_frames[1].grid(sticky = 'nesw', columnspan = 10, ipady = 50)
+        
         self._see_played_cards_frame_prince.grid(sticky = 'nesw', columnspan = 10, ipady = 50)
         
     #Affichage des possibilités de cartes que l'utilisateur peut deviner
@@ -697,11 +721,13 @@ class SpecialFrame(tk.Frame):
         self._displayerslabels[1].grid(row = 0, column = 1)
         self._displayerslabels[0].grid(row = 0, column = 2)
         
-        
+        #Attente de 3 secondes avant d'enlever l'affichage
         var = tk.IntVar()
         self.after(3000, var.set, 1)
         self.wait_variable(var)
         self.stop_display()
+        
+        
     #Enleve l'affichage de la frame, pour se faire, enleve l'affichage de tous les éléments qui se trouvent dans la frame,
     #puis enlève la frame
     def stop_display(self):

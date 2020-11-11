@@ -92,6 +92,10 @@ class Model(object):
     @property
     def current_player(self):
         return self._players_list.current
+    
+    @property
+    def next_player(self):
+        return self._players_list.next_player
         
     @property
     def victory(self):
@@ -126,7 +130,7 @@ class Model(object):
         #distribution des cartes dans les différentes listes
         self.distribution()
         
-        #Détermine le premier joueur
+        #Détermine le premier joueur aléatoirement
         premier_joueur = randrange(0,2)
         
         if premier_joueur == 0:
@@ -139,7 +143,10 @@ class Model(object):
         
     #Instanciation des joueurs
     def creer_joueurs(self, difficulty = 0):
+        #Création du noeud contenant l'instance du vrai joueur
         player_node = player.Node(player.RealPlayer())
+        
+        #Création de l'instance de l'ia
         ia = None
         if difficulty == 0:
             ia = player.IAFacile(self)
@@ -147,9 +154,15 @@ class Model(object):
             ia = player.IAMoyenne(self)
         else:
             ia = player.IADifficile(self)
+            
+        #Création du noeud contenant l'instance de l'ia
         ia_node = player.Node(ia)
+        
+        #Définition de l'attribut next player des noeuds, qui est une référence du noeud du prochain joueur
         player_node.next_player = ia_node
         ia_node.next_player = player_node
+        
+        #Création de la liste circulaire chaînée
         self._players_list = player.CircleLinkedList(player_node, ia_node)
     
     #Distribution des cartes dans les différentes listes
@@ -209,7 +222,7 @@ class Model(object):
         else:
             self._cards_played_ia.append(self.current_player.cards[index])
         self.current_player.remove_card(index)#Suppression de la carte dans la main du joueur courrant
-        self._players_list.next_player()
+        self._players_list.next_turn() #On passe au prochain joueur
         self.current_player.add_card(self.pick_card(), index)
     
     #Fonction appelée lorsque la pioche est vide
@@ -240,10 +253,14 @@ class Model(object):
                 winner = self.player
                 string_to_pass = "Pioche vide : \nJoueur a gagné car sa carte était plus forte"
 
+        #Victoire
         self.game_victory(winner, string_to_pass, [self.player.score, self.ia.score])
         
+    #Fonction appelée chaque foiqu'il y a victoire
     def game_victory(self, winner, chaine):
-        winner.win(1)
-        self.victory = True
+        winner.win(1) #Le joueur ayant gagné gagne un point de score
+        self.victory = True 
+        
+        #On affiche l'écran de fin de jeu en passant par le controller
         self.controller.display_victory(chaine, [self.player.score, self.ia.score])
         
