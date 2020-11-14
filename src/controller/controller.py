@@ -8,8 +8,6 @@ Created on 26 oct. 2020
 import src.model.model as model
 import webbrowser
 import sys
-import tkinter as tk
-
 
 class Controller():
     #Ne pas appeler cette variable depuis un module de view afin de garder l'indépendance entre modèle et view    
@@ -95,9 +93,6 @@ class Controller():
     @classmethod
     #Fonction appelée lorsqu'un joueur a choisi une carte
     def card_played(cls, gamescene, index):
-        #if(not isinstance(cls._modelvar.current_player.last_card_played, model.cards.Chancelier)):
-        
-        
         #Action de la carte et changement de joueur courant
         current_player = cls._modelvar.play(index)
         
@@ -114,9 +109,7 @@ class Controller():
     @classmethod
     def display_guard_choice(cls):
         cls._game_scene.display_guard_choice()
-        
-        #Attend que le joueur ait fait son choix
-        #cls._game_scene.wait_visibility(cls._game_scene)
+
     
     #Si la carte est un prince, alors il pourra choisir le camp qui défausse sa carte    
     @classmethod
@@ -141,12 +134,9 @@ class Controller():
     @classmethod
     def display_AI_card(cls,card):
         #Affichage de la carte de l'ia, verouillage des boutons, attente de 3 secondes, déverouillage des boutons et ré affichage de la carte cachée
-        #var = tk.IntVar()
         cls._game_scene.display_AI_card(str(card))
         cls._game_scene.lock_buttons()
         cls._game_scene.freeze_screen()
-        '''cls._game_scene.view.after(3000, var.set, 1)
-        cls._game_scene.wait_variable(var)'''
         cls._game_scene.update_iaUI(1)
         cls._game_scene.unlock_buttons()
         
