@@ -129,11 +129,11 @@ class Player(metaclass = abc.ABCMeta):
     def win(self, value):
         self._score += value
         
-    def add_card(self, new_card, index):
-        self._cards.insert(index, new_card)
+    def add_card(self, new_card):
+        self._cards.append(new_card)
         
-    def remove_card(self, index):
-        self._cards.pop(index)
+    def remove_card(self, card):
+        self._cards.remove(card)
         
     def reset_values(self):
         self._cards = []

@@ -126,7 +126,7 @@ class MenuScene(tk.Frame):
             radio1.pack(anchor = tk.W)
             radio2.pack(anchor = tk.W)
             radio3.pack(anchor = tk.W)
-            validate = tk.Button(self._difficulty_window, text = "OK", command =lambda:self.validate(self._difficulty_window, view, var.get()))
+            validate = tk.Button(self._difficulty_window, text = "OK", command =lambda:self.validate(view, var.get()))
             validate.pack(anchor = tk.SE)
     
     #Si la fenêtre est fermée sans avoir fait de choix, on la détruit
@@ -135,9 +135,9 @@ class MenuScene(tk.Frame):
         self._difficulty_window = None
         
         
-    def validate(self, window, view, difficulty):
+    def validate(self, view, difficulty):
         #Destruction de la seconde fenetre
-        window.destroy()
+        self.window_closed()
         
         #Démarrage de la partie
         Controller.start_game(view, difficulty)
@@ -432,7 +432,11 @@ class GameScene(tk.Frame):
     def display_baron(self, player, ia):
         self._special_frame.display_baron_screen(player, ia)
         
-    
+    def freeze_screen(self):
+        var = tk.IntVar()
+        self.after(3000, var.set, 1)
+        self.wait_variable(var)
+        
     
 class SpecialFrame(tk.Frame):
     '''
@@ -697,6 +701,8 @@ class SpecialFrame(tk.Frame):
         
         self._see_played_cards_frame_prince.grid(sticky = 'nesw', columnspan = 10, ipady = 50)
         
+        self._gamescene.wait_visibility()
+        
     #Affichage des possibilités de cartes que l'utilisateur peut deviner
     def display_guard_choice(self):
         self.place(relwidth = 1, relheight = 1)
@@ -707,6 +713,8 @@ class SpecialFrame(tk.Frame):
                                  "Princesse"], 0, self._side_labels[3], 0, self._actionbuttons)
         
         self._see_played_cards_frame_garde.grid()
+        
+        self._gamescene.wait_visibility()
         
     #Affiche l'écran lorsqu'un baron est joué
     def display_baron_screen(self, currentplayercard, othercard):
@@ -721,9 +729,7 @@ class SpecialFrame(tk.Frame):
         self._displayerslabels[0].grid(row = 0, column = 2)
         
         #Attente de 3 secondes avant d'enlever l'affichage
-        var = tk.IntVar()
-        self.after(3000, var.set, 1)
-        self.wait_variable(var)
+        self._gamescene.freeze_screen()
         self.stop_display()
         
         

@@ -80,13 +80,12 @@ class Controller():
     @classmethod
     #L'IA joue une carte
     def card_playedAI(cls, gamescene):
-        var = tk.IntVar()
+        #var = tk.IntVar()
         #Lock des boutons
         gamescene.lock_buttons()
         
         #Attente de 3 secondes
-        gamescene.view.after(3000, var.set, 1)
-        gamescene.view.wait_variable(var)
+        gamescene.freeze_screen()
         
         #unlock des boutons et lancement du tour de l'ia
         gamescene.unlock_buttons()
@@ -117,15 +116,12 @@ class Controller():
         cls._game_scene.display_guard_choice()
         
         #Attend que le joueur ait fait son choix
-        cls._game_scene.wait_visibility(cls._game_scene)
+        #cls._game_scene.wait_visibility(cls._game_scene)
     
     #Si la carte est un prince, alors il pourra choisir le camp qui défausse sa carte    
     @classmethod
     def display_prince_choice(cls, jeu_joueur, jeu_ia):
         cls._game_scene.display_prince_choice(jeu_joueur, jeu_ia)
-        
-        #Attend que le joueur ait fait son choix
-        cls._game_scene.wait_visibility(cls._game_scene)
     
     
     @classmethod
@@ -145,11 +141,12 @@ class Controller():
     @classmethod
     def display_AI_card(cls,card):
         #Affichage de la carte de l'ia, verouillage des boutons, attente de 3 secondes, déverouillage des boutons et ré affichage de la carte cachée
-        var = tk.IntVar()
+        #var = tk.IntVar()
         cls._game_scene.display_AI_card(str(card))
         cls._game_scene.lock_buttons()
-        cls._game_scene.view.after(3000, var.set, 1)
-        cls._game_scene.wait_variable(var)
+        cls._game_scene.freeze_screen()
+        '''cls._game_scene.view.after(3000, var.set, 1)
+        cls._game_scene.wait_variable(var)'''
         cls._game_scene.update_iaUI(1)
         cls._game_scene.unlock_buttons()
         

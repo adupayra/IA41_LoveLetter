@@ -89,7 +89,7 @@ class Garde(TwoActionCards):
         #Vérification du joueur courant afin d'afficher ou non quelque chose sur l'UI
         if(isinstance(cls._model.current_player, player.RealPlayer)):
             cls._model.controller.display_guard_choice()
-            print(cls.__name__())
+            #print(cls.__name__())
         else:
             
             #algo ia
@@ -149,17 +149,17 @@ class Baron(Card):
         
         #Vérifie quelle carte n'est pas un baron dans la main du joueur courant (afin de ne pas comparer le baron joué avec la carte de l'autre joueur)
         #Ici, on veut comparer la deuxieme carte du joueur courant (la première étant le baron joué)
-        if(isinstance(cls._model.current_player.cards[0], Baron)):
+        #if(isinstance(cls._model.current_player.cards[0], Baron)):
             #Affichage de l'écran
-            cls._model.controller.display_baron(current_player.cards[1], next_player.cards[0])
+        cls._model.controller.display_baron(current_player.cards[0], next_player.cards[0])
             
             #Check du gagnant
-            if(current_player.cards[1].value() > next_player.cards[0].value()):
-                cls._model.game_victory(current_player, str(current_player) + chaine)
+        if(current_player.cards[0].value() > next_player.cards[0].value()):
+            cls._model.game_victory(current_player, str(current_player) + chaine)
                                          
-            elif(current_player.cards[1].value() < next_player.cards[0].value()):
-                cls._model.game_victory(next_player, str(next_player) + chaine)  
-        else:
+        elif(current_player.cards[0].value() < next_player.cards[0].value()):
+            cls._model.game_victory(next_player, str(next_player) + chaine)  
+        '''else:
             #Ici, on veut comparer la première carte du joueur courant (la deuxieme étant le baron joué)
             #Affichage de l'écran
             cls._model.controller.display_baron(current_player.cards[0], next_player.cards[0])
@@ -169,7 +169,7 @@ class Baron(Card):
                 cls._model.game_victory(current_player, str(current_player) + chaine)
                 
             elif(current_player.cards[0].value() < next_player.cards[0].value()):
-                cls._model.game_victory(next_player, str(next_player) + chaine)  
+                cls._model.game_victory(next_player, str(next_player) + chaine)  '''
         
         
         

@@ -48,7 +48,7 @@ class Model(object):
             self._cards.append(cards.Chancelier(self))
             
         for _ in range(0, 4):
-            self._cards.append(cards.Baron(self))
+            self._cards.append(cards.Garde(self))
 
     @property
     def controller(self):
@@ -138,7 +138,7 @@ class Model(object):
             self._players_list.current_node = self._players_list.real_player_node
         else:
             self._players_list.current_node = self._players_list.ia_node
-        self._players_list.current.add_card(self.pick_card(),1)
+        self._players_list.current.add_card(self.pick_card())
 
         return self._players_list.current
         
@@ -168,8 +168,8 @@ class Model(object):
     
     #Distribution des cartes dans les différentes listes
     def distribution(self):
-        self.player.add_card(self._cards[0], 0) #Une carte au joueur
-        self.ia.add_card(self._cards[1],0) #Une à l'IA
+        self.player.add_card(self._cards[0]) #Une carte au joueur
+        self.ia.add_card(self._cards[1]) #Une à l'IA
         self._burnt_card = self._cards[2] #La carte qui restera cachée le long de la partie
         
         #Les 3 cartes visibles dès le début
@@ -208,25 +208,26 @@ class Model(object):
     
     #Effectue l'action de la carte à l'index associée du joueur courrant
     def play(self, index):
-        self.current_player.last_card_played = self.current_player.cards[index]
-        self._cards_played.append(self.current_player.cards[index])#Ajout de cette carte à la liste des cartes jouées
-        self.current_player.cards[index].action()#Action de la carte
-    
-        self.next_turn(index)
+        last_card_played = self.current_player.cards[index]
+        if(isinstance(self.current_player, player.RealPlayer)):
+            self._cards_played_player.append(last_card_played)
+        else:
+            self._cards_played_ia.append(last_card_played)
+
+        self.current_player.remove_card(last_card_played)#Suppression de la carte dans la main du joueur courrant
+        self._cards_played.append(last_card_played)#Ajout de cette carte à la liste des cartes jouées
+        last_card_played.action()#Action de la carte
+        self.current_player.last_card_played = last_card_played
+        self.next_turn()
         
-        return self._players_list.current
+        return self.current_player
         
             
     #Définition du prochain joueur
-    def next_turn(self, index):
-        if(isinstance(self.current_player, player.RealPlayer)):
-            self._cards_played_player.append(self.current_player.cards[index])
-        else:
-            self._cards_played_ia.append(self.current_player.cards[index])
-        self.current_player.last_card_played = self.current_player.cards[index]
-        self.current_player.remove_card(index)#Suppression de la carte dans la main du joueur courrant
+    def next_turn(self):
+        
         self._players_list.next_turn() #On passe au prochain joueur
-        self.current_player.add_card(self.pick_card(), index)
+        self.current_player.add_card(self.pick_card())
     
     #Fonction appelée lorsque la pioche est vide
     def victory_emptydeck(self):
@@ -257,7 +258,7 @@ class Model(object):
                 string_to_pass = "Pioche vide : \nJoueur a gagné car sa carte était plus forte"
 
         #Victoire
-        self.game_victory(winner, string_to_pass, [self.player.score, self.ia.score])
+        self.game_victory(winner, string_to_pass)
     
     #Fonction appelée chaque foiqu'il y a victoire
     def game_victory(self, winner, chaine):
