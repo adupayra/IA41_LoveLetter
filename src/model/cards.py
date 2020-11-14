@@ -46,6 +46,11 @@ class TwoActionCards(Card, metaclass = abc.ABCMeta):
         Card.__init__(self, model)
         
 
+    @abstractmethod
+    def deuxieme_action(self):
+        pass
+    
+    
 class Espionne(Card):
     '''
     Classe définissant la carte espionne
@@ -209,7 +214,7 @@ class Prince(TwoActionCards):
     def deuxieme_action(cls, chosen_side):
         print(str(cls._model.current_player) + " a choisi " + chosen_side)
         
-class Chancelier(Card):
+class Chancelier(TwoActionCards):
     '''
     Classe définissant la carte chancelier
     '''
@@ -228,8 +233,30 @@ class Chancelier(Card):
     
      
     def action(self):
-        pass
-
+        current_player = self._model.current_player
+        
+        current_player.add_card(self._model.pick_card())
+        current_player.add_card(self._model.pick_card())
+        
+        self._model.controller.update_chancelier(current_player, self._model.ia.cards.__len__(), self._model.player.cards_to_string)
+        
+        if(isinstance(current_player, player.IA)):
+            Chancelier.deuxieme_action(self._model.ia.cards[randrange(0, 3)])
+            #algo IA
+        
+    
+    @classmethod
+    def deuxieme_action(cls, card_chosen):
+        current_player = cls._model.current_player
+        
+        cards_to_remove = current_player.search_and_remove_others(card_chosen)
+        
+        for i in range(0, cards_to_remove.__len__()):
+            cls._model.deck.append(cards_to_remove[i])
+        
+        print(cls._model.deck)
+        
+        
 class Roi(Card):
     '''
     Classe définissant la carte comtesse

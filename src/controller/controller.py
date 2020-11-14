@@ -93,12 +93,18 @@ class Controller():
     @classmethod
     #Fonction appelée lorsqu'un joueur a choisi une carte
     def card_played(cls, gamescene, index):
-        #Action de la carte et changement de joueur courant
-        current_player = cls._modelvar.play(index)
-        
-        #Nouveau tour
-        cls.start_turn(current_player, gamescene)
+        #Si le joueur a 3 cartes, alors ça veut dire qu'il a joué un chancelier, et qu'il a cliqué sur la carte qu'il souhaite garder
+        if(cls._modelvar.player.cards.__len__() == 3):
+            cls.played_chancelier(gamescene, index)
+        else:
+            #Action de la carte et changement de joueur courant
+            current_player = cls._modelvar.play(index)
+            
+            #Nouveau tour
+            cls.start_turn(current_player, gamescene)
     
+
+        
     @classmethod
     #Prend dans le modèle les cartes ayant été jouées lors du round afin de les redonner à la view qui va les afficher
     def display_played_cards(cls, special_frame, call_from_special = False):
@@ -145,7 +151,23 @@ class Controller():
         #Affichage des cartes du joueur et de l'ia pendant 3 secondes
         cls._game_scene.display_baron(firstcard, secondcard)
 
-        
+    @classmethod
+    def update_chancelier(cls,currentplayer, nbcardsia, playercards):
+        cls._game_scene.update_lastcardslabels(str(currentplayer), model.cards.Chancelier.__name__)
+        if(isinstance(currentplayer, model.player.IA)):
+            cls._game_scene.update_iaUI(nbcardsia)
+            cls._game_scene.lock_buttons()
+            cls._game_scene.freeze_screen()
+            cls._game_scene.unlock_buttons()
+        else:
+            cls._game_scene.update_playerUI(playercards)
+            cls._game_scene.wait_chancelier()
+    
+    @classmethod
+    def played_chancelier(cls, gamescene, index):
+        gamescene.resume_game()
+        model.cards.Chancelier.deuxieme_action(cls._modelvar.player.cards[index])
+            
     @classmethod
     #Affichage de l'écran de fin, de la manière dont s'est fini la partie, et du score de chaque joueur
     def display_victory(cls, victory_condition, score):

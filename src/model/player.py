@@ -140,8 +140,17 @@ class Player(metaclass = abc.ABCMeta):
         self._last_card_played = None
         self._immune = False
     
+    def search_and_remove_others(self, card_chosen):
+        cards_to_remove = []
+        for i in range(0, self._cards.__len__()):
+            if(self._cards[i] != card_chosen):
+                cards_to_remove.append(self._cards[i])
+        
+        for i in range(0, cards_to_remove.__len__()):
+            self.remove_card(cards_to_remove[i])
+        
+        return cards_to_remove
     
-
 class RealPlayer(Player):
     
     def __init__(self):

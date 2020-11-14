@@ -435,6 +435,14 @@ class GameScene(tk.Frame):
     def display_baron(self, player, ia):
         self._special_frame.display_baron_screen(player, ia)
         
+    def wait_chancelier(self):
+        self._var = tk.IntVar()
+        self.wait_variable(self._var)
+        
+    def resume_game(self):
+        self._var.set(1)
+        self._var = None
+        
     #Arrete le programme pendant 3 secondes
     def freeze_screen(self):
         self._var = tk.IntVar()
