@@ -161,6 +161,9 @@ class GameScene(tk.Frame):
         #Font
         text_font = tk.font.Font(family = "Times", size = "14", weight = "bold")
         
+        #Valeur permettant d'attendre qu'une action soit effectuée pour continuer le programme
+        self._var = None
+        
         self._view = view
 
         #Création des différentes images des cartes
@@ -432,10 +435,12 @@ class GameScene(tk.Frame):
     def display_baron(self, player, ia):
         self._special_frame.display_baron_screen(player, ia)
         
+    #Arrete le programme pendant 3 secondes
     def freeze_screen(self):
-        var = tk.IntVar()
-        self.after(3000, var.set, 1)
-        self.wait_variable(var)
+        self._var = tk.IntVar()
+        self.after(3000, self._var.set, 1)
+        self.wait_variable(self._var)
+        self._var = None
         
     
 class SpecialFrame(tk.Frame):
