@@ -258,6 +258,8 @@ class GameScene(tk.Frame):
             for _ in range(0,5):
                 temp.append(tk.Label(self._token_frames[i], bg = theme1, fg = theme, image = self._tokenimage))
             self._token_labels.append(temp)
+            
+        self._chancelier_label = tk.Label(self, text = "Vous avez joué un chancelier\nChoisissez dans l'ordre\nles cartes que vous voulez avoir en fin de pioche", bg = theme1, fg = theme, font = text_font)
         
         
 
@@ -432,13 +434,25 @@ class GameScene(tk.Frame):
         self._player_buttons[0].tkraise()
         self._player_buttons[0].place(rely=1, relx=0.5, x=-self._ia_labels[0].winfo_reqwidth(), y=-self._ia_labels[0].winfo_reqheight())
     
+    #Lance la fonction d'affichage de l'écran du baron
     def display_baron(self, player, ia):
         self._special_frame.display_baron_screen(player, ia)
         
+    #Affiche le label d'information du chancelier
+    def display_chancelier_label(self):
+        self._chancelier_label.place(relx = 0.1, rely = 0.8)
+    
+    #Enlève le label d'info du chancelier
+    def undisplay_chancelier_label(self):
+        self._chancelier_label.place_forget()
+        
+    #Stop le programme en attendant que le joueur choisisse la carte qu'il veut garder lorsqu'il joue le chancelier
     def wait_chancelier(self):
         self._var = tk.IntVar()
         self.wait_variable(self._var)
         
+    #Reprend le programme lorsqu'il est interrompu par un évènement particulier (n'inclut pas tous les évènements 
+    #(exceptions :affichage de la special frame et attente de 3 secondesavant de reprendre le programme)
     def resume_game(self):
         self._var.set(1)
         self._var = None

@@ -94,7 +94,8 @@ class Controller():
     @classmethod
     #Fonction appelée lorsqu'un joueur a choisi une carte
     def card_played(cls, gamescene, index):
-        #Si le joueur a 3 cartes, alors ça veut dire qu'il a joué un chancelier, et qu'il a cliqué sur la carte qu'il souhaite garder
+        #Vérifie si le joueur n'est pas entrain de jouer l'action du chancelier, auquel cas il ne faut pas que le programme interprète le click sur un bouton comme
+        #le fait de jouer une carte
         if(cls._modelvar.player.play_chancelier):
             cls.played_chancelier(gamescene, index)
         else:
@@ -152,7 +153,7 @@ class Controller():
         #Affichage des cartes du joueur et de l'ia pendant 3 secondes
         cls._game_scene.display_baron(firstcard, secondcard)
 
-    
+    #Update l'UI de l'IA lorsqu'elle joue le chancelier, de manière à ce que le joueur puisse suivre son action
     @classmethod
     def update_chancelier_IA(cls, current_player, nbcardsia):
         cls._game_scene.update_lastcardslabels(str(current_player), model.cards.Chancelier.__name__)
@@ -161,16 +162,20 @@ class Controller():
         cls._game_scene.freeze_screen()
         cls._game_scene.unlock_buttons()
     
+    #Update l'UI du joueur lorsqu'il joue un chancelier, de manière à ce qu'il puisse ensuite choisir la carte qu'il veut conserver
     @classmethod
     def update_chancelier_player(cls, current_player, playercards):
+        cls._game_scene.display_chancelier_label() #Affichage du label d'info
         cls._game_scene.update_lastcardslabels(str(current_player), model.cards.Chancelier.__name__)
-        cls._game_scene.update_playerUI(playercards)
-        cls._game_scene.wait_chancelier()
+        cls._game_scene.update_playerUI(playercards) #Update de l'UI
+        cls._game_scene.wait_chancelier() #Attente du choix du joueur
         
+    #Fonction lancée lorsque le joueur a cliqué sur l'une des cartes qu'il souhaite mettre en bas de la pioche
     @classmethod
     def played_chancelier(cls, gamescene, index):
-        gamescene.resume_game()
-        model.cards.Chancelier.deuxieme_action(cls._modelvar.player.cards[index])
+        gamescene.resume_game() #On reprend le jeu
+        model.cards.Chancelier.deuxieme_action(cls._modelvar.player.cards[index]) #On effectue le traitement approprié
+        cls._game_scene.undisplay_chancelier_label()#On enlève le label d'info
             
     @classmethod
     #Affichage de l'écran de fin, de la manière dont s'est fini la partie, et du score de chaque joueur

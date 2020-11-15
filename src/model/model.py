@@ -191,7 +191,6 @@ class Model(object):
         if(self._deck):
             return self._deck.pop(0)
         elif(self._victory is False):
-            print("coucou")
             self._victory = True
             self.victory_emptydeck()
             

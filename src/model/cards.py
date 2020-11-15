@@ -231,22 +231,40 @@ class Chancelier(TwoActionCards):
     def value(cls):
         return 6
     
+    '''
+    Explication du fonctionnement : Lorsqu'un des deux joueurs va jouer un chancelier, il va devoir choisir dans l'ordre les cartes qu'il veut voir
+    au fond de la pioche (il choisit donc (sauf exception) les 2 cartes qu'il ne veut pas garder)
+    Une fois qu'une carte a été sélectionnée, on va vérifier le nombre de cartes restantes du joueur.
+    si il possède plus d'une carte, cela signifie que le joueur doit encore choisir une carte qu'il ne veut pas et le processus est relancé
+    sinon, cela signifie soit que le joueur a finit sa séléction, soit que nous nous trouvons dans le cas d'exception où il n'y a qu'une carte dans la pioche
+    (auquel cas le joueur n'a qu'une carte a séléctionner). On arrête donc le processus.
+    '''
      
     def action(self):
-        current_player = self._model.current_player
-        current_player.play_chancelier = True
-        current_player.add_card(self._model.pick_card())
-        current_player.add_card(self._model.pick_card())
-      
-        
-        if(isinstance(current_player, player.IA)):
-            self._model.controller.update_chancelier_IA(current_player, self._model.ia.cards.__len__())
-            Chancelier.deuxieme_action(self._model.ia.cards[randrange(0, 3)])
-            #algo IA
-        else:
-            self._model.controller.update_chancelier_player(current_player, self._model.player.cards_to_string)
+        #Si il n'y a plus de carte dans la pioche, alors jouer le chancelier ne fera rien
+        if(self._model.deck.__len__() != 0):
+            current_player = self._model.current_player
+            current_player.play_chancelier = True #Variable permettant de savoir si le joueur est en pleine action de chancelier ou non lorsqu'il clique sur un bouton
+            
+            #Vérifie si il y a bien deux cartes restantes dans la pioche au moins
+            if(self._model.deck.__len__() >= 2):
+                current_player.add_card(self._model.pick_card())
+                current_player.add_card(self._model.pick_card())
+            else:
+                #Cas particulier où il ne reste qu'une carte dans la pioche
+                current_player.add_card(self._model.pick_card())
+          
+            #Si l'IA a joué le chancelier, alors on appelle les fonctions appropriées
+            if(isinstance(current_player, player.IA)):
+                self._model.controller.update_chancelier_IA(current_player, self._model.ia.cards.__len__())
+                Chancelier.deuxieme_action(self._model.ia.cards[randrange(0, 3)])
+                #algo IA
+            else:
+                #Pareil pour le joueur
+                self._model.controller.update_chancelier_player(current_player, self._model.player.cards_to_string)
         
     
+    #Fonction appelée lorsque le joueur courant a séléctionné une carte qu'il ne voulait pas
     @classmethod
     def deuxieme_action(cls, card_chosen):
         current_player = cls._model.current_player
@@ -254,8 +272,7 @@ class Chancelier(TwoActionCards):
         current_player.remove_card(card_chosen)
         
         cls._model.deck.append(card_chosen)
-        
-        print(cls._model.deck)
+    
         if(current_player.cards.__len__() == 2):
             if(isinstance(current_player, player.IA)):
                 cls.deuxieme_action(cls._model.ia.cards[randrange(0,2)])
