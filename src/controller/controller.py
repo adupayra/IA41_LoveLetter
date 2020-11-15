@@ -8,6 +8,7 @@ Created on 26 oct. 2020
 import src.model.model as model
 import webbrowser
 import sys
+from prompt_toolkit.application import current
 
 class Controller():
     #Ne pas appeler cette variable depuis un module de view afin de garder l'indépendance entre modèle et view    
@@ -94,7 +95,7 @@ class Controller():
     #Fonction appelée lorsqu'un joueur a choisi une carte
     def card_played(cls, gamescene, index):
         #Si le joueur a 3 cartes, alors ça veut dire qu'il a joué un chancelier, et qu'il a cliqué sur la carte qu'il souhaite garder
-        if(cls._modelvar.player.cards.__len__() == 3):
+        if(cls._modelvar.player.play_chancelier):
             cls.played_chancelier(gamescene, index)
         else:
             #Action de la carte et changement de joueur courant
@@ -151,18 +152,21 @@ class Controller():
         #Affichage des cartes du joueur et de l'ia pendant 3 secondes
         cls._game_scene.display_baron(firstcard, secondcard)
 
-    @classmethod
-    def update_chancelier(cls,currentplayer, nbcardsia, playercards):
-        cls._game_scene.update_lastcardslabels(str(currentplayer), model.cards.Chancelier.__name__)
-        if(isinstance(currentplayer, model.player.IA)):
-            cls._game_scene.update_iaUI(nbcardsia)
-            cls._game_scene.lock_buttons()
-            cls._game_scene.freeze_screen()
-            cls._game_scene.unlock_buttons()
-        else:
-            cls._game_scene.update_playerUI(playercards)
-            cls._game_scene.wait_chancelier()
     
+    @classmethod
+    def update_chancelier_IA(cls, current_player, nbcardsia):
+        cls._game_scene.update_lastcardslabels(str(current_player), model.cards.Chancelier.__name__)
+        cls._game_scene.update_iaUI(nbcardsia)
+        cls._game_scene.lock_buttons()
+        cls._game_scene.freeze_screen()
+        cls._game_scene.unlock_buttons()
+    
+    @classmethod
+    def update_chancelier_player(cls, current_player, playercards):
+        cls._game_scene.update_lastcardslabels(str(current_player), model.cards.Chancelier.__name__)
+        cls._game_scene.update_playerUI(playercards)
+        cls._game_scene.wait_chancelier()
+        
     @classmethod
     def played_chancelier(cls, gamescene, index):
         gamescene.resume_game()

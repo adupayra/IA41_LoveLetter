@@ -190,7 +190,8 @@ class Model(object):
     def pick_card(self):
         if(self._deck):
             return self._deck.pop(0)
-        else:
+        elif(self._victory is False):
+            print("coucou")
             self._victory = True
             self.victory_emptydeck()
             
@@ -263,7 +264,7 @@ class Model(object):
     #Fonction appelée chaque foiqu'il y a victoire
     def game_victory(self, winner, chaine):
         winner.win(1) #Le joueur ayant gagné gagne un point de score
-        self.victory = True 
+        self._victory = True 
         
         #On affiche l'écran de fin de jeu en passant par le controller
         self.controller.display_victory(chaine, [self.player.score, self.ia.score])

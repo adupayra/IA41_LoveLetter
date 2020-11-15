@@ -234,27 +234,36 @@ class Chancelier(TwoActionCards):
      
     def action(self):
         current_player = self._model.current_player
-        
+        current_player.play_chancelier = True
         current_player.add_card(self._model.pick_card())
         current_player.add_card(self._model.pick_card())
-        
-        self._model.controller.update_chancelier(current_player, self._model.ia.cards.__len__(), self._model.player.cards_to_string)
+      
         
         if(isinstance(current_player, player.IA)):
+            self._model.controller.update_chancelier_IA(current_player, self._model.ia.cards.__len__())
             Chancelier.deuxieme_action(self._model.ia.cards[randrange(0, 3)])
             #algo IA
+        else:
+            self._model.controller.update_chancelier_player(current_player, self._model.player.cards_to_string)
         
     
     @classmethod
     def deuxieme_action(cls, card_chosen):
         current_player = cls._model.current_player
         
-        cards_to_remove = current_player.search_and_remove_others(card_chosen)
+        current_player.remove_card(card_chosen)
         
-        for i in range(0, cards_to_remove.__len__()):
-            cls._model.deck.append(cards_to_remove[i])
+        cls._model.deck.append(card_chosen)
         
         print(cls._model.deck)
+        if(current_player.cards.__len__() == 2):
+            if(isinstance(current_player, player.IA)):
+                cls.deuxieme_action(cls._model.ia.cards[randrange(0,2)])
+            else:
+                cls._model.controller.update_chancelier_player(current_player, cls._model.player.cards_to_string)
+                
+        current_player.play_chancelier = False
+            
         
         
 class Roi(Card):

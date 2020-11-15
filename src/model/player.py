@@ -93,6 +93,7 @@ class Player(metaclass = abc.ABCMeta):
         self._last_card_played = None
         self._cards_to_string = []
         self._immune = False
+        self._play_chancelier = False
         
     @property
     def cards(self):
@@ -126,6 +127,14 @@ class Player(metaclass = abc.ABCMeta):
     def score(self):
         return self._score
     
+    @property
+    def play_chancelier(self):
+        return self._play_chancelier
+    
+    @play_chancelier.setter
+    def play_chancelier(self, value):
+        self._play_chancelier = value
+        
     def win(self, value):
         self._score += value
         
