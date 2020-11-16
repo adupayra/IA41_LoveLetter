@@ -79,15 +79,9 @@ class Controller():
     @classmethod
     #L'IA joue une carte
     def card_playedAI(cls, gamescene):
-        #var = tk.IntVar()
-        #Lock des boutons
-        gamescene.lock_buttons()
-        
         #Attente de 3 secondes
         gamescene.freeze_screen()
-        
-        #unlock des boutons et lancement du tour de l'ia
-        gamescene.unlock_buttons()
+
         current_player = cls._modelvar.playAI()
         cls.start_turn(current_player, gamescene)
        
@@ -143,13 +137,12 @@ class Controller():
     def display_AI_card(cls,card):
         #Affichage de la carte de l'ia, verouillage des boutons, attente de 3 secondes, déverouillage des boutons et ré affichage de la carte cachée
         cls._game_scene.display_AI_card(str(card))
-        cls._game_scene.lock_buttons()
         cls._game_scene.freeze_screen()
         cls._game_scene.update_iaUI(1)
-        cls._game_scene.unlock_buttons()
         
     @classmethod
     def display_baron(cls, firstcard, secondcard):
+        cls._game_scene.update_lastcardslabels(str(cls._modelvar.current_player), model.cards.Baron.__name__)
         #Affichage des cartes du joueur et de l'ia pendant 3 secondes
         cls._game_scene.display_baron(firstcard, secondcard)
 
@@ -158,9 +151,7 @@ class Controller():
     def update_chancelier_IA(cls, current_player, nbcardsia):
         cls._game_scene.update_lastcardslabels(str(current_player), model.cards.Chancelier.__name__)
         cls._game_scene.update_iaUI(nbcardsia)
-        cls._game_scene.lock_buttons()
         cls._game_scene.freeze_screen()
-        cls._game_scene.unlock_buttons()
     
     #Update l'UI du joueur lorsqu'il joue un chancelier, de manière à ce qu'il puisse ensuite choisir la carte qu'il veut conserver
     @classmethod

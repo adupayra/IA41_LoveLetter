@@ -459,10 +459,12 @@ class GameScene(tk.Frame):
         
     #Arrete le programme pendant 3 secondes
     def freeze_screen(self):
+        self.lock_buttons() #Empêche l'utilisateur de faire des actions pendant le freeze
         self._var = tk.IntVar()
         self.after(3000, self._var.set, 1)
         self.wait_variable(self._var)
         self._var = None
+        self.unlock_buttons() #Libère les boutons
         
     
 class SpecialFrame(tk.Frame):
@@ -745,6 +747,7 @@ class SpecialFrame(tk.Frame):
         
     #Affiche l'écran lorsqu'un baron est joué
     def display_baron_screen(self, currentplayercard, othercard):
+        self._gamescene.freeze_screen()
         self.place(relwidth = 1, relheight = 1)
         self.tkraise()
         self._gamescene.place_forget()
