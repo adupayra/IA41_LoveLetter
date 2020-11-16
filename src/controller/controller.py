@@ -8,7 +8,7 @@ Created on 26 oct. 2020
 import src.model.model as model
 import webbrowser
 import sys
-from prompt_toolkit.application import current
+#from prompt_toolkit.application import current
 
 class Controller():
     #Ne pas appeler cette variable depuis un module de view afin de garder l'indépendance entre modèle et view    

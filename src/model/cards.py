@@ -92,6 +92,7 @@ class Garde(TwoActionCards):
      
     def action(self):
         #Vérification du joueur courant afin d'afficher ou non quelque chose sur l'UI
+        print(self._model.ia.cards[0].value())
         if(isinstance(self._model.current_player, player.RealPlayer)):
             self._model.controller.display_guard_choice()
             
@@ -103,7 +104,10 @@ class Garde(TwoActionCards):
     #Action effectuée une fois que la carte à deviner a été choisi
     @classmethod
     def deuxieme_action(cls, chosen_card):
+        
         print("vous avez choisi " + chosen_card)
+        if(chosen_card == str(cls._model.next_player.cards[0])):
+            cls._model.game_victory(cls._model.player, "Le vrai joueur gagne un point en ayant deviné la carte avec le garde !") 
         
             
     
