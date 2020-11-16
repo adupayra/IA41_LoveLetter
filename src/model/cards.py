@@ -218,6 +218,28 @@ class Prince(TwoActionCards):
     def deuxieme_action(cls, chosen_side):
         print(str(cls._model.current_player) + " a choisi " + chosen_side)
         
+        
+        # player est le joueur qui se fait deffausser ses cartes
+        if(chosen_side == cls._player_side):
+            _player = cls._model.player
+        else:
+            _player = cls._model.ia
+            
+            
+        #cas ou la carte déffaussé est une princesse
+        if(_player.cards[0].value() == 9 and isinstance(_player, player.RealPlayer)):
+            cls._model.game_victory(cls._model.ia, "L'IA remporte 1 point car le vrai joueur s'est fait défaussé une princesse !")
+        elif(_player.cards[0].value() == 9 and isinstance(_player, player.IA)):
+            cls._model.game_victory(cls._model.player, "Le vrai joueur remporte 1 point car l'IA s'est fait défaussé une princesse !")
+        
+        #autre cas
+        else:
+            #a refaire mdr
+            cls._model.add_cards_played(_player.cards[0])
+            _player.remove_card(_player.cards[0])
+            _player.add_card(cls._model.pick_card())
+        
+        
 class Chancelier(TwoActionCards):
     '''
     Classe définissant la carte chancelier

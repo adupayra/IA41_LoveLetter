@@ -34,21 +34,21 @@ class Model(object):
         cards.Card._model = self
         
         #Instantiation de toutes les cartes
-        self._cards.append(cards.Roi(self))
+        #self._cards.append(cards.Roi(self))
         self._cards.append(cards.Comtesse(self))
         self._cards.append(cards.Princesse(self))
         
         for _ in range(0,2):
             self._cards.append(cards.Espionne(self))
-            self._cards.append(cards.Garde(self))
-            self._cards.append(cards.Pretre(self))
-            self._cards.append(cards.Baron(self))
-            self._cards.append(cards.Servante(self))
-            self._cards.append(cards.Prince(self))
-            self._cards.append(cards.Chancelier(self))
+            #self._cards.append(cards.Garde(self))
+            #self._cards.append(cards.Pretre(self))
+            #self._cards.append(cards.Baron(self))
+            #self._cards.append(cards.Servante(self))
+            #self._cards.append(cards.Prince(self))
+            #self._cards.append(cards.Chancelier(self))
             
         for _ in range(0, 4):
-            self._cards.append(cards.Garde(self))
+            self._cards.append(cards.Prince(self))
 
     @property
     def controller(self):
