@@ -64,6 +64,7 @@ class Node(object):
     
     def __init__(self, player):
         self._player = player
+        self._cards_played = []
     
     @property
     def next_player(self):
@@ -76,7 +77,8 @@ class Node(object):
     @property
     def player(self):
         return self._player
-
+    
+    
 
 class Player(metaclass = abc.ABCMeta):
     '''
@@ -94,6 +96,7 @@ class Player(metaclass = abc.ABCMeta):
         self._cards_to_string = []
         self._immune = False
         self._play_chancelier = False
+        self._cards_played = []
         
     @property
     def cards(self):
@@ -148,17 +151,16 @@ class Player(metaclass = abc.ABCMeta):
         self._cards = []
         self._last_card_played = None
         self._immune = False
+        self._cards_played = []
     
-    def search_and_remove_others(self, card_chosen):
-        cards_to_remove = []
-        for i in range(0, self._cards.__len__()):
-            if(self._cards[i] != card_chosen):
-                cards_to_remove.append(self._cards[i])
-        
-        for i in range(0, cards_to_remove.__len__()):
-            self.remove_card(cards_to_remove[i])
-        
-        return cards_to_remove
+    
+    @property
+    def cards_played(self):
+        return self._cards_played
+    
+    def add_cards_played(self, card):
+        self._cards_played.append(card)
+
     
 class RealPlayer(Player):
     

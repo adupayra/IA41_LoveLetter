@@ -234,8 +234,7 @@ class Prince(TwoActionCards):
         
         #autre cas
         else:
-            #a refaire mdr
-            cls._model.add_cards_played(_player.cards[0])
+            cls._model.add_defausse(_player.cards[0])
             _player.remove_card(_player.cards[0])
             _player.add_card(cls._model.pick_card())
         

@@ -25,27 +25,26 @@ class Model(object):
         self._controller = controller
         self._cards = [] #Liste de toutes les cartes
         self._cards_played = [] #Liste des cartes jouées (comprenant les 3 cartes montrées au début)
-        self._cards_played_player = [] #Liste cartes jouées par le joueur
-        self._cards_played_ia = [] #Liste cartes jouées par l'ia
         self._burnt_card = None #La carte inconnue
         self._deck = [] #La pioche
         self._players_list = None #Liste chainée contenant le joueur courant, le vrai joueur et l'ia
         self._victory = False
         cards.Card._model = self
+        self._cartes_defaussees = [] #Cartes défaussées lorsque le prince est joué
         
         #Instantiation de toutes les cartes
-        #self._cards.append(cards.Roi(self))
+        self._cards.append(cards.Roi(self))
         self._cards.append(cards.Comtesse(self))
         self._cards.append(cards.Princesse(self))
         
         for _ in range(0,2):
             self._cards.append(cards.Espionne(self))
-            #self._cards.append(cards.Garde(self))
-            #self._cards.append(cards.Pretre(self))
-            #self._cards.append(cards.Baron(self))
-            #self._cards.append(cards.Servante(self))
-            #self._cards.append(cards.Prince(self))
-            #self._cards.append(cards.Chancelier(self))
+            self._cards.append(cards.Garde(self))
+            self._cards.append(cards.Pretre(self))
+            self._cards.append(cards.Baron(self))
+            self._cards.append(cards.Servante(self))
+            self._cards.append(cards.Prince(self))
+            self._cards.append(cards.Chancelier(self))
             
         for _ in range(0, 4):
             self._cards.append(cards.Prince(self))
@@ -105,6 +104,13 @@ class Model(object):
     @victory.setter
     def victory(self, value):
         self._victory=value
+        
+    @property
+    def cartes_defaussees(self):
+        return self._cartes_defaussees
+    
+    def add_defausse(self, card):
+        self._cartes_defaussees.append(card)
                 
     
     #Fonction permettant l'initialisation des données non persistantes (appel à chaque début de partie et début de round)
@@ -117,6 +123,7 @@ class Model(object):
         self._burnt_card = None
         self._deck = [] 
         self._victory = False
+        self._cartes_defaussees = []
         
         #Mélange des cartes
         shuffle(self._cards)
@@ -209,10 +216,7 @@ class Model(object):
     #Effectue l'action de la carte à l'index associée du joueur courrant
     def play(self, index):
         last_card_played = self.current_player.cards[index]
-        if(isinstance(self.current_player, player.RealPlayer)):
-            self._cards_played_player.append(last_card_played)
-        else:
-            self._cards_played_ia.append(last_card_played)
+        self.current_player.add_cards_played(last_card_played)
 
         self.current_player.remove_card(last_card_played)#Suppression de la carte dans la main du joueur courrant
         self._cards_played.append(last_card_played)#Ajout de cette carte à la liste des cartes jouées

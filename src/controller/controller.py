@@ -104,7 +104,7 @@ class Controller():
     @classmethod
     #Prend dans le modèle les cartes ayant été jouées lors du round afin de les redonner à la view qui va les afficher
     def display_played_cards(cls, special_frame, call_from_special = False):
-        special_frame.display_allcards(cls._modelvar.cards_played_ia, cls._modelvar.cards_played_player, cls._modelvar.get_three_cards(), call_from_special)
+        special_frame.display_allcards(cls._modelvar.ia.cards_played, cls._modelvar.player.cards_played, cls._modelvar.get_three_cards(), cls._modelvar.cartes_defaussees, call_from_special)
     
     #Si la carte est un garde et que c'est le tour de l'utilisateur, on va afficher une écran lui montrant quelles cartes il peut 
     #deviner

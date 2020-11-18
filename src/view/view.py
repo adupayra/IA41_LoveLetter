@@ -566,8 +566,6 @@ class SpecialFrame(tk.Frame):
                                             fg = theme2)
         return_last_frame.pack()
         
-        #Error label, écran trop petit
-        self._error_label = tk.Label(self, text = "Votre écran est trop piti, disoulé :(")
         
         #Attribution des images aux boutons de choix du garde
         self._actionbuttons[0]['image'] = self._gamescene.images['Espionne']
@@ -591,6 +589,9 @@ class SpecialFrame(tk.Frame):
         self._actionbuttons[7].configure(command = lambda:Controller.card_chosen(self, self.search_card(7)))
         self._actionbuttons[8].configure(command = lambda:Controller.card_chosen(self, self.search_card(8)))
         
+        
+        #Label de défausse
+        self._defausse_label = tk.Label(self, text = "Cartes défaussées : ", bg = color, fg = theme2, font = cards_played_font)
     
     #Permet de renvoyer la chaine de caractère correspondant au bouton cliqué par l'utilisateur
     def search_card(self, index):
@@ -650,7 +651,7 @@ class SpecialFrame(tk.Frame):
         
    
     #Affiche toutes les cartes ayant été jouées durant le round
-    def display_allcards(self, ia_cards, player_cards, middle_cards, call_from_special = False):
+    def display_allcards(self, ia_cards, player_cards, middle_cards, cartes_defausse, call_from_special = False):
         self.place(relwidth = 1, relheight = 1)
         self.tkraise()
         self._gamescene.place_forget()
@@ -671,16 +672,29 @@ class SpecialFrame(tk.Frame):
             self._displayerslabels[p].grid(row = i, column = j)
             j+=1
         
+        
         #Vérifie si la fonction est appelée via la gamescene ou via la specialframe
         if(call_from_special):
             self._return_last_frame_frame.grid(row = i, column = j) #Si la fonction est appelée de la specialframe, on affiche le boutton
                                                             #permettant de revenir à la specialframe précédente
         else:
             self._leave_feature_frame.grid(row = i, column = j) #Boutton faisant revenir à la gamescene
+        
+        
+        #Affichage des cartes défaussées
+        j += 1
+        p+=1
+        self._defausse_label.grid(row = i, column = j)
+        j+=1
+        for k in range(0, cartes_defausse.__len__()):
+            self._displayerslabels[p]['image'] = self._gamescene.images[str(cartes_defausse[k])]
+            self._displayerslabels[p].grid(row = i, column = j+k)
+            p+=1
+        
         i+=1
         
         #Affichage des cartes utilisées du joueur
-        self.display_cards_side(player_cards, i, self._side_labels[1], ia_cards.__len__() + 4, self._displayerslabels)
+        self.display_cards_side(player_cards, i, self._side_labels[1], ia_cards.__len__() + 5 + cartes_defausse.__len__(), self._displayerslabels)
         
         self._gamescene.wait_visibility()
      
@@ -703,10 +717,6 @@ class SpecialFrame(tk.Frame):
             label_index += 1
             j+=1
         
-        #Si il y a plus de 3 lignes, erreur
-        if self.grid_slaves(row = 3, column = 0) :
-            self.stop_display()
-            self.display_err()
         return row + 1
     
 
@@ -785,10 +795,6 @@ class SpecialFrame(tk.Frame):
             last_column +=1
         return last_column
     
-    #s'affiche quand il y a trop de cartes pour l'écran
-    def display_err(self):
-        self._error_label.grid(row = 0, column = 0)
-        self._leave_feature_frame.grid(row = 1, column = 0)
         
     #Permet d'effectuer une copie des éléments affichés à l'écran lorsque l'on voudra les rafficher plus tard
     def make_copy(self):
