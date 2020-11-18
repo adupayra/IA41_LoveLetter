@@ -92,22 +92,24 @@ class Garde(TwoActionCards):
      
     def action(self):
         #Vérification du joueur courant afin d'afficher ou non quelque chose sur l'UI
-        print(self._model.ia.cards[0].value())
         if(isinstance(self._model.current_player, player.RealPlayer)):
             self._model.controller.display_guard_choice()
             
         else:
-            
-            #algo ia
+            #Algo IA
+            guess = randrange(0,9)
+            array = [Espionne.__name__, Pretre.__name__, Baron.__name__, Servante.__name__, Prince.__name__, Chancelier.__name__, Roi.__name__, 
+                     Comtesse.__name__, Princesse.__name__]
+            self._model.controller.display_guard_ialabel(array[guess]) #Affichage du label récapitulatif
+            self.deuxieme_action(array[guess])
             pass
     
     #Action effectuée une fois que la carte à deviner a été choisi
     @classmethod
     def deuxieme_action(cls, chosen_card):
-        
-        print("vous avez choisi " + chosen_card)
+
         if(chosen_card == str(cls._model.next_player.cards[0])):
-            cls._model.game_victory(cls._model.player, "Le vrai joueur gagne un point en ayant deviné la carte avec le garde !") 
+            cls._model.game_victory(cls._model.current_player, str(cls._model.current_player) +" gagne un point en ayant deviné la carte avec le garde !") 
         
             
     
@@ -203,11 +205,12 @@ class Prince(TwoActionCards):
     def value(cls):
         return 5
     
-     
     def action(self):
+        #Affichage de l'écran de séléction du camp si le joueur est le joueur courrant
         if(isinstance(self._model.current_player, player.RealPlayer)):
             self._model.controller.display_prince_choice(self._player_side, self._ia_side)
         else:
+            #Sinon algo ia
             alea = randrange(2)
             if(alea == 0):
                 self.deuxieme_action(self._player_side)
@@ -216,15 +219,13 @@ class Prince(TwoActionCards):
     
     @classmethod
     def deuxieme_action(cls, chosen_side):
-        print(str(cls._model.current_player) + " a choisi " + chosen_side)
-        
-        
         # player est le joueur qui se fait deffausser ses cartes
         if(chosen_side == cls._player_side):
             _player = cls._model.player
         else:
             _player = cls._model.ia
-            
+        
+        cls._model.controller.display_prince_detailslabel(cls._model.current_player, chosen_side, _player.cards[0]) #Affichage du label récapitulatif
             
         #cas ou la carte déffaussé est une princesse
         if(_player.cards[0].value() == 9 and isinstance(_player, player.RealPlayer)):

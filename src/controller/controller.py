@@ -118,7 +118,25 @@ class Controller():
     def display_prince_choice(cls, jeu_joueur, jeu_ia):
         cls._game_scene.display_prince_choice(jeu_joueur, jeu_ia)
     
+    #Fonction permettant d'afficher le label d'informations et d'ajouter de la lisibilité au jeu
+    @classmethod
+    def display_guard_ialabel(cls, card_guessed):
+        cls._game_scene.display_details_label("L'IA a joué un garde\net deviné la carte : " + card_guessed)
+        cls._game_scene.update_lastcardslabels("IA ", model.cards.Garde.__name__)
+        cls._game_scene.update_iaUI(1)
+        cls._game_scene.freeze_screen()
+        cls._game_scene.undisplay_details_label()
     
+    #Affichage du label récapitulatif lorsqu'un des joueurs a joué un prince
+    @classmethod
+    def display_prince_detailslabel(cls, current_player, side_chosen, card):
+        cls._game_scene.display_details_label(str(current_player) + " a joué un prince\net choisi ce camp : " + side_chosen + "\nDéfausse : " + str(card))
+        if("IA" in side_chosen):
+           cls.display_AI_card(cls._modelvar.ia.cards[0])
+        cls._game_scene.freeze_screen()
+        cls._game_scene.undisplay_details_label()
+        cls._game_scene.update_iaUI(1)
+        
     @classmethod
     #Fonction appelée lorsque l'utilisateur a tenté de deviner une carte grâce au guarde
     def card_chosen(cls, special_frame, card):
@@ -156,7 +174,7 @@ class Controller():
     #Update l'UI du joueur lorsqu'il joue un chancelier, de manière à ce qu'il puisse ensuite choisir la carte qu'il veut conserver
     @classmethod
     def update_chancelier_player(cls, current_player, playercards):
-        cls._game_scene.display_chancelier_label() #Affichage du label d'info
+        cls._game_scene.display_details_label("Vous avez joué un chancelier\nChoisissez dans l'ordre\nles cartes que vous voulez avoir en fin de pioche") #Affichage du label d'info
         cls._game_scene.update_lastcardslabels(str(current_player), model.cards.Chancelier.__name__)
         cls._game_scene.update_playerUI(playercards) #Update de l'UI
         cls._game_scene.wait_chancelier() #Attente du choix du joueur
@@ -166,7 +184,7 @@ class Controller():
     def played_chancelier(cls, gamescene, index):
         gamescene.resume_game() #On reprend le jeu
         model.cards.Chancelier.deuxieme_action(cls._modelvar.player.cards[index]) #On effectue le traitement approprié
-        cls._game_scene.undisplay_chancelier_label()#On enlève le label d'info
+        cls._game_scene.undisplay_details_label()#On enlève le label d'info
             
     @classmethod
     #Affichage de l'écran de fin, de la manière dont s'est fini la partie, et du score de chaque joueur

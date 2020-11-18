@@ -259,7 +259,7 @@ class GameScene(tk.Frame):
                 temp.append(tk.Label(self._token_frames[i], bg = theme1, fg = theme, image = self._tokenimage))
             self._token_labels.append(temp)
             
-        self._chancelier_label = tk.Label(self, text = "Vous avez joué un chancelier\nChoisissez dans l'ordre\nles cartes que vous voulez avoir en fin de pioche", bg = theme1, fg = theme, font = text_font)
+        self._details_label = tk.Label(self, bg = theme1, fg = theme, font = text_font)
         
         
 
@@ -439,12 +439,13 @@ class GameScene(tk.Frame):
         self._special_frame.display_baron_screen(player, ia)
         
     #Affiche le label d'information du chancelier
-    def display_chancelier_label(self):
-        self._chancelier_label.place(relx = 0.1, rely = 0.8)
+    def display_details_label(self, text_to_display):
+        self._details_label['text'] = text_to_display
+        self._details_label.place(relx = 0.1, rely = 0.8)
     
     #Enlève le label d'info du chancelier
-    def undisplay_chancelier_label(self):
-        self._chancelier_label.place_forget()
+    def undisplay_details_label(self):
+        self._details_label.place_forget()
         
     #Stop le programme en attendant que le joueur choisisse la carte qu'il veut garder lorsqu'il joue le chancelier
     def wait_chancelier(self):
