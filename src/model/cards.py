@@ -364,7 +364,11 @@ class Princesse(Card):
     
      
     def action(self):
-        pass
+        
+        if(isinstance(self._model.current_player, player.RealPlayer)):
+            self._model.game_victory(self._model.ia, "L'IA remporte 1 point car le vrai joueur à joué la Princesse !")
+        else:
+            self._model.game_victory(self._model.player, "Le vrai joueur remporte 1 point car l'IA à joué la Princesse !")
     
 
     
