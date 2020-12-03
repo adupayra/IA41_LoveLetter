@@ -107,7 +107,7 @@ class Player(metaclass = abc.ABCMeta):
     
     def save_attributes(self):
         return (copy.copy(self._cards), copy.copy(self._last_card_played), copy.copy(self._immune), copy.copy(self._cards_played), 
-        copy.copy(self._espionne_played), copy.copy(self._knows_card))
+        copy.copy(self._espionne_played), copy.copy(self._knows_card), copy.copy(self._play_chancelier))
     
     def set_attributes(self, attributes):
         self._cards = attributes[0] 
@@ -116,6 +116,7 @@ class Player(metaclass = abc.ABCMeta):
         self._cards_played = attributes[3] 
         self._espionne_played = attributes[4]
         self._knows_card = attributes[5]
+        self._play_chancelier = attributes[6]
         
     @property
     def espionne_played(self):

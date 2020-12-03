@@ -236,24 +236,14 @@ class Model(object):
     
     #Choix de la carte jouée par l'IA
     def playAI(self):
-        self.issimul = True
-        '''
-        file = open("test.b", "wb")
-        pickle.dump(self, file)
-        file.close()
-        '''
+        if(self.issimul is False):
+            self.issimul = True
+    
+            state = State(self, self._current_state)
+            self._current_state = state
+            self._current_state.next_states(0)
         
-        state = State(self, self._current_state)
-        self._current_state = state
-        self._current_state.next_states()
-        
-        '''
-        file2 = open("test.b", "rb")
-        self = pickle.load(file2)
-        file2.close()
-        print(self._cards_played)'''
-        
-        self.issimul = False
+            self.issimul = False
         #Appeler algo de l'IA ici
         self.play(randrange(0,2))
     
@@ -267,7 +257,6 @@ class Model(object):
         self.current_player.remove_card(last_card_played)#Suppression de la carte dans la main du joueur courrant
         self._cards_played.append(last_card_played)#Ajout de cette carte à la liste des cartes jouées
         last_card_played.action()#Action de la carte
-        self.issimul = False
         self.current_player.last_card_played = last_card_played
         self.next_turn()
         
@@ -313,11 +302,12 @@ class Model(object):
     
     #Fonction appelée chaque foiqu'il y a victoire
     def game_victory(self, winner, chaine):
-        winner.win(1) #Le joueur ayant gagné gagne un point de score
+        
         self._victory = True 
         
         if(not self.issimul):
             #On affiche l'écran de fin de jeu en passant par le controller
+            winner.win(1) #Le joueur ayant gagné gagne un point de score
             self.controller.display_victory(chaine, [self.player.score, self.ia.score])
         
         
@@ -334,17 +324,12 @@ class State():
     def __init__(self, model,parent):
         self._model = model
         self._current_player = model.current_player
-        '''
-        self._current_player = copy.deepcopy(model.current_player)
-        self._opponent = copy.deepcopy(model.next_player)
-        self._cards_played = copy.copy(model.cards_played)
-        self._deck = copy.copy(model.deck)'''
         self._hand = self._current_player.cards
         
         self._save = Save()
         self._parent = parent
         
-    def next_states(self): 
+    def next_states(self, j): 
        
         for i in range(0, self._hand.__len__()) :
             print(self._model.ia.cards)
@@ -352,6 +337,8 @@ class State():
             print(self._model.current_player)
             self._model.play(i)
             state = State(self._model, self)
+            if(j != 1):
+                state.next_states(1)
             self._save.backup()
 
 
