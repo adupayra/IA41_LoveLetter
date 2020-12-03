@@ -9,6 +9,7 @@ import src.model.cards as cards
 from random import shuffle
 from random import randrange
 import src.model.player as player
+import copy
 
 class Model(object):
     '''
@@ -31,6 +32,8 @@ class Model(object):
         self._victory = False
         cards.Card._model = self
         self._cartes_defaussees = [] #Cartes défaussées lorsque le prince est joué
+        self._current_state = None
+        self._issimul = False
         
         #Instantiation de toutes les cartes
         self._cards.append(cards.Roi(self))
@@ -47,7 +50,7 @@ class Model(object):
             self._cards.append(cards.Chancelier(self))
             
         for _ in range(0, 4):
-            self._cards.append(cards.Princesse(self))
+            self._cards.append(cards.Garde(self))
 
     @property
     def controller(self):
@@ -60,6 +63,10 @@ class Model(object):
     @property
     def cards_played(self):
         return self._cards_played
+    
+    @cards_played.setter
+    def cards_played(self,value):
+        self._cards_played = value
     
     @property
     def cards_played_ia(self):
@@ -77,9 +84,17 @@ class Model(object):
     def deck(self):
         return self._deck
 
+    @deck.setter
+    def deck(self, value):
+        self._deck = value
+        
     @property
     def players_list(self):
         return self._players_list
+    
+    @players_list.setter
+    def players_list(self, value):
+        self._players_list = value
     
     @property
     def player(self):
@@ -92,6 +107,7 @@ class Model(object):
     @property
     def current_player(self):
         return self._players_list.current
+
     
     @property
     def next_player(self):
@@ -109,6 +125,14 @@ class Model(object):
     def cartes_defaussees(self):
         return self._cartes_defaussees
     
+    @property
+    def issimul(self):
+        return self._issimul
+    
+    @issimul.setter
+    def issimul(self, value):
+        self._issimul = value
+    
     def add_defausse(self, card):
         self._cartes_defaussees.append(card)
                 
@@ -124,6 +148,7 @@ class Model(object):
         self._deck = [] 
         self._victory = False
         self._cartes_defaussees = []
+        self._current_state = None
         
         #Mélange des cartes
         shuffle(self._cards)
@@ -209,20 +234,33 @@ class Model(object):
     
     #Choix de la carte jouée par l'IA
     def playAI(self):
+        self.issimul = True
+        state = State(self, self._current_state)
+        self._current_state = state
+        self._current_state.next_states()
+        
+        self.issimul = False
         #Appeler algo de l'IA ici
         self.play(randrange(0,2))
     
+        
     
     #Effectue l'action de la carte à l'index associée du joueur courrant
     def play(self, index):
+        
+        if(not isinstance(self.current_player, player.IA)):
+            state = State(self, self._current_state)
+            self._current_state = state
         last_card_played = self.current_player.cards[index]
         self.current_player.add_cards_played(last_card_played)
 
         self.current_player.remove_card(last_card_played)#Suppression de la carte dans la main du joueur courrant
         self._cards_played.append(last_card_played)#Ajout de cette carte à la liste des cartes jouées
         last_card_played.action()#Action de la carte
+        self.issimul = False
         self.current_player.last_card_played = last_card_played
         self.next_turn()
+        print(self.issimul)
         
         return self.current_player
         
@@ -269,6 +307,53 @@ class Model(object):
         winner.win(1) #Le joueur ayant gagné gagne un point de score
         self._victory = True 
         
-        #On affiche l'écran de fin de jeu en passant par le controller
-        self.controller.display_victory(chaine, [self.player.score, self.ia.score])
+        if(not self.issimul):
+            #On affiche l'écran de fin de jeu en passant par le controller
+            self.controller.display_victory(chaine, [self.player.score, self.ia.score])
         
+        
+class State():
+    
+    def __init__(self, model,parent):
+        self._model = model
+        self._current_player = copy.deepcopy(model.current_player)
+        self._opponent = copy.deepcopy(model.next_player)
+        self._cards_played = copy.copy(model.cards_played)
+        self._deck = copy.copy(model.deck)
+
+        self._hand = self._current_player.cards
+        
+        self._save = Save()
+        self._parent = parent
+        
+    def next_states(self): 
+       
+        #for i in range(0, self._hand.__len__()) :
+            self._save.save(self._model)
+            self._model.play(0)
+            state = State(self._model, self)
+            self._save.backup()
+            print(self._model.cards_played)
+            print(self._hand)
+
+
+        
+class Save():
+
+
+    def save(self, model):
+        self._model = model
+        self._playerscopy = copy.deepcopy(self._model.players_list)
+        self._cards_playedcpy = copy.deepcopy(self._model.cards_played)
+        self._deckcpy = copy.copy(self._model.deck)
+        self._victorycpy = copy.copy(self._model.victory)
+    def backup(self):
+        self._model.players_list = self._playerscopy
+        self._model.cards_played = self._cards_playedcpy
+        self._model.deck = self._deckcpy
+        self._model.victory = self._victorycpy
+
+        
+        
+        
+         

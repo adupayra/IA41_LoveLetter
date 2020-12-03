@@ -97,6 +97,27 @@ class Player(metaclass = abc.ABCMeta):
         self._immune = False
         self._play_chancelier = False
         self._cards_played = []
+        self._espionne_played = False
+        self._knows_card = False
+    
+    def attributes_to_save(self):
+        return self._cards, self._last_card_played, self._immune, self._cards_played, self._espionne_played, self._knows_card
+        
+    @property
+    def espionne_played(self):
+        return self._espionne_played
+    
+    @espionne_played.setter
+    def espionne_played(self, value):
+        self._espionne_played = value
+        
+    @property
+    def knows_card(self):
+        return self._knows_card
+    
+    @knows_card.setter
+    def knows_card(self, value):
+        self._knows_card = value
         
     @property
     def cards(self):
@@ -138,6 +159,7 @@ class Player(metaclass = abc.ABCMeta):
     def play_chancelier(self, value):
         self._play_chancelier = value
         
+    
     def win(self, value):
         self._score += value
         
@@ -178,12 +200,11 @@ class IA(Player, metaclass = abc.ABCMeta):
     def __init__(self, model):
         Player.__init__(self)
         self._model = model
+        
     
     def __str__(self):
         return "IA"
 
-    def next_states(self):
-        pass
     
     @abstractmethod
     def algorithme(self):
