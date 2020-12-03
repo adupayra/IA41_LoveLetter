@@ -7,6 +7,7 @@ Created on 28 oct. 2020
 
 import abc
 from abc import abstractmethod
+import copy
 
 #Liste circulairement chainée, contenant les noeuds contenant chaque joueur, ainsi que le noeud du joueur courant
 class CircleLinkedList(object):
@@ -78,6 +79,10 @@ class Node(object):
     def player(self):
         return self._player
     
+    @player.setter
+    def player(self,value):
+        self._player = value
+    
     
 
 class Player(metaclass = abc.ABCMeta):
@@ -100,8 +105,17 @@ class Player(metaclass = abc.ABCMeta):
         self._espionne_played = False
         self._knows_card = False
     
-    def attributes_to_save(self):
-        return self._cards, self._last_card_played, self._immune, self._cards_played, self._espionne_played, self._knows_card
+    def save_attributes(self):
+        return (copy.copy(self._cards), copy.copy(self._last_card_played), copy.copy(self._immune), copy.copy(self._cards_played), 
+        copy.copy(self._espionne_played), copy.copy(self._knows_card))
+    
+    def set_attributes(self, attributes):
+        self._cards = attributes[0] 
+        self._last_card_played = attributes[1] 
+        self._immune = attributes[2] 
+        self._cards_played = attributes[3] 
+        self._espionne_played = attributes[4]
+        self._knows_card = attributes[5]
         
     @property
     def espionne_played(self):
@@ -122,6 +136,10 @@ class Player(metaclass = abc.ABCMeta):
     @property
     def cards(self):
         return self._cards
+    
+    @cards.setter
+    def cards(self,value):
+        self._cards = value
 
     @property 
     def cards_to_string(self):
@@ -179,6 +197,10 @@ class Player(metaclass = abc.ABCMeta):
     @property
     def cards_played(self):
         return self._cards_played
+    
+    @cards_played.setter
+    def cards_played(self, value):
+        self._cards_played = value
     
     def add_cards_played(self, card):
         self._cards_played.append(card)

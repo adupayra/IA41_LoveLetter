@@ -10,6 +10,8 @@ from random import shuffle
 from random import randrange
 import src.model.player as player
 import copy
+import pickle
+from prompt_toolkit.key_binding.bindings.named_commands import self_insert
 
 class Model(object):
     '''
@@ -235,9 +237,21 @@ class Model(object):
     #Choix de la carte jouée par l'IA
     def playAI(self):
         self.issimul = True
+        '''
+        file = open("test.b", "wb")
+        pickle.dump(self, file)
+        file.close()
+        '''
+        
         state = State(self, self._current_state)
         self._current_state = state
         self._current_state.next_states()
+        
+        '''
+        file2 = open("test.b", "rb")
+        self = pickle.load(file2)
+        file2.close()
+        print(self._cards_played)'''
         
         self.issimul = False
         #Appeler algo de l'IA ici
@@ -247,10 +261,6 @@ class Model(object):
     
     #Effectue l'action de la carte à l'index associée du joueur courrant
     def play(self, index):
-        
-        if(not isinstance(self.current_player, player.IA)):
-            state = State(self, self._current_state)
-            self._current_state = state
         last_card_played = self.current_player.cards[index]
         self.current_player.add_cards_played(last_card_played)
 
@@ -260,7 +270,6 @@ class Model(object):
         self.issimul = False
         self.current_player.last_card_played = last_card_played
         self.next_turn()
-        print(self.issimul)
         
         return self.current_player
         
@@ -312,15 +321,24 @@ class Model(object):
             self.controller.display_victory(chaine, [self.player.score, self.ia.score])
         
         
+    def save_attributes(self):
+        return (copy.copy(self._cards_played), copy.copy(self._deck), copy.copy(self._victory))
+    
+    def set_attributes(self, attributes):
+        self._cards_played = attributes[0]
+        self._deck = attributes[1]
+        self._victory = attributes[2]
+    
 class State():
     
     def __init__(self, model,parent):
         self._model = model
+        self._current_player = model.current_player
+        '''
         self._current_player = copy.deepcopy(model.current_player)
         self._opponent = copy.deepcopy(model.next_player)
         self._cards_played = copy.copy(model.cards_played)
-        self._deck = copy.copy(model.deck)
-
+        self._deck = copy.copy(model.deck)'''
         self._hand = self._current_player.cards
         
         self._save = Save()
@@ -328,13 +346,14 @@ class State():
         
     def next_states(self): 
        
-        #for i in range(0, self._hand.__len__()) :
+        for i in range(0, self._hand.__len__()) :
+            print(self._model.ia.cards)
             self._save.save(self._model)
-            self._model.play(0)
+            print(self._model.current_player)
+            self._model.play(i)
             state = State(self._model, self)
             self._save.backup()
-            print(self._model.cards_played)
-            print(self._hand)
+
 
 
         
@@ -343,15 +362,18 @@ class Save():
 
     def save(self, model):
         self._model = model
-        self._playerscopy = copy.deepcopy(self._model.players_list)
-        self._cards_playedcpy = copy.deepcopy(self._model.cards_played)
-        self._deckcpy = copy.copy(self._model.deck)
-        self._victorycpy = copy.copy(self._model.victory)
+        #Copie de l'environnement courant 
+        self._ia_save = model.ia.save_attributes()
+        self._player_save = model.player.save_attributes()
+        self._model_save = self._model.save_attributes()
+        
     def backup(self):
-        self._model.players_list = self._playerscopy
-        self._model.cards_played = self._cards_playedcpy
-        self._model.deck = self._deckcpy
-        self._model.victory = self._victorycpy
+        self._model.players_list.next_turn()
+        
+        self._model.ia.set_attributes(self._ia_save)
+        self._model.player.set_attributes(self._player_save)
+        self._model.set_attributes(self._model_save)
+        
 
         
         
