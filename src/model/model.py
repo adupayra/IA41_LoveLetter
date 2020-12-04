@@ -223,7 +223,8 @@ class Model(object):
     #Pioche une carte
     def pick_card(self):
         if(self._deck):
-            return self._deck.pop(0)
+            if(not self._issimul):
+                return self._deck.pop(0)
         elif(self._victory is False):
             self._victory = True
             self.victory_emptydeck()
@@ -241,7 +242,7 @@ class Model(object):
     
             state = State(self, self._current_state)
             self._current_state = state
-            self._current_state.next_states(0)
+            self._current_state.next_states()
         
             self.issimul = False
         #Appeler algo de l'IA ici
@@ -321,27 +322,64 @@ class Model(object):
     
 class State():
     
-    def __init__(self, model,parent):
+    
+    def __str__(self):
+        return ("State : " + str(self._current_player) + "\nCards played : " + str(self._model.cards_played) + 
+                "\nNumber of remaining cards : " + str(self._cards_remained) + "\nPossible cards enemy can play " + str(self._possible_cards) +
+                "\nHand : " + str(self._current_player.cards) + "\nDeck : " + str(self._deck) + "\n")
+
+    def __init__(self, model, parent):
         self._model = model
         self._current_player = model.current_player
-        self._hand = self._current_player.cards
+        self._opponent = model.next_player
+        self._deck = model.deck
+        self._drawable_cards = copy.copy(self._deck)
+        self._drawable_cards.append(model.burnt_card)
+        self._unknown_cards = copy.copy(self._deck)
+        self._unknown_cards.append(model.burnt_card)
+        self._unknown_cards.append(self._opponent.cards[0])
+        
+        self._cards_remained = self._deck.__len__()
+        
+        self._possible_cards = self.get_possible_cards()
+        
+        
         
         self._save = Save()
         self._parent = parent
         
-    def next_states(self, j): 
-       
-        for i in range(0, self._hand.__len__()) :
-            print(self._model.ia.cards)
-            self._save.save(self._model)
-            print(self._model.current_player)
-            self._model.play(i)
-            state = State(self._model, self)
-            if(j != 1):
-                state.next_states(1)
-            self._save.backup()
+    def next_states(self): 
+        print("Current state : ")
+        print(str(self))
+        for i in range(0, self._current_player.cards.__len__()) :
+            test = Save()
+            test.save(self._model)
+            for card in self._drawable_cards:
+                
+                self._save.save(self._model)
+                self._opponent.add_card(card)
+                print("coucou le test : " + str(self._opponent.cards))
+                self._drawable_cards.remove(card)
+                if(card is not self._model.burnt_card):
 
+                    self._deck.remove(card)
+                self._model.play(i)
+                
+                state = State(self._model, self)
+                print("substate")
+                print(str(state))
+                self._save.backup()
+            test.backup()
 
+    
+    def get_possible_cards(self):
+        possible_cards = []
+        for card in self._unknown_cards:
+            if(not any(isinstance(x, card.__class__) for x in possible_cards)):
+                possible_cards.append(card)
+            if(possible_cards.__len__() == 10):
+                break
+        return possible_cards
 
         
 class Save():
