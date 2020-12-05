@@ -11,7 +11,6 @@ from random import randrange
 import src.model.player as player
 import copy
 import pickle
-from prompt_toolkit.key_binding.bindings.named_commands import self_insert
 
 class Model(object):
     '''
@@ -52,7 +51,7 @@ class Model(object):
             self._cards.append(cards.Chancelier(self))
             
         for _ in range(0, 4):
-            self._cards.append(cards.Garde(self))
+            self._cards.append(cards.Chancelier(self))
 
     @property
     def controller(self):
@@ -226,8 +225,22 @@ class Model(object):
             if(not self._issimul):
                 return self._deck.pop(0)
         elif(self._victory is False):
-            self._victory = True
             self.victory_emptydeck()
+    
+    #Fonction permettant de déterminer la fin de pioche lors de la simulation de l'IA, de simuler la pioche lors de la simulation de l'IA,
+    #et permet également le bon déroulement de la simulation dans des cas de pioche particulieres (Prince et Chancelier)
+    def pick_card_simu(self, card = None):
+        #Lorsqu'on parcourt l'arbre de jeu, le joueur courant ne sait pas quelle carte est brulée. La carte peut donc théoriquement 
+        #être piochée par le joueur adverse. Elle est donc mélangée à la pioche le temps de la simulation. Avoir une longueur de pioche de 1 signifie pendant
+        #la simulation signifie donc que la pioche serait vide hors simulation
+        if(not self._deck or self._deck.__len__() == 1):
+            self.victory_emptydeck()
+        elif card is None: #Cas particulier (prince et chancelier)
+            return self._deck.pop(0)
+        else:
+            self._deck.remove(card)
+            
+        
             
         
     #Retourne les 3 première cartes de jeu (celles affichées au milieu du plateau)
@@ -237,13 +250,14 @@ class Model(object):
     
     #Choix de la carte jouée par l'IA
     def playAI(self):
+        #Test d'une simulation en depth 1, à modifier à terme
         if(self.issimul is False):
             self.issimul = True
-    
+            self.deck.append(self.burnt_card)
             state = State(self, self._current_state)
             self._current_state = state
             self._current_state.next_states()
-        
+            self.deck.remove(self.burnt_card)
             self.issimul = False
         #Appeler algo de l'IA ici
         self.play(randrange(0,2))
@@ -268,7 +282,9 @@ class Model(object):
     def next_turn(self):
         
         self._players_list.next_turn() #On passe au prochain joueur
-        self.current_player.add_card(self.pick_card())
+        temp = self.pick_card()
+        if(temp is not None):
+            self.current_player.add_card(temp)
     
     #Fonction appelée lorsque la pioche est vide
     def victory_emptydeck(self):
@@ -311,14 +327,17 @@ class Model(object):
             winner.win(1) #Le joueur ayant gagné gagne un point de score
             self.controller.display_victory(chaine, [self.player.score, self.ia.score])
         
-        
+    #Permet la sauvegarde des attributs de l'environnements rattachés à la classe du modèle afin de ne pas les perdre lorsque l'on effectue la recherche dans l'arbre
+    #de jeu
     def save_attributes(self):
-        return (copy.copy(self._cards_played), copy.copy(self._deck), copy.copy(self._victory))
+        return (copy.copy(self._cards_played), copy.copy(self._deck), copy.copy(self._victory), copy.copy(self._cartes_defaussees))
     
+    #Récupération des attributs
     def set_attributes(self, attributes):
         self._cards_played = attributes[0]
         self._deck = attributes[1]
         self._victory = attributes[2]
+        self._cartes_defaussees = attributes[3]
     
 class State():
     
@@ -326,55 +345,46 @@ class State():
     def __str__(self):
         return ("State : " + str(self._current_player) + "\nCards played : " + str(self._model.cards_played) + 
                 "\nNumber of remaining cards : " + str(self._cards_remained) + "\nPossible cards enemy can play " + str(self._possible_cards) +
-                "\nHand : " + str(self._current_player.cards) + "\nDeck : " + str(self._deck) + "\n")
+                "\nHand : " + str(self._current_player.cards) + "\nDeck : " + str(self._model.deck) +
+                 "\nBurnt card : " + str(self._model.burnt_card) + "\nOpponent's card : " + str(self._opponent.cards) + "\n")
 
     def __init__(self, model, parent):
+        self._save = Save()
         self._model = model
         self._current_player = model.current_player
         self._opponent = model.next_player
-        self._deck = model.deck
-        self._drawable_cards = copy.copy(self._deck)
-        self._drawable_cards.append(model.burnt_card)
-        self._unknown_cards = copy.copy(self._deck)
-        self._unknown_cards.append(model.burnt_card)
-        self._unknown_cards.append(self._opponent.cards[0])
-        
-        self._cards_remained = self._deck.__len__()
+
+        self._cards_remained = model.deck.__len__()
         
         self._possible_cards = self.get_possible_cards()
         
         
         
-        self._save = Save()
+        
         self._parent = parent
         
     def next_states(self): 
-        print("Current state : ")
-        print(str(self))
-        for i in range(0, self._current_player.cards.__len__()) :
-            test = Save()
-            test.save(self._model)
-            for card in self._drawable_cards:
-                
-                self._save.save(self._model)
-                self._opponent.add_card(card)
-                print("coucou le test : " + str(self._opponent.cards))
-                self._drawable_cards.remove(card)
-                if(card is not self._model.burnt_card):
+        #On boucle sur les cartes du joueur courant, pour chaque carte, on boucle sur toutes les cartes possibles que le prochain joueur peut piocher
+        for i in range(0, self._model.current_player.cards.__len__()) :
+            for card in self._possible_cards:
+                    self._save.save(self._model) #Sauvagarde de l'environnement
+                    
+                    #Simulation
+                    self._opponent.add_card(card)
+                    self._model.pick_card_simu(card)
+                    self._model.play(i)
+                    
+                    #Génération de l'état correspondant
+                    state = State(self._model, self)
 
-                    self._deck.remove(card)
-                self._model.play(i)
-                
-                state = State(self._model, self)
-                print("substate")
-                print(str(state))
-                self._save.backup()
-            test.backup()
+                    self._save.backup() #Restauration de lenvironnement
+                    
+                    
 
-    
+    #retourne une liste contenant une instance de chaque carte pouvant être piochée par le prochain joueur    
     def get_possible_cards(self):
         possible_cards = []
-        for card in self._unknown_cards:
+        for card in self._model.deck:
             if(not any(isinstance(x, card.__class__) for x in possible_cards)):
                 possible_cards.append(card)
             if(possible_cards.__len__() == 10):
@@ -383,22 +393,26 @@ class State():
 
         
 class Save():
-
-
+    '''
+    Classe permettant de sauvegarder l'état courant du jeu lors d'une simulation. Cette manière de faire est loin d'être la meilleure, implémenter un command 
+    pattern aurait été plus bénéfique, bien que rendant l'architecture des fichiers moins lisibles
+    '''
+    #Copie de l'environnement courant 
     def save(self, model):
         self._model = model
-        #Copie de l'environnement courant 
-        self._ia_save = model.ia.save_attributes()
-        self._player_save = model.player.save_attributes()
+        
+        self._ia_save = self._model.ia.save_attributes()
+        self._player_save = self._model.player.save_attributes()
         self._model_save = self._model.save_attributes()
         
+    #Restauration de l'environnement
     def backup(self):
         self._model.players_list.next_turn()
         
         self._model.ia.set_attributes(self._ia_save)
         self._model.player.set_attributes(self._player_save)
         self._model.set_attributes(self._model_save)
-        
+
 
         
         

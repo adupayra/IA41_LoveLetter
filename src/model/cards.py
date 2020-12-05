@@ -102,6 +102,7 @@ class Garde(TwoActionCards):
             array = [Espionne.__name__, Pretre.__name__, Baron.__name__, Servante.__name__, Prince.__name__, Chancelier.__name__, Roi.__name__, 
                      Comtesse.__name__, Princesse.__name__]
             
+            #Pas d'affichage en simulation
             if(not self._model.issimul):
                 self._model.controller.display_guard_ialabel(array[guess]) #Affichage du label récapitulatif
             self.deuxieme_action(array[guess])
@@ -134,7 +135,7 @@ class Pretre(Card):
      
     def action(self):
         self._model.current_player.knows_card = True
-        if(isinstance(self._model.current_player, player.RealPlayer) and not self._model.issimul):
+        if(isinstance(self._model.current_player, player.RealPlayer) and not self._model.issimul): #Pas d'affichage en simulation
             self._model.controller.display_AI_card(self._model.ia.cards[0])
             
             
@@ -163,6 +164,7 @@ class Baron(Card):
         chaine = " gagne 1 point, en ayant joué un baron"
 
         #Affichage de l'écran
+        #Pas d'affichage en simulation
         if(not self._model.issimul):
             self._model.controller.display_baron(current_player.cards[0], next_player.cards[0])
             
@@ -213,6 +215,7 @@ class Prince(TwoActionCards):
     def action(self):
         #Affichage de l'écran de séléction du camp si le joueur est le joueur courrant
         if(isinstance(self._model.current_player, player.RealPlayer)):
+            #Pas d'affichage en simulation
             if(not self._model.issimul):
                 self._model.controller.display_prince_choice(self._player_side, self._ia_side)
         else:
@@ -231,6 +234,7 @@ class Prince(TwoActionCards):
         else:
             _player = cls._model.ia
             
+        #Pas d'affichage en simulation
         if(not cls._model.issimul):
             cls._model.controller.display_prince_detailslabel(cls._model.current_player, chosen_side, _player.cards[0]) #Affichage du label récapitulatif
             
@@ -244,7 +248,10 @@ class Prince(TwoActionCards):
         else:
             cls._model.add_defausse(_player.cards[0])
             _player.remove_card(_player.cards[0])
-            _player.add_card(cls._model.pick_card())
+            if(not cls._model.issimul):
+                _player.add_card(cls._model.pick_card())
+            else:
+                _player.add_card(cls._model.pick_card_simu())
         
         
 class Chancelier(TwoActionCards):
@@ -281,21 +288,28 @@ class Chancelier(TwoActionCards):
             
             #Vérifie si il y a bien deux cartes restantes dans la pioche au moins
             if(self._model.deck.__len__() >= 2):
-                current_player.add_card(self._model.pick_card())
-                current_player.add_card(self._model.pick_card())
+                if(not self._model.issimul):
+                    current_player.add_card(self._model.pick_card())
+                    current_player.add_card(self._model.pick_card())
+                else:
+                    current_player.add_card(self._model.pick_card_simu())
+                    current_player.add_card(self._model.pick_card_simu())
             else:
                 #Cas particulier où il ne reste qu'une carte dans la pioche
-                current_player.add_card(self._model.pick_card())
+                if(not self._model.issimul):
+                    current_player.add_card(self._model.pick_card())
+                else:
+                    current_player.add_card(self._model.pick_card_simu())
           
             #Si l'IA a joué le chancelier, alors on appelle les fonctions appropriées
             if(isinstance(current_player, player.IA)):
-                if(not self._model.issimul):
+                if(not self._model.issimul): #Pas d'affichage en simulation
                     self._model.controller.update_chancelier_IA(current_player, self._model.ia.cards.__len__())
                 Chancelier.deuxieme_action(self._model.ia.cards[randrange(0, 3)])
                 #algo IA
             else:
                 #Pareil pour le joueur
-                if(not self._model.issimul):
+                if(not self._model.issimul): #Pas d'affichage en simulation
                     self._model.controller.update_chancelier_player(current_player, self._model.player.cards_to_string)
         
     
@@ -305,14 +319,13 @@ class Chancelier(TwoActionCards):
         current_player = cls._model.current_player
         
         current_player.remove_card(card_chosen)
-        
         cls._model.deck.append(card_chosen)
     
         if(current_player.cards.__len__() == 2):
             if(isinstance(current_player, player.IA)):
                 cls.deuxieme_action(cls._model.ia.cards[randrange(0,2)])
             else:
-                if(not cls._model.issimul):
+                if(not cls._model.issimul): #Pas d'affichage en simulation
                     cls._model.controller.update_chancelier_player(current_player, cls._model.player.cards_to_string)
                 
         current_player.play_chancelier = False

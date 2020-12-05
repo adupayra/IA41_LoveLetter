@@ -105,10 +105,12 @@ class Player(metaclass = abc.ABCMeta):
         self._espionne_played = False
         self._knows_card = False
     
+    #Permet de sauvegarder l'état du joueur dans le cas d'une simulation
     def save_attributes(self):
         return (copy.copy(self._cards), copy.copy(self._last_card_played), copy.copy(self._immune), copy.copy(self._cards_played), 
         copy.copy(self._espionne_played), copy.copy(self._knows_card), copy.copy(self._play_chancelier))
     
+    #Restauration de la sauvegarde
     def set_attributes(self, attributes):
         self._cards = attributes[0] 
         self._last_card_played = attributes[1] 
@@ -140,7 +142,7 @@ class Player(metaclass = abc.ABCMeta):
     
     @cards.setter
     def cards(self,value):
-        self._cards = value
+        self._cards = copy.copy(value)
 
     @property 
     def cards_to_string(self):
