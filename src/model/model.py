@@ -12,6 +12,7 @@ import src.model.player as player
 import copy
 import pickle
 
+
 class Model(object):
     '''
     classdocs
@@ -51,7 +52,7 @@ class Model(object):
             self._cards.append(cards.Chancelier(self))
             
         for _ in range(0, 4):
-            self._cards.append(cards.Chancelier(self))
+            self._cards.append(cards.Garde(self))
 
     @property
     def controller(self):
@@ -134,6 +135,13 @@ class Model(object):
     def issimul(self, value):
         self._issimul = value
     
+    @property
+    def current_state(self):
+        return self._current_state
+    
+    @current_state.setter
+    def current_state(self, value):
+        self._current_state = value
     def add_defausse(self, card):
         self._cartes_defaussees.append(card)
                 
@@ -241,8 +249,6 @@ class Model(object):
             self._deck.remove(card)
             
         
-            
-        
     #Retourne les 3 première cartes de jeu (celles affichées au milieu du plateau)
     def get_three_cards(self):
         return str(self._cards_played[0]), str(self._cards_played[1]), str(self._cards_played[2])
@@ -253,11 +259,7 @@ class Model(object):
         #Test d'une simulation en depth 1, à modifier à terme
         if(self.issimul is False):
             self.issimul = True
-            self.deck.append(self.burnt_card)
-            state = State(self, self._current_state)
-            self._current_state = state
-            self._current_state.next_states()
-            self.deck.remove(self.burnt_card)
+            self.ia.algorithme()
             self.issimul = False
         #Appeler algo de l'IA ici
         self.play(randrange(0,2))
@@ -339,82 +341,4 @@ class Model(object):
         self._victory = attributes[2]
         self._cartes_defaussees = attributes[3]
     
-class State():
-    
-    
-    def __str__(self):
-        return ("State : " + str(self._current_player) + "\nCards played : " + str(self._model.cards_played) + 
-                "\nNumber of remaining cards : " + str(self._cards_remained) + "\nPossible cards enemy can play " + str(self._possible_cards) +
-                "\nHand : " + str(self._current_player.cards) + "\nDeck : " + str(self._model.deck) +
-                 "\nBurnt card : " + str(self._model.burnt_card) + "\nOpponent's card : " + str(self._opponent.cards) + "\n")
 
-    def __init__(self, model, parent):
-        self._save = Save()
-        self._model = model
-        self._current_player = model.current_player
-        self._opponent = model.next_player
-
-        self._cards_remained = model.deck.__len__()
-        
-        self._possible_cards = self.get_possible_cards()
-        
-        
-        
-        
-        self._parent = parent
-        
-    def next_states(self): 
-        #On boucle sur les cartes du joueur courant, pour chaque carte, on boucle sur toutes les cartes possibles que le prochain joueur peut piocher
-        for i in range(0, self._model.current_player.cards.__len__()) :
-            for card in self._possible_cards:
-                    self._save.save(self._model) #Sauvagarde de l'environnement
-                    
-                    #Simulation
-                    self._opponent.add_card(card)
-                    self._model.pick_card_simu(card)
-                    self._model.play(i)
-                    
-                    #Génération de l'état correspondant
-                    state = State(self._model, self)
-
-                    self._save.backup() #Restauration de lenvironnement
-                    
-                    
-
-    #retourne une liste contenant une instance de chaque carte pouvant être piochée par le prochain joueur    
-    def get_possible_cards(self):
-        possible_cards = []
-        for card in self._model.deck:
-            if(not any(isinstance(x, card.__class__) for x in possible_cards)):
-                possible_cards.append(card)
-            if(possible_cards.__len__() == 10):
-                break
-        return possible_cards
-
-        
-class Save():
-    '''
-    Classe permettant de sauvegarder l'état courant du jeu lors d'une simulation. Cette manière de faire est loin d'être la meilleure, implémenter un command 
-    pattern aurait été plus bénéfique, bien que rendant l'architecture des fichiers moins lisibles
-    '''
-    #Copie de l'environnement courant 
-    def save(self, model):
-        self._model = model
-        
-        self._ia_save = self._model.ia.save_attributes()
-        self._player_save = self._model.player.save_attributes()
-        self._model_save = self._model.save_attributes()
-        
-    #Restauration de l'environnement
-    def backup(self):
-        self._model.players_list.next_turn()
-        
-        self._model.ia.set_attributes(self._ia_save)
-        self._model.player.set_attributes(self._player_save)
-        self._model.set_attributes(self._model_save)
-
-
-        
-        
-        
-         
