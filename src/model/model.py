@@ -332,13 +332,13 @@ class Model(object):
     #Permet la sauvegarde des attributs de l'environnements rattachés à la classe du modèle afin de ne pas les perdre lorsque l'on effectue la recherche dans l'arbre
     #de jeu
     def save_attributes(self):
-        return (copy.copy(self._cards_played), copy.copy(self._deck), copy.copy(self._victory), copy.copy(self._cartes_defaussees))
+        return {"Cards played" : copy.copy(self._cards_played), "Deck" : copy.copy(self._deck), 
+                "Cartes defaussees" : copy.copy(self._cartes_defaussees)}
     
     #Récupération des attributs
     def set_attributes(self, attributes):
-        self._cards_played = attributes[0]
-        self._deck = attributes[1]
-        self._victory = attributes[2]
-        self._cartes_defaussees = attributes[3]
+        self._cards_played = attributes["Cards played"]
+        self._deck = attributes["Deck"]
+        self._cartes_defaussees = attributes["Cartes defaussees"]
     
 

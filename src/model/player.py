@@ -108,19 +108,20 @@ class Player(metaclass = abc.ABCMeta):
     
     #Permet de sauvegarder l'état du joueur dans le cas d'une simulation
     def save_attributes(self):
-        return (copy.copy(self._cards), copy.copy(self._last_card_played), copy.copy(self._immune), copy.copy(self._cards_played), 
-        copy.copy(self._espionne_played), copy.copy(self._knows_card), copy.copy(self._play_chancelier))
+        return {"Cards" : copy.copy(self._cards), "Cards played" : copy.copy(self._cards_played)}
     
     #Restauration de la sauvegarde
     def set_attributes(self, attributes):
-        self._cards = attributes[0] 
-        self._last_card_played = attributes[1] 
-        self._immune = attributes[2] 
-        self._cards_played = attributes[3] 
-        self._espionne_played = attributes[4]
-        self._knows_card = attributes[5]
-        self._play_chancelier = attributes[6]
+        self._cards = attributes["Cards"] 
         
+        self._cards_played = attributes["Cards played"] 
+        '''
+        self._last_card_played = attributes["Last card played"] 
+        self._immune = attributes["Immune"]
+        self._espionne_played = attributes["Espionne played"]
+        self._knows_card = attributes["Knows card"]
+        self._play_chancelier = attributes["Play chancelier"]
+        '''
     @property
     def espionne_played(self):
         return self._espionne_played
@@ -334,19 +335,20 @@ class State():
     
     
     def __str__(self):
-        return ("State : " + str(self._current_player) + "\nProbability : " + str(self._probability) + "\nCards played : " + str(self._model.cards_played) + 
+        return ("State : " + str(self._current_player) + "\nProbability : " + str(self._probability) + "\nCards played : " + str(self._save.get_ia_save("Cards played")) + 
                 "\nNumber of remaining cards : " + str(self._cards_remained) + "\nPossible cards enemy can play " + str(self._possible_cards) +
-                "\nHand : " + str(self._current_player.cards) + "\nDeck : " + str(self._model.deck) +
-                 "\nBurnt card : " + str(self._model.burnt_card) + "\nOpponent's card : " + str(self._opponent.cards) + "\nCard played by opponent " +
-                 str(self._last_card_played))
+                "\nHand : " + str(self._save.get_ia_save("Cards")) + "\nDeck : " + str(self._save.get_model_save("Deck")) +
+                 "\nBurnt card : " + str(self._model.burnt_card) + "\nOpponent's card : " + str(self._save.get_player_save("Cards")) + "\nCard played by opponent " +
+                 str(self._opponent.last_card_played) + "\n")
 
     def __init__(self, model, parent, probability = 1):
-        self._save = Save()
+        
         self._model = model
+        self._save = Save(self._model)
         self._current_player = model.current_player
         self._opponent = model.next_player
 
-        self._last_card_played = self._opponent.last_card_played
+        #self._last_card_played = self._opponent.last_card_played
         
         self._cards_remained = model.deck.__len__()
         
@@ -355,21 +357,24 @@ class State():
         self._probability = probability
         
         self._parent = parent
-        
+       
     @property
     def last_card_played(self):
         return self._last_card_played
     
+    @property
+    def save(self):
+        return self._save
+    
     def next_states(self): 
-        print(str(self))
+       
         drawable_cards = self.get_drawable_cards()
         states = []
         #On boucle sur les cartes du joueur courant, pour chaque carte, on boucle sur toutes les cartes possibles que le prochain joueur peut piocher
         for i in range(0, self._model.current_player.cards.__len__()) :
             for card in drawable_cards:
                 
-                self._save.save(self._model) #Sauvagarde de l'environnement
-                
+                self._save.save() #Sauvagarde de l'environnement
                 #Simulation
                 self._opponent.add_card(card)
                 self._model.pick_card_simu(card)
@@ -377,9 +382,11 @@ class State():
                 
                 #Génération de l'état correspondant
                 state = State(self._model, self, drawable_cards[card])
+                print(state)
                 states.append(state)
-                print(str(state))
+                #print(str(state))
                 self._save.backup() #Restauration de lenvironnement
+                
                     
         return states
 
@@ -411,14 +418,32 @@ class Save():
     Classe permettant de sauvegarder l'état courant du jeu lors d'une simulation. Cette manière de faire est loin d'être la meilleure, implémenter un command 
     pattern aurait été plus bénéfique, bien que rendant l'architecture des fichiers moins lisibles
     '''
-    #Copie de l'environnement courant 
-    def save(self, model):
+    def __init__(self, model):
         self._model = model
+        self._ia_save = {}
+        self._player_save = {}
+        self._model_save = {}
+        self._ia_save = model.current_player.save_attributes()
+        self._player_save = model.next_player.save_attributes()
+        self._model_save = model.save_attributes()
         
-        self._ia_save = self._model.ia.save_attributes()
-        self._player_save = self._model.player.save_attributes()
+    #Copie de l'environnement courant 
+    def save(self):
+        
+        self._ia_save = self._model.current_player.save_attributes()
+        self._player_save = self._model.next_player.save_attributes()
         self._model_save = self._model.save_attributes()
         
+        
+    def get_ia_save(self, key):
+        return self._ia_save[key]
+    
+    def get_player_save(self, key):
+        return self._player_save[key]
+    
+    def get_model_save(self, key):
+        return self._model_save[key]
+    
     #Restauration de l'environnement
     def backup(self):
         self._model.players_list.next_turn()
@@ -426,5 +451,7 @@ class Save():
         self._model.ia.set_attributes(self._ia_save)
         self._model.player.set_attributes(self._player_save)
         self._model.set_attributes(self._model_save)
+        
+        self.save()
 
     
