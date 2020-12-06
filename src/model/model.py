@@ -10,7 +10,6 @@ from random import shuffle
 from random import randrange
 import src.model.player as player
 import copy
-import pickle
 
 
 class Model(object):
@@ -259,11 +258,12 @@ class Model(object):
         #Test d'une simulation en depth 1, à modifier à terme
         if(self.issimul is False):
             self.issimul = True
-            self.ia.algorithme()
+            index = self.ia.algorithme()
             self.issimul = False
         #Appeler algo de l'IA ici
-        self.play(randrange(0,2))
-    
+        #self.play(randrange(0,2))
+        print(self.victory)
+        self.play(index)
         
     
     #Effectue l'action de la carte à l'index associée du joueur courrant
@@ -333,12 +333,13 @@ class Model(object):
     #de jeu
     def save_attributes(self):
         return {"Cards played" : copy.copy(self._cards_played), "Deck" : copy.copy(self._deck), 
-                "Cartes defaussees" : copy.copy(self._cartes_defaussees)}
+                "Cartes defaussees" : copy.copy(self._cartes_defaussees), "Victory" : self.victory}
     
     #Récupération des attributs
     def set_attributes(self, attributes):
         self._cards_played = attributes["Cards played"]
         self._deck = attributes["Deck"]
         self._cartes_defaussees = attributes["Cartes defaussees"]
+        self._victory = attributes["Victory"]
     
 

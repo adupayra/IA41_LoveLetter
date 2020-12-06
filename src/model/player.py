@@ -9,6 +9,7 @@ import abc
 from abc import abstractmethod
 import copy
 import random
+import src.model.cards as cards
 
 #Liste circulairement chainée, contenant les noeuds contenant chaque joueur, ainsi que le noeud du joueur courant
 class CircleLinkedList(object):
@@ -261,11 +262,15 @@ class IAFacile(IA):
     def algorithme(self):
         self._model.deck.append(self._model.burnt_card)
         state = State(self._model, self._model.current_state)
+        value, card = self.max_val(state, 2)
+        print(value)
+        print(card)
+        index = self.cards.index(card)
         self._model.current_state = state
-        test = self._model.current_state.next_states()
-        print(str(test[1]))
         self._model.deck.remove(self._model.burnt_card)
-
+        print(self._model.deck)
+        return index
+    
     def algorithmeGuard(self):
         pass
     
@@ -278,14 +283,30 @@ class IAFacile(IA):
     def minmax(self, depth):
         pass
     
-    def max(self, state, depth):
-        eval = state.eval()
-        if eval == 1 or depth == 0:
-            return eval, state.last_card_played
-        
-        value = -1
+    def max_val(self, state, depth):
+        if state.is_final or depth == 0:
+            return state.eval(), state.last_card_played
+        print(state)
+        last_card_played = None
+        value = -10
         for s in state.next_states():
-            value = max(value, min(s, depth-1))
+            print(s)
+            temp, last_card_played = self.min_val(s, depth-1)
+            value = max(temp, value)
+        
+        return value, last_card_played
+    
+    def min_val(self, state, depth):
+        if(state.is_final or depth == 0):
+            return -state.eval(), state.last_card_played
+        
+        last_card_played = None
+        value = 10
+        for s in state.next_states():
+            temp, last_card_played = self.max_val(s, depth-1)
+            value = min(value, temp)
+            
+        return value, last_card_played
             
         
             
@@ -339,7 +360,7 @@ class State():
                 "\nNumber of remaining cards : " + str(self._cards_remained) + "\nPossible cards enemy can play " + str(self._possible_cards) +
                 "\nHand : " + str(self._save.get_ia_save("Cards")) + "\nDeck : " + str(self._save.get_model_save("Deck")) +
                  "\nBurnt card : " + str(self._model.burnt_card) + "\nOpponent's card : " + str(self._save.get_player_save("Cards")) + "\nCard played by opponent " +
-                 str(self._opponent.last_card_played) + "\n")
+                 str(self._last_card_played) + "\n")
 
     def __init__(self, model, parent, probability = 1):
         
@@ -347,9 +368,8 @@ class State():
         self._save = Save(self._model)
         self._current_player = model.current_player
         self._opponent = model.next_player
-
-        #self._last_card_played = self._opponent.last_card_played
         
+        self._last_card_played = self._opponent.last_card_played
         self._cards_remained = model.deck.__len__()
         
         self._possible_cards = self.get_possible_cards()
@@ -358,6 +378,12 @@ class State():
         
         self._parent = parent
        
+    @property
+    def is_final(self):
+        if(self._model.victory):
+            return True
+        else:
+            return False
     @property
     def last_card_played(self):
         return self._last_card_played
@@ -382,9 +408,7 @@ class State():
                 
                 #Génération de l'état correspondant
                 state = State(self._model, self, drawable_cards[card])
-                print(state)
                 states.append(state)
-                #print(str(state))
                 self._save.backup() #Restauration de lenvironnement
                 
                     
@@ -406,12 +430,17 @@ class State():
         drawable_cards = {}
         for card in self._model.deck:
             if(not any(isinstance(x, card.__class__) for x in drawable_cards)):
-                proba = sum(isinstance(x, card.__class__) for x in self._model.deck)#/self._model.deck.__len__()
+                proba = sum(isinstance(x, card.__class__) for x in self._model.deck)/self._model.deck.__len__()
                 drawable_cards[card] = proba
             if(drawable_cards.__len__() == 10):
                 break
         return {k:v for k,v in sorted(drawable_cards.items(), key = lambda item:item[1], reverse = True)}
-
+    
+    def eval(self):
+        if(self._model.victory):
+            return 1
+        else:
+            return self._probability
         
 class Save():
     '''

@@ -96,17 +96,15 @@ class Garde(TwoActionCards):
             if(not self._model.issimul):
                 self._model.controller.display_guard_choice()
             
-        else:
+        elif not self._model.issimul:
             #Algo IA
             guess = randrange(0,9)
             array = [Espionne.__name__, Pretre.__name__, Baron.__name__, Servante.__name__, Prince.__name__, Chancelier.__name__, Roi.__name__, 
                      Comtesse.__name__, Princesse.__name__]
             
-            #Pas d'affichage en simulation
-            if(not self._model.issimul):
-                self._model.controller.display_guard_ialabel(array[guess]) #Affichage du label récapitulatif
+
+            self._model.controller.display_guard_ialabel(array[guess]) #Affichage du label récapitulatif
             self.deuxieme_action(array[guess])
-            pass
     
     #Action effectuée une fois que la carte à deviner a été choisi
     @classmethod
@@ -165,14 +163,21 @@ class Baron(Card):
 
         #Affichage de l'écran
         #Pas d'affichage en simulation
+        #Lorsqu'il y a simulation, une autre fonction est appelée
         if(not self._model.issimul):
             self._model.controller.display_baron(current_player.cards[0], next_player.cards[0])
             
-        #Check du gagnant
-        if(current_player.cards[0].value() > next_player.cards[0].value()):
-            self._model.game_victory(current_player, str(current_player) + chaine)                     
-        elif(current_player.cards[0].value() < next_player.cards[0].value()):
-            self._model.game_victory(next_player, str(next_player) + chaine)
+            #Check du gagnant
+            if(current_player.cards[0].value() > next_player.cards[0].value()):
+                self._model.game_victory(current_player, str(current_player) + chaine)                     
+            elif(current_player.cards[0].value() < next_player.cards[0].value()):
+                self._model.game_victory(next_player, str(next_player) + chaine)
+
+            
+    #Fonction appelée lors d'une simulation de jeu de baron afin de déterminer les probabilités de gagner
+    @classmethod
+    def algorithme_simulation(cls, state):
+        return 0.5
         
         
         
@@ -237,11 +242,11 @@ class Prince(TwoActionCards):
         #Pas d'affichage en simulation
         if(not cls._model.issimul):
             cls._model.controller.display_prince_detailslabel(cls._model.current_player, chosen_side, _player.cards[0]) #Affichage du label récapitulatif
-            
+        
         #cas ou la carte déffaussé est une princesse
-        if(_player.cards[0].value() == 9 and isinstance(_player, player.RealPlayer)):
+        if(_player.cards[0].value() == 9 and isinstance(_player, player.RealPlayer) and not cls._model.issimul):
             cls._model.game_victory(cls._model.ia, "L'IA remporte 1 point car le vrai joueur s'est fait défaussé une princesse !")
-        elif(_player.cards[0].value() == 9 and isinstance(_player, player.IA)):
+        elif(_player.cards[0].value() == 9 and isinstance(_player, player.IA) and not cls._model.issimul):
             cls._model.game_victory(cls._model.player, "Le vrai joueur remporte 1 point car l'IA s'est fait défaussé une princesse !")
         
         #autre cas
@@ -387,12 +392,12 @@ class Princesse(Card):
     
      
     def action(self):
+        if(not self._model.issimul):
+            if(isinstance(self._model.current_player, player.RealPlayer)):
+                self._model.game_victory(self._model.ia, "L'IA remporte 1 point car le vrai joueur à joué la Princesse !")
+            else:
+                self._model.game_victory(self._model.player, "Le vrai joueur remporte 1 point car l'IA à joué la Princesse !")
         
-        if(isinstance(self._model.current_player, player.RealPlayer)):
-            self._model.game_victory(self._model.ia, "L'IA remporte 1 point car le vrai joueur à joué la Princesse !")
-        else:
-            self._model.game_victory(self._model.player, "Le vrai joueur remporte 1 point car l'IA à joué la Princesse !")
-    
 
     
     
