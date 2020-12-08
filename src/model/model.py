@@ -109,10 +109,17 @@ class Model(object):
     def current_player(self):
         return self._players_list.current
 
+    @current_player.setter
+    def current_player(self, value):
+        self._players_list.current = value
     
     @property
     def next_player(self):
         return self._players_list.next_player
+    
+    @next_player.setter
+    def next_player(self, value):
+        self._players_list.next_player = value
         
     @property
     def victory(self):
@@ -233,6 +240,7 @@ class Model(object):
                 return self._deck.pop(0)
         elif(self._victory is False):
             self.victory_emptydeck()
+        
     
     #Fonction permettant de déterminer la fin de pioche lors de la simulation de l'IA, de simuler la pioche lors de la simulation de l'IA,
     #et permet également le bon déroulement de la simulation dans des cas de pioche particulieres (Prince et Chancelier)
@@ -243,7 +251,7 @@ class Model(object):
         if(not self._deck or self._deck.__len__() == 1):
             self.victory_emptydeck()
         elif card is None: #Cas particulier (prince et chancelier)
-            return self._deck.pop(0)
+            return self._deck.pop(randrange(0, self.deck.__len__()))
         else:
             self._deck.remove(card)
             
@@ -262,7 +270,7 @@ class Model(object):
             self.issimul = False
         #Appeler algo de l'IA ici
         #self.play(randrange(0,2))
-        print(self.victory)
+        
         self.play(index)
         
     
@@ -328,18 +336,14 @@ class Model(object):
             #On affiche l'écran de fin de jeu en passant par le controller
             winner.win(1) #Le joueur ayant gagné gagne un point de score
             self.controller.display_victory(chaine, [self.player.score, self.ia.score])
-        
-    #Permet la sauvegarde des attributs de l'environnements rattachés à la classe du modèle afin de ne pas les perdre lorsque l'on effectue la recherche dans l'arbre
-    #de jeu
+
     def save_attributes(self):
-        return {"Cards played" : copy.copy(self._cards_played), "Deck" : copy.copy(self._deck), 
-                "Cartes defaussees" : copy.copy(self._cartes_defaussees), "Victory" : self.victory}
-    
-    #Récupération des attributs
+        return {"Deck" : copy.copy(self._deck), "Cards played" : copy.copy(self._cards_played), "Cartes defaussees" : copy.copy(self._cartes_defaussees), 
+                "Victory" : self._victory}
+        
     def set_attributes(self, attributes):
+        self._deck = copy.copy(attributes["Deck"])
         self._cards_played = attributes["Cards played"]
-        self._deck = attributes["Deck"]
         self._cartes_defaussees = attributes["Cartes defaussees"]
         self._victory = attributes["Victory"]
-    
 

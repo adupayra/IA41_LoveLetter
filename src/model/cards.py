@@ -218,18 +218,17 @@ class Prince(TwoActionCards):
         return 5
     
     def action(self):
-        #Affichage de l'écran de séléction du camp si le joueur est le joueur courrant
-        if(isinstance(self._model.current_player, player.RealPlayer)):
-            #Pas d'affichage en simulation
-            if(not self._model.issimul):
+        if(not self._model.issimul):
+            #Affichage de l'écran de séléction du camp si le joueur est le joueur courrant
+            if(isinstance(self._model.current_player, player.RealPlayer)):
                 self._model.controller.display_prince_choice(self._player_side, self._ia_side)
-        else:
-            #Sinon algo ia
-            alea = randrange(2)
-            if(alea == 0):
-                self.deuxieme_action(self._player_side)
             else:
-                self.deuxieme_action(self._ia_side)
+                #Sinon algo ia
+                alea = randrange(2)
+                if(alea == 0):
+                    self.deuxieme_action(self._player_side)
+                else:
+                    self.deuxieme_action(self._ia_side)
     
     @classmethod
     def deuxieme_action(cls, chosen_side):
@@ -238,10 +237,8 @@ class Prince(TwoActionCards):
             _player = cls._model.player
         else:
             _player = cls._model.ia
-            
-        #Pas d'affichage en simulation
-        if(not cls._model.issimul):
-            cls._model.controller.display_prince_detailslabel(cls._model.current_player, chosen_side, _player.cards[0]) #Affichage du label récapitulatif
+
+        cls._model.controller.display_prince_detailslabel(cls._model.current_player, chosen_side, _player.cards[0]) #Affichage du label récapitulatif
         
         #cas ou la carte déffaussé est une princesse
         if(_player.cards[0].value() == 9 and isinstance(_player, player.RealPlayer) and not cls._model.issimul):
@@ -253,10 +250,7 @@ class Prince(TwoActionCards):
         else:
             cls._model.add_defausse(_player.cards[0])
             _player.remove_card(_player.cards[0])
-            if(not cls._model.issimul):
-                _player.add_card(cls._model.pick_card())
-            else:
-                _player.add_card(cls._model.pick_card_simu())
+            _player.add_card(cls._model.pick_card())
         
         
 class Chancelier(TwoActionCards):
@@ -286,52 +280,40 @@ class Chancelier(TwoActionCards):
     '''
      
     def action(self):
-        #Si il n'y a plus de carte dans la pioche, alors jouer le chancelier ne fera rien
-        if(self._model.deck.__len__() != 0):
+        #Si il n'y a plus de carte dans la pioche, ou si il y a simulation, alors jouer le chancelier ne fera rien
+        if(self._model.deck.__len__() != 0 and not self._model.issimul):
             current_player = self._model.current_player
             current_player.play_chancelier = True #Variable permettant de savoir si le joueur est en pleine action de chancelier ou non lorsqu'il clique sur un bouton
             
             #Vérifie si il y a bien deux cartes restantes dans la pioche au moins
             if(self._model.deck.__len__() >= 2):
-                if(not self._model.issimul):
-                    current_player.add_card(self._model.pick_card())
-                    current_player.add_card(self._model.pick_card())
-                else:
-                    current_player.add_card(self._model.pick_card_simu())
-                    current_player.add_card(self._model.pick_card_simu())
+                current_player.add_card(self._model.pick_card())
+                current_player.add_card(self._model.pick_card())
             else:
-                #Cas particulier où il ne reste qu'une carte dans la pioche
-                if(not self._model.issimul):
-                    current_player.add_card(self._model.pick_card())
-                else:
-                    current_player.add_card(self._model.pick_card_simu())
+                current_player.add_card(self._model.pick_card())
           
             #Si l'IA a joué le chancelier, alors on appelle les fonctions appropriées
             if(isinstance(current_player, player.IA)):
-                if(not self._model.issimul): #Pas d'affichage en simulation
-                    self._model.controller.update_chancelier_IA(current_player, self._model.ia.cards.__len__())
-                Chancelier.deuxieme_action(self._model.ia.cards[randrange(0, 3)])
+                self._model.controller.update_chancelier_IA(current_player, self._model.ia.cards.__len__())
+                Chancelier.deuxieme_action(current_player.cards[randrange(0, current_player.cards.__len__())])
                 #algo IA
             else:
                 #Pareil pour le joueur
-                if(not self._model.issimul): #Pas d'affichage en simulation
-                    self._model.controller.update_chancelier_player(current_player, self._model.player.cards_to_string)
+                self._model.controller.update_chancelier_player(current_player, self._model.player.cards_to_string)
         
     
     #Fonction appelée lorsque le joueur courant a séléctionné une carte qu'il ne voulait pas
     @classmethod
     def deuxieme_action(cls, card_chosen):
         current_player = cls._model.current_player
-        
         current_player.remove_card(card_chosen)
         cls._model.deck.append(card_chosen)
     
         if(current_player.cards.__len__() == 2):
             if(isinstance(current_player, player.IA)):
-                cls.deuxieme_action(cls._model.ia.cards[randrange(0,2)])
+                cls.deuxieme_action(current_player.cards[randrange(0, current_player.cards.__len__())])
             else:
-                if(not cls._model.issimul): #Pas d'affichage en simulation
-                    cls._model.controller.update_chancelier_player(current_player, cls._model.player.cards_to_string)
+                cls._model.controller.update_chancelier_player(current_player, cls._model.player.cards_to_string)
                 
         current_player.play_chancelier = False
             

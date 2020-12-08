@@ -10,6 +10,7 @@ from abc import abstractmethod
 import copy
 import random
 import src.model.cards as cards
+from prompt_toolkit.application import current
 
 #Liste circulairement chainée, contenant les noeuds contenant chaque joueur, ainsi que le noeud du joueur courant
 class CircleLinkedList(object):
@@ -24,13 +25,36 @@ class CircleLinkedList(object):
         self._current_node = self._current_node.next_player
         return self._current_node
     
+    def create_copy(self):
+        listcopy = copy.deepcopy(self)
+        player_nodecopy = self._real_player_node.create_copy()
+        ia_nodecopy = self._ia_node.create_copy()
+        ia_nodecopy.next_player = player_nodecopy
+        player_nodecopy.next_player = ia_nodecopy
+        listcopy.current_node = copy.deepcopy(self._current_node)
+        if self._current_node == self._ia_node:
+            listcopy.current_node = ia_nodecopy
+        else:
+            listcopy.current_node = player_nodecopy
+        listcopy._real_player_node = player_nodecopy
+        listcopy._ia_node = ia_nodecopy
+        return listcopy
+        
     @property
     def real_player_node(self):
         return self._real_player_node
     
+    @real_player_node.setter
+    def real_player_node(self, value):
+        self._real_player_node = value
+        
     @property
     def ia_node(self):
         return self._ia_node
+    
+    @ia_node.setter
+    def ia_node(self, value):
+        self._ia_node = value
     
     @property
     def real_player(self):
@@ -46,12 +70,15 @@ class CircleLinkedList(object):
     
     @current_node.setter
     def current_node(self, player):
-        if(self._current_node is None):
-            self._current_node = player
+        self._current_node = player
         
     @property
     def current(self):
         return self._current_node.player
+    
+    @current.setter
+    def current(self, value):
+        self._current_node.player = value
     
     @property
     def next_player_node(self):
@@ -61,13 +88,22 @@ class CircleLinkedList(object):
     def next_player(self):
         return self._current_node.next_player.player
     
+    @next_player.setter
+    def next_player(self,value):
+        self._current_node.next_player.player = value
+    
 
 #Noeud contenant l'instance d'un joueur et la référence vers le noeud suivant
 class Node(object):
     
     def __init__(self, player):
         self._player = player
-        self._cards_played = []
+        self._next_player = None
+    
+    def create_copy(self):
+        nodecopy = copy.deepcopy(self)
+        nodecopy.player = copy.deepcopy(self._player)
+        return nodecopy
     
     @property
     def next_player(self):
@@ -107,22 +143,13 @@ class Player(metaclass = abc.ABCMeta):
         self._espionne_played = False
         self._knows_card = False
     
-    #Permet de sauvegarder l'état du joueur dans le cas d'une simulation
     def save_attributes(self):
         return {"Cards" : copy.copy(self._cards), "Cards played" : copy.copy(self._cards_played)}
     
-    #Restauration de la sauvegarde
     def set_attributes(self, attributes):
-        self._cards = attributes["Cards"] 
-        
-        self._cards_played = attributes["Cards played"] 
-        '''
-        self._last_card_played = attributes["Last card played"] 
-        self._immune = attributes["Immune"]
-        self._espionne_played = attributes["Espionne played"]
-        self._knows_card = attributes["Knows card"]
-        self._play_chancelier = attributes["Play chancelier"]
-        '''
+        self._cards = copy.copy(attributes["Cards"])
+        self._cards_played = attributes["Cards played"]
+       
     @property
     def espionne_played(self):
         return self._espionne_played
@@ -145,7 +172,7 @@ class Player(metaclass = abc.ABCMeta):
     
     @cards.setter
     def cards(self,value):
-        self._cards = copy.copy(value)
+        self._cards = copy.deepcopy(value)
 
     @property 
     def cards_to_string(self):
@@ -261,14 +288,12 @@ class IAFacile(IA):
     
     def algorithme(self):
         self._model.deck.append(self._model.burnt_card)
-        state = State(self._model, self._model.current_state)
-        value, card = self.max_val(state, 2)
-        print(value)
-        print(card)
-        index = self.cards.index(card)
+        state = State(self._model)
+        (value, card_to_play) = self.max_val(state, 2)
+        index = self.cards.index(card_to_play)
         self._model.current_state = state
         self._model.deck.remove(self._model.burnt_card)
-        print(self._model.deck)
+        
         return index
     
     def algorithmeGuard(self):
@@ -285,28 +310,28 @@ class IAFacile(IA):
     
     def max_val(self, state, depth):
         if state.is_final or depth == 0:
-            return state.eval(), state.last_card_played
+            return (state.eval(), state.last_card_played)
         print(state)
-        last_card_played = None
-        value = -10
+        
+        value = (-10, None)
         for s in state.next_states():
             print(s)
-            temp, last_card_played = self.min_val(s, depth-1)
-            value = max(temp, value)
+            temp = self.min_val(s, depth-1)
+            value = max(temp, value, key = lambda x:x[0])
         
-        return value, last_card_played
+        return value
     
     def min_val(self, state, depth):
         if(state.is_final or depth == 0):
-            return -state.eval(), state.last_card_played
+            return (-state.eval(), state.last_card_played)
         
-        last_card_played = None
-        value = 10
+        value = (10,None)
+        
         for s in state.next_states():
-            temp, last_card_played = self.max_val(s, depth-1)
-            value = min(value, temp)
+            temp = self.max_val(s, depth-1)
+            value = min(value, temp, key = lambda x:x[0])
             
-        return value, last_card_played
+        return value
             
         
             
@@ -356,27 +381,30 @@ class State():
     
     
     def __str__(self):
-        return ("State : " + str(self._current_player) + "\nProbability : " + str(self._probability) + "\nCards played : " + str(self._save.get_ia_save("Cards played")) + 
-                "\nNumber of remaining cards : " + str(self._cards_remained) + "\nPossible cards enemy can play " + str(self._possible_cards) +
-                "\nHand : " + str(self._save.get_ia_save("Cards")) + "\nDeck : " + str(self._save.get_model_save("Deck")) +
-                 "\nBurnt card : " + str(self._model.burnt_card) + "\nOpponent's card : " + str(self._save.get_player_save("Cards")) + "\nCard played by opponent " +
-                 str(self._last_card_played) + "\n")
+        return ("State : " + str(self._probability) + "\n" + str(self._model.current_player) + "\nCards remained : " + str(self._cards_remained)+
+                "\nCards played by current : " + str(self._model.current_player.cards_played) +
+                "\nLast card played by current : " + str(self._model.current_player.last_card_played) + "\nHand : " + str(self._model.current_player.cards) + 
+                "\nOpponent's cards played : " + str(self._model.next_player.cards_played) + "\nLast card played in game : " + 
+                str(self._model.next_player.last_card_played) + "\nOpponent's hand : " + str(self._model.next_player.cards) + 
+                "\nDeck : " + str(self._model.deck) + "\nPossible cards : " + str(self._possible_cards) + "\n")
+        
+        
 
-    def __init__(self, model, parent, probability = 1):
+    def __init__(self, model, probability = 1):
         
-        self._model = model
-        self._save = Save(self._model)
-        self._current_player = model.current_player
-        self._opponent = model.next_player
+        self._save = Save(model)
+        self._model = self._save.get_model()
         
+        self._current_player = self._model.current_player
+        self._opponent = self._model.next_player
+
         self._last_card_played = self._opponent.last_card_played
-        self._cards_remained = model.deck.__len__()
-        
+        self._cards_remained = self._model.deck.__len__()
+
         self._possible_cards = self.get_possible_cards()
         
         self._probability = probability
         
-        self._parent = parent
        
     @property
     def is_final(self):
@@ -392,28 +420,28 @@ class State():
     def save(self):
         return self._save
     
-    def next_states(self): 
-       
+    def next_states(self, j = 0): 
+        
         drawable_cards = self.get_drawable_cards()
         states = []
+        
         #On boucle sur les cartes du joueur courant, pour chaque carte, on boucle sur toutes les cartes possibles que le prochain joueur peut piocher
         for i in range(0, self._model.current_player.cards.__len__()) :
             for card in drawable_cards:
                 
-                self._save.save() #Sauvagarde de l'environnement
                 #Simulation
                 self._opponent.add_card(card)
                 self._model.pick_card_simu(card)
                 self._model.play(i)
-                
                 #Génération de l'état correspondant
-                state = State(self._model, self, drawable_cards[card])
+                state = State(self._model, drawable_cards[card])
                 states.append(state)
-                self._save.backup() #Restauration de lenvironnement
                 
-                    
+                self._save.backup()
+                
+            
         return states
-
+        
     #retourne une liste contenant une instance de chaque carte pouvant être piochée par le prochain joueur    
     def get_possible_cards(self):
         possible_cards = []
@@ -434,8 +462,9 @@ class State():
                 drawable_cards[card] = proba
             if(drawable_cards.__len__() == 10):
                 break
-        return {k:v for k,v in sorted(drawable_cards.items(), key = lambda item:item[1], reverse = True)}
-    
+        #return {k:v for k,v in sorted(drawable_cards.items(), key = lambda item:item[1], reverse = True)}
+        return drawable_cards
+            
     def eval(self):
         if(self._model.victory):
             return 1
@@ -448,39 +477,24 @@ class Save():
     pattern aurait été plus bénéfique, bien que rendant l'architecture des fichiers moins lisibles
     '''
     def __init__(self, model):
-        self._model = model
-        self._ia_save = {}
-        self._player_save = {}
-        self._model_save = {}
-        self._ia_save = model.current_player.save_attributes()
-        self._player_save = model.next_player.save_attributes()
-        self._model_save = model.save_attributes()
+        self._model = copy.deepcopy(model)
+        self._current_player = self._model.current_player
+        self._next_player = self._model.next_player
+        self._modelsave = self._model.save_attributes()
+        self._current_player_save = self._model.current_player.save_attributes()
+        self._next_player_save = self._model.next_player.save_attributes()
         
-    #Copie de l'environnement courant 
-    def save(self):
-        
-        self._ia_save = self._model.current_player.save_attributes()
-        self._player_save = self._model.next_player.save_attributes()
-        self._model_save = self._model.save_attributes()
-        
-        
-    def get_ia_save(self, key):
-        return self._ia_save[key]
-    
-    def get_player_save(self, key):
-        return self._player_save[key]
-    
-    def get_model_save(self, key):
-        return self._model_save[key]
-    
+    def get_model(self):
+        return self._model
+
     #Restauration de l'environnement
     def backup(self):
+        
+        self._current_player.set_attributes(self._current_player_save)
+        self._next_player.set_attributes(self._next_player_save)
+        
+        self._model.set_attributes(self._modelsave)
         self._model.players_list.next_turn()
         
-        self._model.ia.set_attributes(self._ia_save)
-        self._model.player.set_attributes(self._player_save)
-        self._model.set_attributes(self._model_save)
-        
-        self.save()
 
     
