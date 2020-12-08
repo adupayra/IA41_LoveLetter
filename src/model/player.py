@@ -137,7 +137,6 @@ class Player(metaclass = abc.ABCMeta):
     
     @knows_card.setter
     def knows_card(self, value):
-        print(value)
         self._knows_card[0] = value[0]
         self._knows_card[1] = value[1]
         
@@ -259,17 +258,8 @@ class IAFacile(IA):
     def algorithme(self):
         self._model.deck.append(self._model.burnt_card)
         state = State(self._model, None)
-        print(state)
-        test = state.next_states()
-        print(test[0])
-        test2 = test[0].next_states()
-        print(test2[1])
-        test3 = test2[1].next_states()
-        for i in range(0, 5):
-            print(test3[i])
-            
-        print(self.knows_card[0])
-        '''
+
+        
         (value, best_state) = self.max_val(state, 2)
         
         print(value)
@@ -281,11 +271,11 @@ class IAFacile(IA):
             index = 0
         else:
             index = 1
-        '''
+        
         self._model.current_state = state
         self._model.deck.remove(self._model.burnt_card)
         
-        return 0
+        return index
     
     def algorithmeGuard(self):
         pass

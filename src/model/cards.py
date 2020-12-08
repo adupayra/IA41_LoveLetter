@@ -35,7 +35,6 @@ class Card(metaclass = abc.ABCMeta):
     @abstractmethod
     def action(self):
         if self._model.next_player.knows_card[0] and isinstance(self, self._model.next_player.knows_card[1]):
-            print("coucou")
             self._model.next_player.knows_card = [False, None]
     
 class TwoActionCards(Card, metaclass = abc.ABCMeta):
@@ -138,7 +137,7 @@ class Pretre(Card):
      
     def action(self):
         Card.action(self)
-        self._model.current_player.knows_card = [True,self.__class__]
+        self._model.current_player.knows_card = [True,self._model.next_player.cards[0].__class__]
         if(isinstance(self._model.current_player, player.RealPlayer) and not self._model.issimul): #Pas d'affichage en simulation
             self._model.controller.display_AI_card(self._model.ia.cards[0])
             
