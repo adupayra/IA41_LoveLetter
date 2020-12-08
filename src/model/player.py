@@ -164,9 +164,8 @@ class Player(metaclass = abc.ABCMeta):
         return self._immune
     
     @immune.setter
-    def immune(self):
-        self._immune = not self._immune
-        return self._immune
+    def immune(self, value):
+        self._immune = value
     
     @property
     def score(self):
@@ -376,7 +375,8 @@ class State():
                 "\nOpponent's cards played : " + str(self._model.next_player.cards_played) + "\nLast card played in game : " + 
                 str(self._last_card_played) + "\nOpponent's hand : " + str(self._model.next_player.cards) + 
                 "\nDeck : " + str(self._model.deck) + "\nPossible cards : " + str(self._possible_cards) + "\nKnows card : " + str(self._current_player.knows_card[0])
-                + "\nOpponent knowscard : " + str(self._model.next_player.knows_card[0]) + "\n")
+                + "\nOpponent knowscard : " + str(self._model.next_player.knows_card[0]) + "\nCurrent immune : " + str(self._current_player.immune) +
+                "\nOpponent immune : " + str(self._opponent.immune) + "\n")
         
         
 

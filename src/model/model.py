@@ -51,7 +51,7 @@ class Model(object):
             self._cards.append(cards.Chancelier(self))
             
         for _ in range(0, 4):
-            self._cards.append(cards.Pretre(self))
+            self._cards.append(cards.Roi(self))
 
     @property
     def controller(self):
@@ -229,13 +229,16 @@ class Model(object):
             self.victory_emptydeck()
         
     
-    #Fonction permettant de déterminer la fin de pioche lors de la simulation de l'IA
+    #Fonction permettant de déterminer la fin de pioche lors de la simulation de l'IA, de simuler la pioche lors de la simulation de l'IA,
+    #et permet également le bon déroulement de la simulation dans des cas de pioche particulieres (Prince et Chancelier)
     def pick_card_simu(self, card = None):
         #Lorsqu'on parcourt l'arbre de jeu, le joueur courant ne sait pas quelle carte est brulée. La carte peut donc théoriquement 
         #être piochée par le joueur adverse. Elle est donc mélangée à la pioche le temps de la simulation. Avoir une longueur de pioche de 1 pendant
         #la simulation signifie donc que la pioche serait vide hors simulation
         if(not self._deck or self._deck.__len__() == 1):
             self.victory_emptydeck()
+        elif card is None:
+            return self._deck.pop(randrange(0, self.deck.__len__()))
         else:
             self._deck.remove(card)
             
@@ -266,6 +269,7 @@ class Model(object):
         self.current_player.remove_card(last_card_played)#Suppression de la carte dans la main du joueur courrant
         self._cards_played.append(last_card_played)#Ajout de cette carte à la liste des cartes jouées
         last_card_played.action()#Action de la carte
+        self.next_player.immune = False
         self.current_player.last_card_played = last_card_played
         self.next_turn()
         
