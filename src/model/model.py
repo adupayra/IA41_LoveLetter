@@ -229,16 +229,13 @@ class Model(object):
             self.victory_emptydeck()
         
     
-    #Fonction permettant de déterminer la fin de pioche lors de la simulation de l'IA, de simuler la pioche lors de la simulation de l'IA,
-    #et permet également le bon déroulement de la simulation dans des cas de pioche particulieres (Prince et Chancelier)
+    #Fonction permettant de déterminer la fin de pioche lors de la simulation de l'IA
     def pick_card_simu(self, card = None):
         #Lorsqu'on parcourt l'arbre de jeu, le joueur courant ne sait pas quelle carte est brulée. La carte peut donc théoriquement 
-        #être piochée par le joueur adverse. Elle est donc mélangée à la pioche le temps de la simulation. Avoir une longueur de pioche de 1 signifie pendant
+        #être piochée par le joueur adverse. Elle est donc mélangée à la pioche le temps de la simulation. Avoir une longueur de pioche de 1 pendant
         #la simulation signifie donc que la pioche serait vide hors simulation
         if(not self._deck or self._deck.__len__() == 1):
             self.victory_emptydeck()
-        elif card is None: #Cas particulier (prince et chancelier)
-            return self._deck.pop(randrange(0, self.deck.__len__()))
         else:
             self._deck.remove(card)
             
