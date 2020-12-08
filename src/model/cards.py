@@ -24,7 +24,6 @@ class Card(metaclass = abc.ABCMeta):
     
     def __init__(self, model):
         self._model = model
-        
     
     #Propriété des cartes (valeur)
     @property
@@ -35,7 +34,9 @@ class Card(metaclass = abc.ABCMeta):
     #Action effectuée par la carte une fois jouée
     @abstractmethod
     def action(self):
-        pass
+        if self._model.next_player.knows_card[0] and isinstance(self, self._model.next_player.knows_card[1]):
+            print("coucou")
+            self._model.next_player.knows_card = [False, None]
     
 class TwoActionCards(Card, metaclass = abc.ABCMeta):
     '''
@@ -44,8 +45,11 @@ class TwoActionCards(Card, metaclass = abc.ABCMeta):
     
     def __init__(self, model):
         Card.__init__(self, model)
+    
+    @abstractmethod 
+    def action(self):
+        Card.action(self)
         
-
     @abstractmethod
     def deuxieme_action(self):
         pass
@@ -71,7 +75,7 @@ class Espionne(Card):
     
      
     def action(self):
-        pass
+        Card.action(self)
     
     
 class Garde(TwoActionCards):
@@ -91,21 +95,21 @@ class Garde(TwoActionCards):
     
      
     def action(self):
-        #Carte sans effet en simulation, elle renvoie un pourcentage utilisé das la fonction éval.
-        if(not self._model.issimul):
-            #Vérification du joueur courant afin d'afficher ou non quelque chose sur l'UI
-            if(isinstance(self._model.current_player, player.RealPlayer)):
-                    self._model.controller.display_guard_choice()
-                
-            elif not self._model.issimul:
-                #Algo IA
-                guess = randrange(0,9)
-                array = [Espionne.__name__, Pretre.__name__, Baron.__name__, Servante.__name__, Prince.__name__, Chancelier.__name__, Roi.__name__, 
-                         Comtesse.__name__, Princesse.__name__]
-                
-    
-                self._model.controller.display_guard_ialabel(array[guess]) #Affichage du label récapitulatif
-                self.deuxieme_action(array[guess])
+        TwoActionCards.action(self)
+        #Vérification du joueur courant afin d'afficher ou non quelque chose sur l'UI
+        if(isinstance(self._model.current_player, player.RealPlayer)):
+            if(not self._model.issimul):
+                self._model.controller.display_guard_choice()
+            
+        elif not self._model.issimul:
+            #Algo IA
+            guess = randrange(0,9)
+            array = [Espionne.__name__, Pretre.__name__, Baron.__name__, Servante.__name__, Prince.__name__, Chancelier.__name__, Roi.__name__, 
+                     Comtesse.__name__, Princesse.__name__]
+            
+
+            self._model.controller.display_guard_ialabel(array[guess]) #Affichage du label récapitulatif
+            self.deuxieme_action(array[guess])
     
     #Action effectuée une fois que la carte à deviner a été choisi
     @classmethod
@@ -133,7 +137,8 @@ class Pretre(Card):
     
      
     def action(self):
-        self._model.current_player.knows_card = True
+        Card.action(self)
+        self._model.current_player.knows_card = [True,self.__class__]
         if(isinstance(self._model.current_player, player.RealPlayer) and not self._model.issimul): #Pas d'affichage en simulation
             self._model.controller.display_AI_card(self._model.ia.cards[0])
             
@@ -155,6 +160,7 @@ class Baron(Card):
     
      
     def action(self):
+        Card.action(self)
         #En simulation la carte renverra une probabilité de gagner dans la fonction éval mais n'aura pas d'effet
         if(not self._model.issimul):
             #Caching des valeurs auxquelles on va beaucoup accéder dans la fonction
@@ -163,10 +169,6 @@ class Baron(Card):
             
             #Chaine de caractere de victoire
             chaine = " gagne 1 point, grâce à un baron"
-    
-            #Affichage de l'écran
-            #Pas d'affichage en simulation
-            #Lorsqu'il y a simulation, une autre fonction est appelée
         
             self._model.controller.display_baron(current_player.cards[0], next_player.cards[0])
             
@@ -200,7 +202,7 @@ class Servante(Card):
     
      
     def action(self):
-        pass
+        Card.action(self)
     
 class Prince(TwoActionCards):
     '''
@@ -221,6 +223,7 @@ class Prince(TwoActionCards):
         return 5
     
     def action(self):
+        TwoActionCards.action(self)
         #Si la carte est jouée en simulation, elle renvoie un poids pour la fonction éval et est jouée sans effet
         if(not self._model.issimul):
             #Affichage de l'écran de séléction du camp si le joueur est le joueur courrant
@@ -284,6 +287,7 @@ class Chancelier(TwoActionCards):
     '''
      
     def action(self):
+        TwoActionCards.action(self)
         #Si il n'y a plus de carte dans la pioche, ou si il y a simulation, alors jouer le chancelier n'aura pas d'effet
         if(self._model.deck.__len__() != 0 and not self._model.issimul):
             current_player = self._model.current_player
@@ -340,7 +344,7 @@ class Roi(Card):
     
      
     def action(self):
-        pass
+        Card.action(self)
     
 class Comtesse(Card):
     '''
@@ -359,7 +363,7 @@ class Comtesse(Card):
     
      
     def action(self):
-        pass
+        Card.action(self)
     
 class Princesse(Card):
     '''
@@ -378,6 +382,7 @@ class Princesse(Card):
     
      
     def action(self):
+        Card.action(self)
         if(not self._model.issimul):
             if(isinstance(self._model.current_player, player.RealPlayer)):
                 self._model.game_victory(self._model.ia, "L'IA remporte 1 point car le vrai joueur à joué la Princesse !")

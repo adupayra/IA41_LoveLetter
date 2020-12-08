@@ -108,16 +108,20 @@ class Player(metaclass = abc.ABCMeta):
         self._play_chancelier = False
         self._cards_played = []
         self._espionne_played = False
-        self._knows_card = False
+        self._knows_card = [False, None]
     
     def save_attributes(self):
         #Sauvegarde des variables
-        return {"Cards" : copy.copy(self._cards), "Cards played" : copy.copy(self._cards_played)}
+        return {"Cards" : copy.copy(self._cards), "Cards played" : copy.copy(self._cards_played), "Immune" : self._immune, "Espionne played" : self._espionne_played, 
+                "Knows card" : copy.deepcopy(self._knows_card)}
     
     def set_attributes(self, attributes):
         #Restauration des variables avec recopie de la sauvegarde (afin de ne pas la corrompre)
         self._cards = copy.copy(attributes["Cards"])
         self._cards_played = copy.copy(attributes["Cards played"])
+        self._immune = attributes["Immune"]
+        self._espionne_played = attributes["Espionne played"]
+        self._knows_card = copy.deepcopy(attributes["Knows card"])
        
     @property
     def espionne_played(self):
@@ -133,7 +137,9 @@ class Player(metaclass = abc.ABCMeta):
     
     @knows_card.setter
     def knows_card(self, value):
-        self._knows_card = value
+        print(value)
+        self._knows_card[0] = value[0]
+        self._knows_card[1] = value[1]
         
     @property
     def cards(self):
@@ -190,6 +196,9 @@ class Player(metaclass = abc.ABCMeta):
         self._last_card_played = None
         self._immune = False
         self._cards_played = []
+        self._espionne_played = False
+        self._knows_card[0] = False
+        self._knows_card[1] = None
     
     
     @property
@@ -250,6 +259,17 @@ class IAFacile(IA):
     def algorithme(self):
         self._model.deck.append(self._model.burnt_card)
         state = State(self._model, None)
+        print(state)
+        test = state.next_states()
+        print(test[0])
+        test2 = test[0].next_states()
+        print(test2[1])
+        test3 = test2[1].next_states()
+        for i in range(0, 5):
+            print(test3[i])
+            
+        print(self.knows_card[0])
+        '''
         (value, best_state) = self.max_val(state, 2)
         
         print(value)
@@ -261,11 +281,11 @@ class IAFacile(IA):
             index = 0
         else:
             index = 1
-            
+        '''
         self._model.current_state = state
         self._model.deck.remove(self._model.burnt_card)
         
-        return index
+        return 0
     
     def algorithmeGuard(self):
         pass
@@ -357,7 +377,8 @@ class State():
                 "\nLast card played by current : " + str(self._model.current_player.last_card_played) + "\nHand : " + str(self._model.current_player.cards) + 
                 "\nOpponent's cards played : " + str(self._model.next_player.cards_played) + "\nLast card played in game : " + 
                 str(self._last_card_played) + "\nOpponent's hand : " + str(self._model.next_player.cards) + 
-                "\nDeck : " + str(self._model.deck) + "\nPossible cards : " + str(self._possible_cards) + "\n")
+                "\nDeck : " + str(self._model.deck) + "\nPossible cards : " + str(self._possible_cards) + "\nKnows card : " + str(self._current_player.knows_card[0])
+                + "\nOpponent knowscard : " + str(self._model.next_player.knows_card[0]) + "\n")
         
         
 

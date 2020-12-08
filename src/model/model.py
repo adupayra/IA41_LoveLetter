@@ -51,7 +51,7 @@ class Model(object):
             self._cards.append(cards.Chancelier(self))
             
         for _ in range(0, 4):
-            self._cards.append(cards.Garde(self))
+            self._cards.append(cards.Pretre(self))
 
     @property
     def controller(self):
