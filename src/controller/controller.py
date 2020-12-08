@@ -74,6 +74,11 @@ class Controller():
                     gamescene.update_lastcardslabels(str(cls._modelvar.ia), str(cls._modelvar.ia.last_card_played)) #Affichage de la carte jouée par l'IA au dernier tour
                 gamescene.unlock_buttons()
                 
+                #Cas où le joueur est obligé de jouer la comtesse
+                must_play_comtesse = cls._modelvar.player.must_play_comtesse()
+                if(must_play_comtesse != -1):
+                    gamescene.lock_button((must_play_comtesse+1)%2)
+                
        
     
     @classmethod

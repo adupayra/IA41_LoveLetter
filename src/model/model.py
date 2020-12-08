@@ -44,14 +44,14 @@ class Model(object):
         for _ in range(0,2):
             self._cards.append(cards.Espionne(self))
             self._cards.append(cards.Garde(self))
-            self._cards.append(cards.Pretre(self))
-            self._cards.append(cards.Baron(self))
+            self._cards.append(cards.Roi(self))
+            self._cards.append(cards.Roi(self))
             self._cards.append(cards.Servante(self))
             self._cards.append(cards.Prince(self))
-            self._cards.append(cards.Chancelier(self))
+            self._cards.append(cards.Prince(self))
             
         for _ in range(0, 4):
-            self._cards.append(cards.Roi(self))
+            self._cards.append(cards.Comtesse(self))
 
     @property
     def controller(self):
@@ -250,15 +250,19 @@ class Model(object):
     
     #Choix de la carte jouée par l'IA
     def playAI(self):
-        #Test d'une simulation en depth 1, à modifier à terme
-        if(self._issimul is False):
-            self._issimul = True
-            index = self.ia.algorithme()
-            self._issimul = False
-        #Appeler algo de l'IA ici
-        #self.play(randrange(0,2))
-        
-        self.play(index)
+        #Si l'ia possède une comtesse et un prince ou un roi, alors pas besoin de lancer la simulation, la comtesse est jouée
+        play_comtesse = self.ia.must_play_comtesse()
+        if play_comtesse != -1:
+            self.play(play_comtesse)
+        else:
+            #Test d'une simulation en depth 1, à modifier à terme
+            if(self._issimul is False):
+                self._issimul = True
+                index = self.ia.algorithme()
+                self._issimul = False
+            #Appeler algo de l'IA ici
+            #self.play(randrange(0,2))
+            self.play(index)
         
     
     #Effectue l'action de la carte à l'index associée du joueur courrant
@@ -323,6 +327,13 @@ class Model(object):
         if(not self.issimul):
             #On affiche l'écran de fin de jeu en passant par le controller
             winner.win(1) #Le joueur ayant gagné gagne un point de score
+            
+            if(self.player.espionne_played):
+                self.player.win(1)
+                chaine += "\nVous avez joué l'espionne, vous gagnez\n1 jeton supplémentaire !"
+            elif self.ia.espionne_played:
+                self.ia.win(1)
+                chaine+= "\nL'IA a joué l'espionne, elle gagne\n1 jeton supplémentaire :/"
             self.controller.display_victory(chaine, [self.player.score, self.ia.score])
 
     #Sauvegarde des variables

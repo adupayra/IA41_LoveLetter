@@ -409,6 +409,9 @@ class GameScene(tk.Frame):
     def lock_buttons(self):
         for button in self._player_buttons:
             button.config(state = 'disabled')
+            
+    def lock_button(self, index):
+        self._player_buttons[index].config(state = 'disabled')
     
     #Fonction permettant de les déverouiller
     def unlock_buttons(self):
@@ -888,6 +891,6 @@ class EndGameScene(tk.Frame):
             self._tokenlabels[1][i].pack(side = tk.LEFT)
             
         #Dissociation des cas entre fin de round et fin de partie
-        if score[0] == 6 or score[1] == 6:
+        if score[0] >= 6 or score[1] >= 6:
             self._next_round_button.pack_forget() #Désactivation du bouton next round si fin de partie
 

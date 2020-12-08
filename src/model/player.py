@@ -198,7 +198,15 @@ class Player(metaclass = abc.ABCMeta):
         self._knows_card[0] = False
         self._knows_card[1] = None
     
-    
+    #Fonction utilisée pour vérifier si le joueur possède la comtesse et le roi ou le prince
+    def must_play_comtesse(self):
+        if (any(isinstance(x, cards.Comtesse) for x in self._cards)):
+            if(any(isinstance(y, cards.Roi) or isinstance(y, cards.Prince) for y in self._cards)):
+                if(isinstance(self._cards[0], cards.Comtesse)): 
+                    return 0
+                else: return 1
+        return -1
+        
     @property
     def cards_played(self):
         return self._cards_played
@@ -316,6 +324,7 @@ class IAFacile(IA):
         value = (10,None)
         
         for s in state.next_states():
+            print(s)
             temp = self.max_val(s, depth-1)
             value = min(value, temp, key = lambda x:x[0]) #Puisqu'on a un couple (valeur, état parent), on cherche le minimum des deux couples en fonction de la valeur
             
@@ -376,7 +385,8 @@ class State():
                 str(self._last_card_played) + "\nOpponent's hand : " + str(self._model.next_player.cards) + 
                 "\nDeck : " + str(self._model.deck) + "\nPossible cards : " + str(self._possible_cards) + "\nKnows card : " + str(self._current_player.knows_card[0])
                 + "\nOpponent knowscard : " + str(self._model.next_player.knows_card[0]) + "\nCurrent immune : " + str(self._current_player.immune) +
-                "\nOpponent immune : " + str(self._opponent.immune) + "\n")
+                "\nOpponent immune : " + str(self._opponent.immune) + "\nCurrent espionne : " + str(self._model.current_player.espionne_played) +
+                "\nOpponent espionne : " + str(self._model.next_player.espionne_played) + "\n")
         
         
 
@@ -420,23 +430,29 @@ class State():
         drawable_cards = self.get_drawable_cards()
         states = []
         
-        #On boucle sur les cartes du joueur courant, pour chaque carte, on boucle sur toutes les cartes possibles que le prochain joueur peut piocher
-        for i in range(0, self._model.current_player.cards.__len__()) :
-            for card in drawable_cards:
-                
-                #Simulation
-                self._opponent.add_card(card)
-                self._model.pick_card_simu(card)
-                self._model.play(i)
-                #Génération de l'état correspondant
-                state = State(self._model, self, drawable_cards[card])
-                states.append(state)
-                
-                #Restauration de l'environnement
-                self._save.backup()         
-                   
+        play_comtesse = self._current_player.must_play_comtesse()
+        if play_comtesse != -1:
+            self.play_simu(states, drawable_cards, play_comtesse)
+        else:
+            #On boucle sur les cartes du joueur courant, pour chaque carte, on boucle sur toutes les cartes possibles que le prochain joueur peut piocher
+            for i in range(0, self._model.current_player.cards.__len__()) :
+                self.play_simu(states, drawable_cards, i)
+            
         return states
-        
+    
+    def play_simu(self, states, drawable_cards, i):
+        for card in drawable_cards:
+            #Simulation
+            self._opponent.add_card(card)
+            self._model.pick_card_simu(card)
+            self._model.play(i)
+            #Génération de l'état correspondant
+            state = State(self._model, self, drawable_cards[card])
+            states.append(state)
+            
+            #Restauration de l'environnement
+            self._save.backup() 
+                
     #retourne une liste contenant une instance de chaque carte pouvant être piochée par le prochain joueur    
     def get_possible_cards(self):
         possible_cards = []

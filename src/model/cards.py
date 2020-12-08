@@ -70,11 +70,15 @@ class Espionne(Card):
     @classmethod
     def value(cls):
         return 0
-    
-    
      
     def action(self):
         Card.action(self)
+        current = self._model.current_player
+        next_player = self._model.next_player
+        if(not current.espionne_played and not next_player.espionne_played):
+            current.espionne_played = True
+        elif not current.espionne_played and next_player.espionne_played:
+            next_player.espionne_played = False
     
     
 class Garde(TwoActionCards):
@@ -183,7 +187,7 @@ class Baron(Card):
             
     #Fonction appelée lors d'une simulation de jeu de baron afin de déterminer les probabilités de gagner
     @classmethod
-    def algorithme_simulation(cls, state):
+    def algorithme_simulation(cls):
         return 0.5
         
         
@@ -353,11 +357,9 @@ class Roi(Card):
         Card.action(self)
         if(not self._model.next_player.immune):
             current = self._model.current_player.cards.pop(0)
-            next = self._model.next_player.cards.pop(0)
-            print(current)
-            print(next)
+            next_player = self._model.next_player.cards.pop(0)
             self._model.next_player.add_card(current)
-            self._model.current_player.add_card(next)
+            self._model.current_player.add_card(next_player)
     
 class Comtesse(Card):
     '''
