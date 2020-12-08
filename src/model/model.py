@@ -324,10 +324,12 @@ class Model(object):
             winner.win(1) #Le joueur ayant gagné gagne un point de score
             self.controller.display_victory(chaine, [self.player.score, self.ia.score])
 
+    #Sauvegarde des variables
     def save_attributes(self):
         return {"Deck" : copy.copy(self._deck), "Cards played" : copy.copy(self._cards_played),
                 "Victory" : self._victory}
         
+    #Restauration des variables avec recopie de la sauvegarde afin de ne pas la corrompre
     def set_attributes(self, attributes):
         self._deck = copy.copy(attributes["Deck"])
         self._cards_played = copy.copy(attributes["Cards played"])

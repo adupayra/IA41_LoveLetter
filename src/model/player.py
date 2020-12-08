@@ -111,9 +111,11 @@ class Player(metaclass = abc.ABCMeta):
         self._knows_card = False
     
     def save_attributes(self):
+        #Sauvegarde des variables
         return {"Cards" : copy.copy(self._cards), "Cards played" : copy.copy(self._cards_played)}
     
     def set_attributes(self, attributes):
+        #Restauration des variables avec recopie de la sauvegarde (afin de ne pas la corrompre)
         self._cards = copy.copy(attributes["Cards"])
         self._cards_played = copy.copy(attributes["Cards played"])
        
@@ -411,9 +413,9 @@ class State():
                 state = State(self._model, self, drawable_cards[card])
                 states.append(state)
                 
-                self._save.backup()
-                
-            
+                #Restauration de l'environnement
+                self._save.backup()         
+                   
         return states
         
     #retourne une liste contenant une instance de chaque carte pouvant être piochée par le prochain joueur    
@@ -428,20 +430,21 @@ class State():
         self._model.deck.remove(self._opponent.cards[0])
         return possible_cards
     
+    #Fonction permettant de définir les cartes pouvant être piochée ainsi que leur probabilité d'être piochée
     def get_drawable_cards(self):
         drawable_cards = {}
         for card in self._model.deck:
-            if(not any(isinstance(x, card.__class__) for x in drawable_cards)):
-                proba = sum(isinstance(x, card.__class__) for x in self._model.deck)/self._model.deck.__len__()
+            if(not any(isinstance(x, card.__class__) for x in drawable_cards)): #Vérifie si la carte possède déjà une instance dans la liste
+                proba = sum(isinstance(x, card.__class__) for x in self._model.deck)/self._model.deck.__len__() #Calcul du pourcentage associé
                 drawable_cards[card] = proba
+                
+            #Si la liste contient 10 cartes, elle contient tous les types de carte possible du jeu, on sort donc de la boucle
             if(drawable_cards.__len__() == 10):
                 break
-        #return {k:v for k,v in sorted(drawable_cards.items(), key = lambda item:item[1], reverse = True)}
-        return drawable_cards
+        return {k:v for k,v in sorted(drawable_cards.items(), key = lambda item:item[1], reverse = True)} #Tri du dictionnaire en fonction de ses valeurs (décroissant)
             
     def eval(self):
         if(self._model.victory):
-            print("bonjour")
             return 1
         else:
             return self._probability
@@ -449,12 +452,16 @@ class State():
 class Save():
     '''
     Classe permettant de sauvegarder l'état courant du jeu lors d'une simulation. Cette manière de faire est loin d'être la meilleure, implémenter un command 
-    pattern aurait été plus bénéfique, bien que rendant l'architecture des fichiers moins lisibles
+    pattern aurait été plus bénéfique, bien que rendant l'architecture des fichiers moins lisible
     '''
     def __init__(self, model):
+        #Création d'un environnement propre à l'état courant, afin de ne pas manipuler l'environnement hors de l'état courant
         self._model = copy.deepcopy(model)
+        
         self._current_player = self._model.current_player
         self._next_player = self._model.next_player
+        
+        #Sauvagarde des éléments de l'environnement
         self._modelsave = self._model.save_attributes()
         self._current_player_save = self._model.current_player.save_attributes()
         self._next_player_save = self._model.next_player.save_attributes()
@@ -467,8 +474,9 @@ class Save():
         
         self._current_player.set_attributes(self._current_player_save)
         self._next_player.set_attributes(self._next_player_save)
-        
         self._model.set_attributes(self._modelsave)
+        
+        #La restauration ne se fait que sur les listes de carte, il faut revenir au joueur courant manuellement
         self._model.players_list.next_turn()
         
 
