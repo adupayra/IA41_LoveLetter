@@ -34,6 +34,7 @@ class Card(metaclass = abc.ABCMeta):
     #Action effectuée par la carte une fois jouée
     @abstractmethod
     def action(self):
+        #Si le joueur adverse connaissait la carte du joueur courant, alors il ne la connait plus
         if self._model.next_player.knows_card[0] and isinstance(self, self._model.next_player.knows_card[1]):
             self._model.next_player.knows_card = [False, None]
     
@@ -137,6 +138,7 @@ class Pretre(Card):
      
     def action(self):
         Card.action(self)
+        #Indique que le joueur courant connait la carte du joueur adverse, indique également l'instance de cette carte
         self._model.current_player.knows_card = [True,self._model.next_player.cards[0].__class__]
         if(isinstance(self._model.current_player, player.RealPlayer) and not self._model.issimul): #Pas d'affichage en simulation
             self._model.controller.display_AI_card(self._model.ia.cards[0])

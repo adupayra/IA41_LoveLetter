@@ -255,15 +255,18 @@ class IAFacile(IA):
     def __str__(self):
         return "IA Facile"
     
+    #Algorithme de décision de la carte à jouer de l'IA facile
     def algorithme(self):
-        self._model.deck.append(self._model.burnt_card)
-        state = State(self._model, None)
-
         
-        (value, best_state) = self.max_val(state, 2)
+        self._model.deck.append(self._model.burnt_card) #Ajout de la carte brûlée à la pioche car le joueur ne connaît pas cette carte. Elle doit donc être théoriquement piochable
+        
+        state = State(self._model, None) #Etat courant
+ 
+        (value, best_state) = self.max_val(state, 2) #Appel de l'algorithme minmax qui va nous retourner la valeur du meilleur état ainsi que l'état correspondant
         
         print(value)
 
+        #Grâce à l'état trouvé avec le minmax, on retrouve la carte à jouer menant à cet état
         while(best_state.parent is not state):
             best_state = best_state.parent
         index = 0
@@ -272,8 +275,9 @@ class IAFacile(IA):
         else:
             index = 1
         
+        
         self._model.current_state = state
-        self._model.deck.remove(self._model.burnt_card)
+        self._model.deck.remove(self._model.burnt_card) #On retire la carte brûlée
         
         return index
     
@@ -289,7 +293,9 @@ class IAFacile(IA):
     def minmax(self, depth):
         pass
     
+    #Algorithme classique d'un noeud max
     def max_val(self, state, depth):
+        #Condition d'arrêt
         if state.is_final or depth == 0:
             return (state.eval(), state.parent)
         print(state)
@@ -298,11 +304,13 @@ class IAFacile(IA):
         for s in state.next_states():
             print(s)
             temp = self.min_val(s, depth-1)
-            value = max(temp, value, key = lambda x:x[0])
+            value = max(temp, value, key = lambda x:x[0]) #Puisqu'on a un couple (valeur, état parent), on cherche le maximum des deux couples en fonction de la valeur
         
         return value
     
+    #Algorithme classique d'un noeud min
     def min_val(self, state, depth):
+        #Condition d'arrêt
         if(state.is_final or depth == 0):
             return (-state.eval(), state.parent)
         
@@ -310,7 +318,7 @@ class IAFacile(IA):
         
         for s in state.next_states():
             temp = self.max_val(s, depth-1)
-            value = min(value, temp, key = lambda x:x[0])
+            value = min(value, temp, key = lambda x:x[0]) #Puisqu'on a un couple (valeur, état parent), on cherche le minimum des deux couples en fonction de la valeur
             
         return value
             
