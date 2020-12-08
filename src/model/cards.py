@@ -91,20 +91,21 @@ class Garde(TwoActionCards):
     
      
     def action(self):
-        #Vérification du joueur courant afin d'afficher ou non quelque chose sur l'UI
-        if(isinstance(self._model.current_player, player.RealPlayer)):
-            if(not self._model.issimul):
-                self._model.controller.display_guard_choice()
-            
-        elif not self._model.issimul:
-            #Algo IA
-            guess = randrange(0,9)
-            array = [Espionne.__name__, Pretre.__name__, Baron.__name__, Servante.__name__, Prince.__name__, Chancelier.__name__, Roi.__name__, 
-                     Comtesse.__name__, Princesse.__name__]
-            
-
-            self._model.controller.display_guard_ialabel(array[guess]) #Affichage du label récapitulatif
-            self.deuxieme_action(array[guess])
+        #Carte sans effet en simulation, elle renvoie un pourcentage utilisé das la fonction éval.
+        if(not self._model.issimul):
+            #Vérification du joueur courant afin d'afficher ou non quelque chose sur l'UI
+            if(isinstance(self._model.current_player, player.RealPlayer)):
+                    self._model.controller.display_guard_choice()
+                
+            elif not self._model.issimul:
+                #Algo IA
+                guess = randrange(0,9)
+                array = [Espionne.__name__, Pretre.__name__, Baron.__name__, Servante.__name__, Prince.__name__, Chancelier.__name__, Roi.__name__, 
+                         Comtesse.__name__, Princesse.__name__]
+                
+    
+                self._model.controller.display_guard_ialabel(array[guess]) #Affichage du label récapitulatif
+                self.deuxieme_action(array[guess])
     
     #Action effectuée une fois que la carte à deviner a été choisi
     @classmethod
@@ -154,17 +155,19 @@ class Baron(Card):
     
      
     def action(self):
-        #Caching des valeurs auxquelles on va beaucoup accéder dans la fonction
-        current_player = self._model.current_player
-        next_player= self._model.next_player
-        
-        #Chaine de caractere de victoire
-        chaine = " gagne 1 point, en ayant joué un baron"
-
-        #Affichage de l'écran
-        #Pas d'affichage en simulation
-        #Lorsqu'il y a simulation, une autre fonction est appelée
+        #En simulation la carte renverra une probabilité de gagner dans la fonction éval mais n'aura pas d'effet
         if(not self._model.issimul):
+            #Caching des valeurs auxquelles on va beaucoup accéder dans la fonction
+            current_player = self._model.current_player
+            next_player= self._model.next_player
+            
+            #Chaine de caractere de victoire
+            chaine = " gagne 1 point, grâce à un baron"
+    
+            #Affichage de l'écran
+            #Pas d'affichage en simulation
+            #Lorsqu'il y a simulation, une autre fonction est appelée
+        
             self._model.controller.display_baron(current_player.cards[0], next_player.cards[0])
             
             #Check du gagnant
@@ -218,6 +221,7 @@ class Prince(TwoActionCards):
         return 5
     
     def action(self):
+        #Si la carte est jouée en simulation, elle renvoie un poids pour la fonction éval et est jouée sans effet
         if(not self._model.issimul):
             #Affichage de l'écran de séléction du camp si le joueur est le joueur courrant
             if(isinstance(self._model.current_player, player.RealPlayer)):
@@ -280,7 +284,7 @@ class Chancelier(TwoActionCards):
     '''
      
     def action(self):
-        #Si il n'y a plus de carte dans la pioche, ou si il y a simulation, alors jouer le chancelier ne fera rien
+        #Si il n'y a plus de carte dans la pioche, ou si il y a simulation, alors jouer le chancelier n'aura pas d'effet
         if(self._model.deck.__len__() != 0 and not self._model.issimul):
             current_player = self._model.current_player
             current_player.play_chancelier = True #Variable permettant de savoir si le joueur est en pleine action de chancelier ou non lorsqu'il clique sur un bouton

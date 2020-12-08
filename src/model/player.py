@@ -10,7 +10,6 @@ from abc import abstractmethod
 import copy
 import random
 import src.model.cards as cards
-from prompt_toolkit.application import current
 
 #Liste circulairement chainée, contenant les noeuds contenant chaque joueur, ainsi que le noeud du joueur courant
 class CircleLinkedList(object):
@@ -25,36 +24,16 @@ class CircleLinkedList(object):
         self._current_node = self._current_node.next_player
         return self._current_node
     
-    def create_copy(self):
-        listcopy = copy.deepcopy(self)
-        player_nodecopy = self._real_player_node.create_copy()
-        ia_nodecopy = self._ia_node.create_copy()
-        ia_nodecopy.next_player = player_nodecopy
-        player_nodecopy.next_player = ia_nodecopy
-        listcopy.current_node = copy.deepcopy(self._current_node)
-        if self._current_node == self._ia_node:
-            listcopy.current_node = ia_nodecopy
-        else:
-            listcopy.current_node = player_nodecopy
-        listcopy._real_player_node = player_nodecopy
-        listcopy._ia_node = ia_nodecopy
-        return listcopy
         
     @property
     def real_player_node(self):
         return self._real_player_node
-    
-    @real_player_node.setter
-    def real_player_node(self, value):
-        self._real_player_node = value
+
         
     @property
     def ia_node(self):
         return self._ia_node
-    
-    @ia_node.setter
-    def ia_node(self, value):
-        self._ia_node = value
+
     
     @property
     def real_player(self):
@@ -70,15 +49,12 @@ class CircleLinkedList(object):
     
     @current_node.setter
     def current_node(self, player):
-        self._current_node = player
+        if(self._current_node is None):
+            self._current_node = player
         
     @property
     def current(self):
         return self._current_node.player
-    
-    @current.setter
-    def current(self, value):
-        self._current_node.player = value
     
     @property
     def next_player_node(self):
@@ -88,10 +64,6 @@ class CircleLinkedList(object):
     def next_player(self):
         return self._current_node.next_player.player
     
-    @next_player.setter
-    def next_player(self,value):
-        self._current_node.next_player.player = value
-    
 
 #Noeud contenant l'instance d'un joueur et la référence vers le noeud suivant
 class Node(object):
@@ -99,12 +71,7 @@ class Node(object):
     def __init__(self, player):
         self._player = player
         self._next_player = None
-    
-    def create_copy(self):
-        nodecopy = copy.deepcopy(self)
-        nodecopy.player = copy.deepcopy(self._player)
-        return nodecopy
-    
+
     @property
     def next_player(self):
         return self._next_player
@@ -148,7 +115,7 @@ class Player(metaclass = abc.ABCMeta):
     
     def set_attributes(self, attributes):
         self._cards = copy.copy(attributes["Cards"])
-        self._cards_played = attributes["Cards played"]
+        self._cards_played = copy.copy(attributes["Cards played"])
        
     @property
     def espionne_played(self):
@@ -169,10 +136,6 @@ class Player(metaclass = abc.ABCMeta):
     @property
     def cards(self):
         return self._cards
-    
-    @cards.setter
-    def cards(self,value):
-        self._cards = copy.deepcopy(value)
 
     @property 
     def cards_to_string(self):
@@ -231,10 +194,6 @@ class Player(metaclass = abc.ABCMeta):
     def cards_played(self):
         return self._cards_played
     
-    @cards_played.setter
-    def cards_played(self, value):
-        self._cards_played = value
-    
     def add_cards_played(self, card):
         self._cards_played.append(card)
 
@@ -288,9 +247,19 @@ class IAFacile(IA):
     
     def algorithme(self):
         self._model.deck.append(self._model.burnt_card)
-        state = State(self._model)
-        (value, card_to_play) = self.max_val(state, 2)
-        index = self.cards.index(card_to_play)
+        state = State(self._model, None)
+        (value, best_state) = self.max_val(state, 2)
+        
+        print(value)
+
+        while(best_state.parent is not state):
+            best_state = best_state.parent
+        index = 0
+        if(isinstance(self._cards[0], best_state.last_card_played.__class__)):
+            index = 0
+        else:
+            index = 1
+            
         self._model.current_state = state
         self._model.deck.remove(self._model.burnt_card)
         
@@ -310,7 +279,7 @@ class IAFacile(IA):
     
     def max_val(self, state, depth):
         if state.is_final or depth == 0:
-            return (state.eval(), state.last_card_played)
+            return (state.eval(), state.parent)
         print(state)
         
         value = (-10, None)
@@ -323,7 +292,7 @@ class IAFacile(IA):
     
     def min_val(self, state, depth):
         if(state.is_final or depth == 0):
-            return (-state.eval(), state.last_card_played)
+            return (-state.eval(), state.parent)
         
         value = (10,None)
         
@@ -385,12 +354,12 @@ class State():
                 "\nCards played by current : " + str(self._model.current_player.cards_played) +
                 "\nLast card played by current : " + str(self._model.current_player.last_card_played) + "\nHand : " + str(self._model.current_player.cards) + 
                 "\nOpponent's cards played : " + str(self._model.next_player.cards_played) + "\nLast card played in game : " + 
-                str(self._model.next_player.last_card_played) + "\nOpponent's hand : " + str(self._model.next_player.cards) + 
+                str(self._last_card_played) + "\nOpponent's hand : " + str(self._model.next_player.cards) + 
                 "\nDeck : " + str(self._model.deck) + "\nPossible cards : " + str(self._possible_cards) + "\n")
         
         
 
-    def __init__(self, model, probability = 1):
+    def __init__(self, model, parent, probability = 1):
         
         self._save = Save(model)
         self._model = self._save.get_model()
@@ -403,9 +372,14 @@ class State():
 
         self._possible_cards = self.get_possible_cards()
         
+        self._parent = parent
+        
         self._probability = probability
         
-       
+    @property
+    def parent(self):
+        return self._parent
+    
     @property
     def is_final(self):
         if(self._model.victory):
@@ -420,7 +394,7 @@ class State():
     def save(self):
         return self._save
     
-    def next_states(self, j = 0): 
+    def next_states(self): 
         
         drawable_cards = self.get_drawable_cards()
         states = []
@@ -434,7 +408,7 @@ class State():
                 self._model.pick_card_simu(card)
                 self._model.play(i)
                 #Génération de l'état correspondant
-                state = State(self._model, drawable_cards[card])
+                state = State(self._model, self, drawable_cards[card])
                 states.append(state)
                 
                 self._save.backup()
@@ -467,6 +441,7 @@ class State():
             
     def eval(self):
         if(self._model.victory):
+            print("bonjour")
             return 1
         else:
             return self._probability

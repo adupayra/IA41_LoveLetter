@@ -65,6 +65,7 @@ class Model(object):
     def cards_played(self):
         return self._cards_played
     
+    #Utilisé en cas de sauvegarde du model (pour les simulations)
     @cards_played.setter
     def cards_played(self,value):
         self._cards_played = value
@@ -85,6 +86,7 @@ class Model(object):
     def deck(self):
         return self._deck
 
+    #Utilisé en cas de sauvegarde du model (pour les simulations)
     @deck.setter
     def deck(self, value):
         self._deck = value
@@ -92,11 +94,7 @@ class Model(object):
     @property
     def players_list(self):
         return self._players_list
-    
-    @players_list.setter
-    def players_list(self, value):
-        self._players_list = value
-    
+
     @property
     def player(self):
         return self._players_list.real_player
@@ -108,18 +106,10 @@ class Model(object):
     @property
     def current_player(self):
         return self._players_list.current
-
-    @current_player.setter
-    def current_player(self, value):
-        self._players_list.current = value
     
     @property
     def next_player(self):
         return self._players_list.next_player
-    
-    @next_player.setter
-    def next_player(self, value):
-        self._players_list.next_player = value
         
     @property
     def victory(self):
@@ -137,10 +127,6 @@ class Model(object):
     def issimul(self):
         return self._issimul
     
-    @issimul.setter
-    def issimul(self, value):
-        self._issimul = value
-    
     @property
     def current_state(self):
         return self._current_state
@@ -148,6 +134,7 @@ class Model(object):
     @current_state.setter
     def current_state(self, value):
         self._current_state = value
+        
     def add_defausse(self, card):
         self._cartes_defaussees.append(card)
                 
@@ -264,10 +251,10 @@ class Model(object):
     #Choix de la carte jouée par l'IA
     def playAI(self):
         #Test d'une simulation en depth 1, à modifier à terme
-        if(self.issimul is False):
-            self.issimul = True
+        if(self._issimul is False):
+            self._issimul = True
             index = self.ia.algorithme()
-            self.issimul = False
+            self._issimul = False
         #Appeler algo de l'IA ici
         #self.play(randrange(0,2))
         
@@ -338,12 +325,11 @@ class Model(object):
             self.controller.display_victory(chaine, [self.player.score, self.ia.score])
 
     def save_attributes(self):
-        return {"Deck" : copy.copy(self._deck), "Cards played" : copy.copy(self._cards_played), "Cartes defaussees" : copy.copy(self._cartes_defaussees), 
+        return {"Deck" : copy.copy(self._deck), "Cards played" : copy.copy(self._cards_played),
                 "Victory" : self._victory}
         
     def set_attributes(self, attributes):
         self._deck = copy.copy(attributes["Deck"])
-        self._cards_played = attributes["Cards played"]
-        self._cartes_defaussees = attributes["Cartes defaussees"]
+        self._cards_played = copy.copy(attributes["Cards played"])
         self._victory = attributes["Victory"]
 
