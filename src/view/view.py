@@ -117,15 +117,12 @@ class MenuScene(tk.Frame):
         
             #Création des radio buttons
             var = tk.IntVar()
-            radio1 = tk.Radiobutton(self._difficulty_window, text = "Facile", value = 0, 
+            radio1 = tk.Radiobutton(self._difficulty_window, text = "Intermédiaire", value = 0, 
                                     variable = var)
-            radio2 = tk.Radiobutton(self._difficulty_window, text = "Intermédiare", value = 1, 
-                                    variable = var)
-            radio3 = tk.Radiobutton(self._difficulty_window, text = "Difficile", value = 2, 
+            radio2 = tk.Radiobutton(self._difficulty_window, text = "Difficile (pas implémenté)", value = 1, 
                                     variable = var)
             radio1.pack(anchor = tk.W)
             radio2.pack(anchor = tk.W)
-            radio3.pack(anchor = tk.W)
             validate = tk.Button(self._difficulty_window, text = "OK", command =lambda:self.validate(view, var.get()))
             validate.pack(anchor = tk.SE)
     
@@ -189,10 +186,6 @@ class GameScene(tk.Frame):
     #Initialise les éléments UI de feature
     def init_features(self, view, theme1, container, text_font):
         theme = 'goldenrod'
-        
-        #Création du bouton transition test
-        button = tk.Button(self, text="Go to end game scene", command=lambda:Controller.display_victory("Test de victoire", [4,5]))
-        button.place(relx=0, rely=0)
         
         #Container du quit button
         quit_frame = tk.Frame(self, bg = theme1, highlightthickness = 3, highlightbackground = theme)
@@ -409,6 +402,9 @@ class GameScene(tk.Frame):
     def lock_buttons(self):
         for button in self._player_buttons:
             button.config(state = 'disabled')
+            
+    def lock_button(self, index):
+        self._player_buttons[index].config(state = 'disabled')
     
     #Fonction permettant de les déverouiller
     def unlock_buttons(self):
@@ -869,6 +865,7 @@ class EndGameScene(tk.Frame):
         
     #Fonction qui permet l'affichage du vainqueur
     def victory_screen(self, text, score):
+
         self.tkraise()
         self._label_victory['text'] = text
         
@@ -888,6 +885,6 @@ class EndGameScene(tk.Frame):
             self._tokenlabels[1][i].pack(side = tk.LEFT)
             
         #Dissociation des cas entre fin de round et fin de partie
-        if score[0] == 6 or score[1] == 6:
+        if score[0] >= 6 or score[1] >= 6:
             self._next_round_button.pack_forget() #Désactivation du bouton next round si fin de partie
 

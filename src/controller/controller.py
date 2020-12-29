@@ -8,7 +8,6 @@ Created on 26 oct. 2020
 import src.model.model as model
 import webbrowser
 import sys
-#from prompt_toolkit.application import current
 
 class Controller():
     #Ne pas appeler cette variable depuis un module de view afin de garder l'indépendance entre modèle et view    
@@ -37,6 +36,9 @@ class Controller():
     #Fonction lancée lorsque l'utilisateur à choisi la difficulté de la partie
     def start_game(cls, view, difficulty): #difficulty = -1 : nouveau round, difficulté != -1 : nouvelle partie
         current_player = cls._modelvar.init_data(difficulty)
+        if(difficulty == 1): #Difficulté difficile choisie donc on lance une simulation pour faire apprendre l'IA (apprentissage par renforcement), à retirer quand l'IA
+                            #Aura appris
+            return
         
         #Affichage du plateau de jeu
         cls.display_scene(view, "Game scene")
@@ -60,6 +62,7 @@ class Controller():
             #Actualisation de l'UI du vrai joueur (nombre de cartes et images associées du joueur)
             gamescene.update_playerUI(cls._modelvar.player.cards_to_string)
             
+           
             #Si le joueur actuel est l'IA, alors l'utilisateur ne peut pas jouer, et le process se fera sans UI, dans le modèle
             if(isinstance(current_player, model.player.IA)):
                 gamescene.update_tour_label("C'est le tour de l'IA")
@@ -69,21 +72,29 @@ class Controller():
                     gamescene.update_lastcardslabels(str(cls._modelvar.player), str(cls._modelvar.player.last_card_played)) #Affichage de la carte jouée par le joueur au dernier tour
                 cls.card_playedAI(gamescene)
             else:
+               
                 gamescene.update_tour_label("C'est votre tour")
                 if(cls._modelvar.ia.last_card_played is not None):
                     gamescene.update_lastcardslabels(str(cls._modelvar.ia), str(cls._modelvar.ia.last_card_played)) #Affichage de la carte jouée par l'IA au dernier tour
                 gamescene.unlock_buttons()
+                
+                #Cas où le joueur est obligé de jouer la comtesse
+                must_play_comtesse = cls._modelvar.player.must_play_comtesse()
+                if(must_play_comtesse != -1):
+                    gamescene.lock_button((must_play_comtesse+1)%2)
                 
        
     
     @classmethod
     #L'IA joue une carte
     def card_playedAI(cls, gamescene):
-        #Attente de 3 secondes
-        gamescene.freeze_screen()
+        if(not cls._modelvar.islearning):
+            #Attente de 3 secondes
+            gamescene.freeze_screen()
 
-        current_player = cls._modelvar.playAI()
-        cls.start_turn(current_player, gamescene)
+        cls._modelvar.playAI()
+
+        cls.start_turn(cls._modelvar.current_player, gamescene)
        
     @classmethod
     #Fonction appelée lorsqu'un joueur a choisi une carte
@@ -94,10 +105,10 @@ class Controller():
             cls.played_chancelier(gamescene, index)
         else:
             #Action de la carte et changement de joueur courant
-            current_player = cls._modelvar.play(index)
+            cls._modelvar.play(index)
             
             #Nouveau tour
-            cls.start_turn(current_player, gamescene)
+            cls.start_turn(cls._modelvar.current_player, gamescene)
     
 
         
@@ -121,18 +132,21 @@ class Controller():
     #Fonction permettant d'afficher le label d'informations et d'ajouter de la lisibilité au jeu
     @classmethod
     def display_guard_ialabel(cls, card_guessed):
+        if(cls._modelvar.islearning):
+            return
         cls._game_scene.display_details_label("L'IA a joué un garde\net deviné la carte : " + card_guessed)
         cls._game_scene.update_lastcardslabels("IA ", model.cards.Garde.__name__)
         cls._game_scene.update_iaUI(1)
-        cls._game_scene.freeze_screen()
         cls._game_scene.undisplay_details_label()
     
     #Affichage du label récapitulatif lorsqu'un des joueurs a joué un prince
     @classmethod
     def display_prince_detailslabel(cls, current_player, side_chosen, card):
+        if(cls._modelvar.islearning):
+            return
         cls._game_scene.display_details_label(str(current_player) + " a joué un prince\net choisi ce camp : " + side_chosen + "\nDéfausse : " + str(card))
         if("IA" in side_chosen):
-           cls.display_AI_card(cls._modelvar.ia.cards[0])
+            cls.display_AI_card(cls._modelvar.ia.cards[0])
         cls._game_scene.freeze_screen()
         cls._game_scene.undisplay_details_label()
         cls._game_scene.update_iaUI(1)
@@ -153,6 +167,8 @@ class Controller():
         
     @classmethod
     def display_AI_card(cls,card):
+        if(cls._modelvar.islearning):
+            return
         #Affichage de la carte de l'ia, verouillage des boutons, attente de 3 secondes, déverouillage des boutons et ré affichage de la carte cachée
         cls._game_scene.display_AI_card(str(card))
         cls._game_scene.freeze_screen()
@@ -160,6 +176,8 @@ class Controller():
         
     @classmethod
     def display_baron(cls, firstcard, secondcard):
+        if(cls._modelvar.islearning):
+            return
         cls._game_scene.update_lastcardslabels(str(cls._modelvar.current_player), model.cards.Baron.__name__)
         #Affichage des cartes du joueur et de l'ia pendant 3 secondes
         cls._game_scene.display_baron(firstcard, secondcard)
@@ -167,6 +185,8 @@ class Controller():
     #Update l'UI de l'IA lorsqu'elle joue le chancelier, de manière à ce que le joueur puisse suivre son action
     @classmethod
     def update_chancelier_IA(cls, current_player, nbcardsia):
+        if(cls._modelvar.islearning):
+            return
         cls._game_scene.update_lastcardslabels(str(current_player), model.cards.Chancelier.__name__)
         cls._game_scene.update_iaUI(nbcardsia)
         cls._game_scene.freeze_screen()
