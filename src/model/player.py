@@ -385,8 +385,7 @@ class State():
         self._probability = probability
         self._model.current_state = self
         
-        self.dicocarte={}
-        self.nbcarte=0
+        self._dicocarte, self._nbcarte=self.info()
         
     @property
     def parent(self):
@@ -450,137 +449,136 @@ class State():
         nbcomtesse=0
         nbprincesse=0
             
-        deck=self._model.deck
-        deck.append(self._model.next_player.cards[0])
+        mondeck=self._model.deck
+        mondeck.append(self._model.next_player.cards[0])
           
-        while i<len(deck):
-            if(isinstance(deck[i],cards.Espionne)):
+        while i<len(mondeck):
+            if(isinstance(mondeck[i],cards.Espionne)):
                 nbespionne=nbespionne+1
-            if(isinstance(deck[i],cards.Garde)):
+            if(isinstance(mondeck[i],cards.Garde)):
                 nbgarde=nbgarde+1
-            if(isinstance(deck[i],cards.Pretre)):
+            if(isinstance(mondeck[i],cards.Pretre)):
                 nbpretre=nbpretre+1
-            if(isinstance(deck[i],cards.Baron)):
+            if(isinstance(mondeck[i],cards.Baron)):
                 nbbaron=nbbaron+1
-            if(isinstance(deck[i],cards.Servante)):
+            if(isinstance(mondeck[i],cards.Servante)):
                 nbservante=nbservante+1
-            if(isinstance(deck[i],cards.Prince)):
+            if(isinstance(mondeck[i],cards.Prince)):
                 nbprince=nbprince+1
-            if(isinstance(deck[i],cards.Chancelier)):
+            if(isinstance(mondeck[i],cards.Chancelier)):
                 nbchancelier=nbchancelier+1
-            if(isinstance(deck[i],cards.Roi)):
+            if(isinstance(mondeck[i],cards.Roi)):
                 nbroi=nbroi+1
-            if(isinstance(deck[i],cards.Comtesse)):
+            if(isinstance(mondeck[i],cards.Comtesse)):
                 nbcomtesse=nbcomtesse+1
-            if(isinstance(deck[i],cards.Princesse)):
+            if(isinstance(mondeck[i],cards.Princesse)):
                 nbprincesse=nbprincesse+1
             i=i+1
 
-            self.dicocarte={cards.Espionne:nbespionne,cards.Garde:nbgarde,cards.Pretre:nbpretre,cards.Baron:nbbaron,cards.Servante:nbservante,cards.Prince:nbprince,cards.Chancelier:nbchancelier,cards.Roi:nbroi,cards.Comtesse:nbcomtesse,cards.Princesse:nbprincesse}
-            self.nbcarte=i
+            return {cards.Espionne:nbespionne,cards.Garde:nbgarde,cards.Pretre:nbpretre,cards.Baron:nbbaron,cards.Servante:nbservante,cards.Prince:nbprince,cards.Chancelier:nbchancelier,cards.Roi:nbroi,cards.Comtesse:nbcomtesse,cards.Princesse:nbprincesse},i
+        
         
     def eval(self):
         if(self._model.victory):
             return 1
         else:
-            self.info()
-            print("Nombre d'Espionne =",self.dicocarte[cards.Espionne]," Nombre de Garde =",self.dicocarte[cards.Garde]," Nombre de Pretre =",self.dicocarte[cards.Pretre]," Nombre de Baron =",self.dicocarte[cards.Baron]," Nombre de Servante =",self.dicocarte[cards.Servante]," Nombre de Prince =",self.dicocarte[cards.Prince]," Nombre de Chancelier =",self.dicocarte[cards.Chancelier]," Nombre de Roi =",self.dicocarte[cards.Roi]," Nombre de Comtesse =",self.dicocarte[cards.Comtesse]," Nombre de Princesse =",self.dicocarte[cards.Princesse],"Nombre total de carte :",self.nbcarte)
+            print("Nombre d'Espionne =",self._dicocarte[cards.Espionne]," Nombre de Garde =",self._dicocarte[cards.Garde]," Nombre de Pretre =",self._dicocarte[cards.Pretre]," Nombre de Baron =",self._dicocarte[cards.Baron]," Nombre de Servante =",self._dicocarte[cards.Servante]," Nombre de Prince =",self._dicocarte[cards.Prince]," Nombre de Chancelier =",self._dicocarte[cards.Chancelier]," Nombre de Roi =",self._dicocarte[cards.Roi]," Nombre de Comtesse =",self._dicocarte[cards.Comtesse]," Nombre de Princesse =",self._dicocarte[cards.Princesse],"Nombre total de carte :",self._nbcarte)
             if(isinstance(self._model.current_player.cards[0],cards.Espionne)):
-                poids1=100*(self.dicocarte[cards.Espionne]/self.nbcarte)  #Faut pas chercher plus longtemps, si on a l'espionne, faut la jouer
+                poids1=100*(self._dicocarte[cards.Espionne]/self._nbcarte)  #Faut pas chercher plus longtemps, si on a l'espionne, faut la jouer
 
             if(isinstance(self._model.current_player.cards[0],cards.Garde)):
                 if(self._model.next_player.knows_card[0]==True):
-                    probagarde=self.dicocarte[cards.Garde]/self.nbcarte*100
-                    poids1=(100-probagarde)*(self.dicocarte[cards.Garde]/self.nbcarte)
+                    probagarde=self._dicocarte[cards.Garde]/self._nbcarte*100
+                    poids1=(100-probagarde)*(self._dicocarte[cards.Garde]/self._nbcarte)
                 else:
-                    poids1=self.evalgarde(True)*(self.dicocarte[cards.Garde]/self.nbcarte)
+                    poids1=self.evalgarde(True)*(self._dicocarte[cards.Garde]/self._nbcarte)
 
             if(isinstance(self._model.current_player.cards[0],cards.Pretre)):
                 if(self._model.next_player.knows_card[0]==True):
-                    probagarde=self.dicocarte[cards.Garde]/self.nbcarte*100
-                    poids1=(100-probagarde)*(self.dicocarte[cards.Garde]/self.nbcarte)
+                    probagarde=self._dicocarte[cards.Garde]/self._nbcarte*100
+                    poids1=(100-probagarde)*(self._dicocarte[cards.Garde]/self._nbcarte)
                 else:
                     if(self._opponent.immune==True):
-                        poids1=20*(self.dicocarte[cards.Pretre]/self.nbcarte)
+                        poids1=20*(self._dicocarte[cards.Pretre]/self._nbcarte)
                     else:
-                        poids1=70*(self.dicocarte[cards.Pretre]/self.nbcarte)
+                        poids1=70*(self._dicocarte[cards.Pretre]/self._nbcarte)
 
             if(isinstance(self._model.current_player.cards[0],cards.Baron)):
-                probaespionne=self.dicocarte[cards.Espionne]/self.nbcarte*100
-                probagarde=(self.dicocarte[cards.Espionne]+self.dicocarte[cards.Garde])/self.nbcarte*100
-                probapretre=(self.dicocarte[cards.Espionne]+self.dicocarte[cards.Garde]+self.dicocarte[cards.Pretre])/self.nbcarte*100
-                probabaron=(self.dicocarte[cards.Espionne]+self.dicocarte[cards.Garde]+self.dicocarte[cards.Pretre]+self.dicocarte[cards.Baron])/self.nbcarte*100
-                probaservante=(self.dicocarte[cards.Espionne]+self.dicocarte[cards.Garde]+self.dicocarte[cards.Pretre]+self.dicocarte[cards.Baron]+self.dicocarte[cards.Servante])/self.nbcarte*100
-                probaprince=(self.dicocarte[cards.Espionne]+self.dicocarte[cards.Garde]+self.dicocarte[cards.Pretre]+self.dicocarte[cards.Baron]+self.dicocarte[cards.Servante]+self.dicocarte[cards.Prince])/self.nbcarte*100
-                probachancelier=(self.dicocarte[cards.Espionne]+self.dicocarte[cards.Garde]+self.dicocarte[cards.Pretre]+self.dicocarte[cards.Baron]+self.dicocarte[cards.Servante]+self.dicocarte[cards.Prince]+self.dicocarte[cards.Chancelier])/self.nbcarte*100
-                probaroi=(self.dicocarte[cards.Espionne]+self.dicocarte[cards.Garde]+self.dicocarte[cards.Pretre]+self.dicocarte[cards.Baron]+self.dicocarte[cards.Servante]+self.dicocarte[cards.Prince]+self.dicocarte[cards.Chancelier]+self.dicocarte[cards.Roi])/self.nbcarte*100
-                probacomtesse=(self.dicocarte[cards.Espionne]+self.dicocarte[cards.Garde]+self.dicocarte[cards.Pretre]+self.dicocarte[cards.Baron]+self.dicocarte[cards.Servante]+self.dicocarte[cards.Prince]+self.dicocarte[cards.Chancelier]+self.dicocarte[cards.Roi]+self.dicocarte[cards.Comtesse])/self.nbcarte*100
+                probaespionne=self._dicocarte[cards.Espionne]/self._nbcarte*100
+                probagarde=(self._dicocarte[cards.Espionne]+self._dicocarte[cards.Garde])/self._nbcarte*100
+                probapretre=(self._dicocarte[cards.Espionne]+self._dicocarte[cards.Garde]+self._dicocarte[cards.Pretre])/self._nbcarte*100
+                probabaron=(self._dicocarte[cards.Espionne]+self._dicocarte[cards.Garde]+self._dicocarte[cards.Pretre]+self._dicocarte[cards.Baron])/self._nbcarte*100
+                probaservante=(self._dicocarte[cards.Espionne]+self._dicocarte[cards.Garde]+self._dicocarte[cards.Pretre]+self._dicocarte[cards.Baron]+self._dicocarte[cards.Servante])/self._nbcarte*100
+                probaprince=(self._dicocarte[cards.Espionne]+self._dicocarte[cards.Garde]+self._dicocarte[cards.Pretre]+self._dicocarte[cards.Baron]+self._dicocarte[cards.Servante]+self._dicocarte[cards.Prince])/self._nbcarte*100
+                probachancelier=(self._dicocarte[cards.Espionne]+self._dicocarte[cards.Garde]+self._dicocarte[cards.Pretre]+self._dicocarte[cards.Baron]+self._dicocarte[cards.Servante]+self._dicocarte[cards.Prince]+self._dicocarte[cards.Chancelier])/self._nbcarte*100
+                probaroi=(self._dicocarte[cards.Espionne]+self._dicocarte[cards.Garde]+self._dicocarte[cards.Pretre]+self._dicocarte[cards.Baron]+self._dicocarte[cards.Servante]+self._dicocarte[cards.Prince]+self._dicocarte[cards.Chancelier]+self._dicocarte[cards.Roi])/self._nbcarte*100
+                probacomtesse=(self._dicocarte[cards.Espionne]+self._dicocarte[cards.Garde]+self._dicocarte[cards.Pretre]+self._dicocarte[cards.Baron]+self._dicocarte[cards.Servante]+self._dicocarte[cards.Prince]+self._dicocarte[cards.Chancelier]+self._dicocarte[cards.Roi]+self._dicocarte[cards.Comtesse])/self._nbcarte*100
                 print("Les proba du Baron : Espionne :",probaespionne,"Garde :",probagarde,"Pretre :",probapretre,"Baron :",probabaron,"Servante :",probaservante,"Prince :",probaprince,"Chancelier :",probachancelier,"Roi :",probaroi,"Comtesse :",probacomtesse)
                 if(self._model.next_player.knows_card[0]==True):
-                    probagarde=self.dicocarte[cards.Garde]/self.nbcarte*100
-                    poids1=(100-probagarde)*(self.dicocarte[cards.Garde]/self.nbcarte)
+                    probagarde=self._dicocarte[cards.Garde]/self._nbcarte*100
+                    poids1=(100-probagarde)*(self._dicocarte[cards.Garde]/self._nbcarte)
                 else:
                     if(self._opponent.immune==True):
-                        poids1=35*(self.dicocarte[cards.Baron]/self.nbcarte)
+                        poids1=35*(self._dicocarte[cards.Baron]/self._nbcarte)
                     else:
                         if(isinstance(self._model.current_player.cards[1],cards.Espionne)):
-                            poids1=probaespionne*(self.dicocarte[cards.Baron]/self.nbcarte)
+                            poids1=probaespionne*(self._dicocarte[cards.Baron]/self._nbcarte)
                         if(isinstance(self._model.current_player.cards[1],cards.Garde)):
-                            poids1=probagarde*(self.dicocarte[cards.Baron]/self.nbcarte)
+                            poids1=probagarde*(self._dicocarte[cards.Baron]/self._nbcarte)
                         if(isinstance(self._model.current_player.cards[1],cards.Pretre)):
-                            poids1=probapretre*(self.dicocarte[cards.Baron]/self.nbcarte)
+                            poids1=probapretre*(self._dicocarte[cards.Baron]/self._nbcarte)
                         if(isinstance(self._model.current_player.cards[1],cards.Baron)):
-                            poids1=probabaron*(self.dicocarte[cards.Baron]/self.nbcarte)
+                            poids1=probabaron*(self._dicocarte[cards.Baron]/self._nbcarte)
                         if(isinstance(self._model.current_player.cards[1],cards.Servante)):
-                            poids1=probaservante*(self.dicocarte[cards.Baron]/self.nbcarte)
+                            poids1=probaservante*(self._dicocarte[cards.Baron]/self._nbcarte)
                         if(isinstance(self._model.current_player.cards[1],cards.Prince)):
-                            poids1=probaprince*(self.dicocarte[cards.Baron]/self.nbcarte)
+                            poids1=probaprince*(self._dicocarte[cards.Baron]/self._nbcarte)
                         if(isinstance(self._model.current_player.cards[1],cards.Chancelier)):
-                            poids1=probachancelier*(self.dicocarte[cards.Baron]/self.nbcarte)
+                            poids1=probachancelier*(self._dicocarte[cards.Baron]/self._nbcarte)
                         if(isinstance(self._model.current_player.cards[1],cards.Roi)):
-                            poids1=probaroi*(self.dicocarte[cards.Baron]/self.nbcarte)
+                            poids1=probaroi*(self._dicocarte[cards.Baron]/self._nbcarte)
                         if(isinstance(self._model.current_player.cards[1],cards.Comtesse)):
-                            poids1=probacomtesse*(self.dicocarte[cards.Baron]/self.nbcarte)
+                            poids1=probacomtesse*(self._dicocarte[cards.Baron]/self._nbcarte)
                         if(isinstance(self._model.current_player.cards[1],cards.Princesse)):
-                            poids1=100*(self.dicocarte[cards.Baron]/self.nbcarte)
+                            poids1=100*(self._dicocarte[cards.Baron]/self._nbcarte)
                         
             if(isinstance(self._model.current_player.cards[0],cards.Servante)):
                 if(self._model.next_player.knows_card[0]==True):
-                    probagarde=self.dicocarte[cards.Garde]/self.nbcarte*100
-                    poids1=(100-probagarde)*(self.dicocarte[cards.Garde]/self.nbcarte)
+                    probagarde=self._dicocarte[cards.Garde]/self._nbcarte*100
+                    poids1=(100-probagarde)*(self._dicocarte[cards.Garde]/self._nbcarte)
                 else:
-                    poids1=75*(self.dicocarte[cards.Servante]/self.nbcarte) #Même si le joueur en face a aussi joué une servante, dans le cas de la servante onsenbalécouilles
+                    poids1=75*(self._dicocarte[cards.Servante]/self._nbcarte) #Même si le joueur en face a aussi joué une servante, dans le cas de la servante onsenbalécouilles
 
             if(isinstance(self._model.current_player.cards[0],cards.Prince)):
                 if(self._model.next_player.knows_card[0]):
-                    probagarde=self.dicocarte[cards.Garde]/self.nbcarte*100
-                    poids1=(100-probagarde)*(self.dicocarte[cards.Garde]/self.nbcarte)
+                    probagarde=self._dicocarte[cards.Garde]/self._nbcarte*100
+                    poids1=(100-probagarde)*(self._dicocarte[cards.Garde]/self._nbcarte)
                 else:
-                    poids1=self.evalprince(True)*(self.dicocarte[cards.Prince]/self.nbcarte)
+                    poids1=self.evalprince(True)*(self._dicocarte[cards.Prince]/self._nbcarte)
 
             if(isinstance(self._model.current_player.cards[0],cards.Chancelier)):
                 if(self._model.next_player.knows_card[0]==True):
-                    probagarde=self.dicocarte[cards.Garde]/self.nbcarte*100
-                    poids1=(100-probagarde)*(self.dicocarte[cards.Garde]/self.nbcarte)
+                    probagarde=self._dicocarte[cards.Garde]/self._nbcarte*100
+                    poids1=(100-probagarde)*(self._dicocarte[cards.Garde]/self._nbcarte)
                 else:
-                    poids1=self.evalchancelier(True)*(self.dicocarte[cards.Chancelier]/self.nbcarte)
+                    poids1=self.evalchancelier(True)*(self._dicocarte[cards.Chancelier]/self._nbcarte)
         
             if(isinstance(self._model.current_player.cards[0],cards.Roi)):
                 if(self._model.next_player.knows_card[0]==True):
-                    probagarde=self.dicocarte[cards.Garde]/self.nbcarte*100
-                    poids1=(100-probagarde)*(self.dicocarte[cards.Garde]/self.nbcarte)
+                    probagarde=self._dicocarte[cards.Garde]/self._nbcarte*100
+                    poids1=(100-probagarde)*(self._dicocarte[cards.Garde]/self._nbcarte)
                 else:
                     if(self._opponent.immune==True):
-                        poids1=10*(self.dicocarte[cards.Roi]/self.nbcarte)
+                        poids1=10*(self._dicocarte[cards.Roi]/self._nbcarte)
                     else:
-                        poids1=45*(self.dicocarte[cards.Roi]/self.nbcarte)
+                        poids1=45*(self._dicocarte[cards.Roi]/self._nbcarte)
         
             if(isinstance(self._model.current_player.cards[0],cards.Comtesse)):
                 if(self._model.next_player.knows_card[0]==True):
-                    probagarde=self.dicocarte[cards.Garde]/self.nbcarte*100
-                    poids1=(100-probagarde)*(self.dicocarte[cards.Garde]/self.nbcarte)
+                    probagarde=self._dicocarte[cards.Garde]/self._nbcarte*100
+                    poids1=(100-probagarde)*(self._dicocarte[cards.Garde]/self._nbcarte)
                 else:
-                    poids1=50*(self.dicocarte[cards.Comtesse]/self.nbcarte)
+                    poids1=50*(self._dicocarte[cards.Comtesse]/self._nbcarte)
             
             if(isinstance(self._model.current_player.cards[0],cards.Princesse)):
                 poids1=0 #Peut importe le contexte, le princesse est à 0. (Bon en vrai je pourrais faire une fonction qui nous permetterais de gagner la partie mais pour l'instant je laisse comme ça
@@ -591,71 +589,71 @@ class State():
 
             if(isinstance(self._model.current_player.cards[1],cards.Espionne)):
                 if(isinstance(self._model.current_player.cards[0],cards.Espionne)):
-                    poids2=30*(self.dicocarte[cards.Espionne]/self.nbcarte) #Une main avec deux espionnes  n'est pas forcément la combinaison la plus avantageuse
+                    poids2=30*(self._dicocarte[cards.Espionne]/self._nbcarte) #Une main avec deux espionnes  n'est pas forcément la combinaison la plus avantageuse
                 else:
-                    poids2=100*(self.dicocarte[cards.Espionne]/self.nbcarte)
+                    poids2=100*(self._dicocarte[cards.Espionne]/self._nbcarte)
 
             if(isinstance(self._model.current_player.cards[1],cards.Garde)):
-                poids2=self.evalgarde(True)*(self.dicocarte[cards.Garde]/self.nbcarte)
+                poids2=self.evalgarde(True)*(self._dicocarte[cards.Garde]/self._nbcarte)
 
             if(isinstance(self._model.current_player.cards[1],cards.Pretre)):
                 if(self._opponent.immune==True):
-                    poids2=20*(self.dicocarte[cards.Pretre]/self.nbcarte)
+                    poids2=20*(self._dicocarte[cards.Pretre]/self._nbcarte)
                 else:
-                    poids2=70*(self.dicocarte[cards.Pretre]/self.nbcarte)
+                    poids2=70*(self._dicocarte[cards.Pretre]/self._nbcarte)
 
             if(isinstance(self._model.current_player.cards[1],cards.Baron)):
-                probaespionne=self.dicocarte[cards.Espionne]/self.nbcarte*100
-                probagarde=(self.dicocarte[cards.Espionne]+self.dicocarte[cards.Garde])/self.nbcarte*100
-                probapretre=(self.dicocarte[cards.Espionne]+self.dicocarte[cards.Garde]+self.dicocarte[cards.Pretre])/self.nbcarte*100
-                probabaron=(self.dicocarte[cards.Espionne]+self.dicocarte[cards.Garde]+self.dicocarte[cards.Pretre]+self.dicocarte[cards.Baron])/self.nbcarte*100
-                probaservante=(self.dicocarte[cards.Espionne]+self.dicocarte[cards.Garde]+self.dicocarte[cards.Pretre]+self.dicocarte[cards.Baron]+self.dicocarte[cards.Servante])/self.nbcarte*100
-                probaprince=(self.dicocarte[cards.Espionne]+self.dicocarte[cards.Garde]+self.dicocarte[cards.Pretre]+self.dicocarte[cards.Baron]+self.dicocarte[cards.Servante]+self.dicocarte[cards.Prince])/self.nbcarte*100
-                probachancelier=(self.dicocarte[cards.Espionne]+self.dicocarte[cards.Garde]+self.dicocarte[cards.Pretre]+self.dicocarte[cards.Baron]+self.dicocarte[cards.Servante]+self.dicocarte[cards.Prince]+self.dicocarte[cards.Chancelier])/self.nbcarte*100
-                probaroi=(self.dicocarte[cards.Espionne]+self.dicocarte[cards.Garde]+self.dicocarte[cards.Pretre]+self.dicocarte[cards.Baron]+self.dicocarte[cards.Servante]+self.dicocarte[cards.Prince]+self.dicocarte[cards.Chancelier]+self.dicocarte[cards.Roi])/self.nbcarte*100
-                probacomtesse=(self.dicocarte[cards.Espionne]+self.dicocarte[cards.Garde]+self.dicocarte[cards.Pretre]+self.dicocarte[cards.Baron]+self.dicocarte[cards.Servante]+self.dicocarte[cards.Prince]+self.dicocarte[cards.Chancelier]+self.dicocarte[cards.Roi]+self.dicocarte[cards.Comtesse])/self.nbcarte*100
+                probaespionne=self._dicocarte[cards.Espionne]/self._nbcarte*100
+                probagarde=(self._dicocarte[cards.Espionne]+self._dicocarte[cards.Garde])/self._nbcarte*100
+                probapretre=(self._dicocarte[cards.Espionne]+self._dicocarte[cards.Garde]+self._dicocarte[cards.Pretre])/self._nbcarte*100
+                probabaron=(self._dicocarte[cards.Espionne]+self._dicocarte[cards.Garde]+self._dicocarte[cards.Pretre]+self._dicocarte[cards.Baron])/self._nbcarte*100
+                probaservante=(self._dicocarte[cards.Espionne]+self._dicocarte[cards.Garde]+self._dicocarte[cards.Pretre]+self._dicocarte[cards.Baron]+self._dicocarte[cards.Servante])/self._nbcarte*100
+                probaprince=(self._dicocarte[cards.Espionne]+self._dicocarte[cards.Garde]+self._dicocarte[cards.Pretre]+self._dicocarte[cards.Baron]+self._dicocarte[cards.Servante]+self._dicocarte[cards.Prince])/self._nbcarte*100
+                probachancelier=(self._dicocarte[cards.Espionne]+self._dicocarte[cards.Garde]+self._dicocarte[cards.Pretre]+self._dicocarte[cards.Baron]+self._dicocarte[cards.Servante]+self._dicocarte[cards.Prince]+self._dicocarte[cards.Chancelier])/self._nbcarte*100
+                probaroi=(self._dicocarte[cards.Espionne]+self._dicocarte[cards.Garde]+self._dicocarte[cards.Pretre]+self._dicocarte[cards.Baron]+self._dicocarte[cards.Servante]+self._dicocarte[cards.Prince]+self._dicocarte[cards.Chancelier]+self._dicocarte[cards.Roi])/self._nbcarte*100
+                probacomtesse=(self._dicocarte[cards.Espionne]+self._dicocarte[cards.Garde]+self._dicocarte[cards.Pretre]+self._dicocarte[cards.Baron]+self._dicocarte[cards.Servante]+self._dicocarte[cards.Prince]+self._dicocarte[cards.Chancelier]+self._dicocarte[cards.Roi]+self._dicocarte[cards.Comtesse])/self._nbcarte*100
                 print("Les proba du Baron : Espionne :",probaespionne,"Garde :",probagarde,"Pretre :",probapretre,"Baron :",probabaron,"Servante :",probaservante,"Prince :",probaprince,"Chancelier :",probachancelier,"Roi :",probaroi,"Comtesse :",probacomtesse)
                 if(self._opponent.immune==True):
-                    poids2=35*(self.dicocarte[cards.Baron]/self.nbcarte)
+                    poids2=35*(self._dicocarte[cards.Baron]/self._nbcarte)
                 else:
                     if(isinstance(self._model.current_player.cards[0],cards.Espionne)):
-                        poids2=probaespionne*(self.dicocarte[cards.Baron]/self.nbcarte)
+                        poids2=probaespionne*(self._dicocarte[cards.Baron]/self._nbcarte)
                     if(isinstance(self._model.current_player.cards[0],cards.Garde)):
-                        poids2=probagarde*(self.dicocarte[cards.Baron]/self.nbcarte)
+                        poids2=probagarde*(self._dicocarte[cards.Baron]/self._nbcarte)
                     if(isinstance(self._model.current_player.cards[0],cards.Pretre)):
-                        poids2=probapretre*(self.dicocarte[cards.Baron]/self.nbcarte)
+                        poids2=probapretre*(self._dicocarte[cards.Baron]/self._nbcarte)
                     if(isinstance(self._model.current_player.cards[0],cards.Baron)):
-                        poids2=probabaron*(self.dicocarte[cards.Baron]/self.nbcarte)
+                        poids2=probabaron*(self._dicocarte[cards.Baron]/self._nbcarte)
                     if(isinstance(self._model.current_player.cards[0],cards.Servante)):
-                        poids2=probaservante*(self.dicocarte[cards.Baron]/self.nbcarte)
+                        poids2=probaservante*(self._dicocarte[cards.Baron]/self._nbcarte)
                     if(isinstance(self._model.current_player.cards[0],cards.Prince)):
-                        poids2=probaprince*(self.dicocarte[cards.Baron]/self.nbcarte)
+                        poids2=probaprince*(self._dicocarte[cards.Baron]/self._nbcarte)
                     if(isinstance(self._model.current_player.cards[0],cards.Chancelier)):
-                        poids2=probachancelier*(self.dicocarte[cards.Baron]/self.nbcarte)
+                        poids2=probachancelier*(self._dicocarte[cards.Baron]/self._nbcarte)
                     if(isinstance(self._model.current_player.cards[0],cards.Roi)):
-                        poids2=probaroi*(self.dicocarte[cards.Baron]/self.nbcarte)
+                        poids2=probaroi*(self._dicocarte[cards.Baron]/self._nbcarte)
                     if(isinstance(self._model.current_player.cards[0],cards.Comtesse)):
-                        poids2=probacomtesse*(self.dicocarte[cards.Baron]/self.nbcarte)
+                        poids2=probacomtesse*(self._dicocarte[cards.Baron]/self._nbcarte)
                     if(isinstance(self._model.current_player.cards[0],cards.Princesse)):
-                        poids2=100*(self.dicocarte[cards.Baron]/self.nbcarte)
+                        poids2=100*(self._dicocarte[cards.Baron]/self._nbcarte)
                 
             if(isinstance(self._model.current_player.cards[1],cards.Servante)):
-                poids2=75*(self.dicocarte[cards.Servante]/self.nbcarte) #On viens de la piocher donc on a pas besoin de savoir si le joueur en face connait la carte et le fait que l'adversaire est joué une servante avant, balécouiles
+                poids2=75*(self._dicocarte[cards.Servante]/self._nbcarte) #On viens de la piocher donc on a pas besoin de savoir si le joueur en face connait la carte et le fait que l'adversaire est joué une servante avant, balécouiles
 
             if(isinstance(self._model.current_player.cards[1],cards.Prince)):
-                poids2=self.evalprince(True)*(self.dicocarte[cards.Prince]/self.nbcarte)
+                poids2=self.evalprince(True)*(self._dicocarte[cards.Prince]/self._nbcarte)
 
             if(isinstance(self._model.current_player.cards[1],cards.Chancelier)):
-                poids2=self.evalchancelier(True)*(self.dicocarte[cards.Chancelier]/self.nbcarte)
+                poids2=self.evalchancelier(True)*(self._dicocarte[cards.Chancelier]/self._nbcarte)
         
             if(isinstance(self._model.current_player.cards[1],cards.Roi)):
                 if(self._opponent.immune==True):
-                    poids2=10*(self.dicocarte[cards.Roi]/self.nbcarte)
+                    poids2=10*(self._dicocarte[cards.Roi]/self._nbcarte)
                 else:
-                    poids2=45*(self.dicocarte[cards.Roi]/self.nbcarte) #Poids haut car carte haute
+                    poids2=45*(self._dicocarte[cards.Roi]/self._nbcarte) #Poids haut car carte haute
 
             if(isinstance(self._model.current_player.cards[1],cards.Comtesse)):
-                poids2=50*(self.dicocarte[cards.Comtesse]/self.nbcarte) #Le poids est quand même plus haut car le fait d'avoir une carte haute est toujours un avantage
+                poids2=50*(self._dicocarte[cards.Comtesse]/self._nbcarte) #Le poids est quand même plus haut car le fait d'avoir une carte haute est toujours un avantage
 
             if(isinstance(self._model.current_player.cards[1],cards.Princesse)):
                 poids2=0 #Peut importe le contexte, le princesse est à 0. (Bon en vrai je pourrais faire une fonction qui nous permetterais de gagner la partie mais pour l'instant je laisse comme ça
@@ -712,8 +710,8 @@ class State():
                         print("Je défausse les cartes :",self._model.current_player.cards[defausse1],"et :",self._model.current_player.cards[defausse2])
 
     def evalprince(self,choix):
-        probavictoire=self.dicocarte[cards.Princesse]/self.nbcarte*100
-        probapourfairechier=(self.dicocarte[cards.Servante]+self.dicocarte[cards.Pretre])/self.nbcarte*100
+        probavictoire=self._dicocarte[cards.Princesse]/self._nbcarte*100
+        probapourfairechier=(self._dicocarte[cards.Servante]+self._dicocarte[cards.Pretre])/self._nbcarte*100
         probatotal=probavictoire+probapourfairechier
         if(choix): #Dans le cas où il faut retourner un poids
             print("Les probas pour le Prince : Victoire :",probavictoire,"Pour faire chier :",probapourfairechier)    
@@ -742,15 +740,15 @@ class State():
                     return 1
 
     def evalgarde(self,choix):
-        probaespionne=self.dicocarte[cards.Espionne]/self.nbcarte*100
-        probapretre=self.dicocarte[cards.Pretre]/self.nbcarte*100
-        probabaron=self.dicocarte[cards.Baron]/self.nbcarte*100
-        probaservante=self.dicocarte[cards.Servante]/self.nbcarte*100
-        probaprince=self.dicocarte[cards.Prince]/self.nbcarte*100
-        probachancelier=self.dicocarte[cards.Chancelier]/self.nbcarte*100
-        probaroi=self.dicocarte[cards.Roi]/self.nbcarte*100
-        probacomtesse=self.dicocarte[cards.Comtesse]/self.nbcarte*100
-        probaprincesse=self.dicocarte[cards.Princesse]/self.nbcarte*100
+        probaespionne=self._dicocarte[cards.Espionne]/self._nbcarte*100
+        probapretre=self._dicocarte[cards.Pretre]/self._nbcarte*100
+        probabaron=self._dicocarte[cards.Baron]/self._nbcarte*100
+        probaservante=self._dicocarte[cards.Servante]/self._nbcarte*100
+        probaprince=self._dicocarte[cards.Prince]/self._nbcarte*100
+        probachancelier=self._dicocarte[cards.Chancelier]/self._nbcarte*100
+        probaroi=self._dicocarte[cards.Roi]/self._nbcarte*100
+        probacomtesse=self._dicocarte[cards.Comtesse]/self._nbcarte*100
+        probaprincesse=self._dicocarte[cards.Princesse]/self._nbcarte*100
         dicoproba={probaespionne:cards.Espionne,probapretre:cards.Pretre,probabaron:cards.Baron,probaservante:cards.Servante,probaprince:cards.Prince,probachancelier:cards.Chancelier,probaroi:cards.Roi,probacomtesse:cards.Comtesse,probaprincesse:cards.Princesse}
         carteajouer=max(dicoproba)
         if(choix): #On est dans le cas où il faut retourner un poids
