@@ -169,22 +169,22 @@ class Baron(Card):
     def action(self):
         Card.action(self)
         if(not self._model.next_player.immune):
-            #En simulation la carte renverra une probabilité de gagner dans la fonction éval mais n'aura pas d'effet
-            if(not self._model.issimul):
-                #Caching des valeurs auxquelles on va beaucoup accéder dans la fonction
-                current_player = self._model.current_player
-                next_player= self._model.next_player
-                
-                #Chaine de caractere de victoire
-                chaine = " gagne 1 point, grâce à un baron"
+
+            #Caching des valeurs auxquelles on va beaucoup accéder dans la fonction
+            current_player = self._model.current_player
+            next_player= self._model.next_player
             
+            #Chaine de caractere de victoire
+            chaine = " gagne 1 point, grâce à un baron"
+        
+            if(not self._model.issimul):
                 self._model.controller.display_baron(current_player.cards[0], next_player.cards[0])
-                
-                #Check du gagnant
-                if(current_player.cards[0].value() > next_player.cards[0].value()):
-                    self._model.game_victory(current_player, str(current_player) + chaine)                     
-                elif(current_player.cards[0].value() < next_player.cards[0].value()):
-                    self._model.game_victory(next_player, str(next_player) + chaine)
+            
+            #Check du gagnant
+            if(current_player.cards[0].value() > next_player.cards[0].value()):
+                self._model.game_victory(current_player, str(current_player) + chaine)                     
+            elif(current_player.cards[0].value() < next_player.cards[0].value()):
+                self._model.game_victory(next_player, str(next_player) + chaine)
             
     #Fonction appelée lors d'une simulation de jeu de baron afin de déterminer les probabilités de gagner
     @classmethod
@@ -239,14 +239,14 @@ class Prince(TwoActionCards):
         if(isinstance(self._model.current_player, player.RealPlayer) and not self._model.issimul):
                 self._model.controller.display_prince_choice(self._player_side, self._ia_side)
         else:
-            
-            #Sinon algo ia
-            #faut mettre self.deuxieme_action(fonction eval prince qui renvoie le camp) genre 0=self._player_side et 1=self._ia_side
-            choix=self._model.current_state.evalprince(False)
-            if(choix == 1):
-                self.deuxieme_action(self._player_side)
-            else:
-                self.deuxieme_action(self._ia_side)
+            if(not isinstance(self._model.ia, player.IADifficile)):
+                #Sinon algo ia
+                #faut mettre self.deuxieme_action(fonction eval prince qui renvoie le camp) genre 0=self._player_side et 1=self._ia_side
+                choix=self._model.current_state.evalprince(False)
+                if(choix == 1):
+                    self.deuxieme_action(self._player_side)
+                else:
+                    self.deuxieme_action(self._ia_side)
     
     @classmethod
     def deuxieme_action(cls, chosen_side):
@@ -261,9 +261,9 @@ class Prince(TwoActionCards):
                 cls._model.controller.display_prince_detailslabel(cls._model.current_player, chosen_side, _player.cards[0]) #Affichage du label récapitulatif
             
             #cas ou la carte déffaussé est une princesse
-            if(_player.cards[0].value() == 9 and isinstance(_player, player.RealPlayer) and not cls._model.issimul):
+            if(_player.cards[0].value() == 9 and isinstance(_player, player.RealPlayer)):
                 cls._model.game_victory(cls._model.ia, "L'IA remporte 1 point car le vrai joueur s'est fait défaussé une princesse !")
-            elif(_player.cards[0].value() == 9 and isinstance(_player, player.IA) and not cls._model.issimul):
+            elif(_player.cards[0].value() == 9 and isinstance(_player, player.IA)):
                 cls._model.game_victory(cls._model.player, "Le vrai joueur remporte 1 point car l'IA s'est fait défaussé une princesse !")
             
             #autre cas
@@ -427,11 +427,10 @@ class Princesse(Card):
      
     def action(self):
         Card.action(self)
-        if(not self._model.issimul):
-            if(isinstance(self._model.current_player, player.RealPlayer)):
-                self._model.game_victory(self._model.ia, "L'IA remporte 1 point car le vrai joueur à joué la Princesse !")
-            else:
-                self._model.game_victory(self._model.player, "Le vrai joueur remporte 1 point car l'IA à joué la Princesse !")
+        if(isinstance(self._model.current_player, player.RealPlayer)):
+            self._model.game_victory(self._model.ia, "L'IA remporte 1 point car le vrai joueur à joué la Princesse !")
+        else:
+            self._model.game_victory(self._model.player, "Le vrai joueur remporte 1 point car l'IA à joué la Princesse !")
         
 
     

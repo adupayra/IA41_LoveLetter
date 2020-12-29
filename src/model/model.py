@@ -31,6 +31,7 @@ class Model(object):
         self._deck = [] #La pioche
         self._players_list = None #Liste chainée contenant le joueur courant, le vrai joueur et l'ia
         self._victory = False
+        self._winner = None
         cards.Card._model = self
         self._cartes_defaussees = [] #Cartes défaussées lorsque le prince est joué
         self._current_state = None
@@ -120,6 +121,10 @@ class Model(object):
     @victory.setter
     def victory(self, value):
         self._victory=value
+        
+    @property
+    def winner(self):
+        return self._winner
         
     @property
     def cartes_defaussees(self):
@@ -275,6 +280,15 @@ class Model(object):
             
     #Choix de la carte jouée par l'IA
     def playAI(self):
+        
+        #Si l'ia a une princesse elle n'est pas jouée
+        if(isinstance(self.current_player.cards[0], cards.Princesse)):
+            self.play(1)
+            return
+        elif(isinstance(self.current_player.cards[1], cards.Princesse)):
+            self.play(0)
+            return
+        
         #Si l'ia possède une comtesse et un prince ou un roi, alors pas besoin de lancer la simulation, la comtesse est jouée
         play_comtesse = self.current_player.must_play_comtesse()
         if play_comtesse != -1:
@@ -352,9 +366,10 @@ class Model(object):
         
         self._victory = True 
         
+        self._winner = winner
         if(not self.issimul):
             #On affiche l'écran de fin de jeu en passant par le controller
-            winner.win(1) #Le joueur ayant gagné gagne un point de score
+            self._winner.win(1) #Le joueur ayant gagné gagne un point de score
             
             if(self.player.espionne_played):
                 self.player.win(1)
@@ -379,19 +394,6 @@ class Model(object):
         self._cards_played = copy.copy(attributes["Cards played"])
         self._victory = attributes["Victory"]
         
-    #retourne une liste représentant les cartes qu'il est possible d'être possédée par le joueur adverse  
-    def get_possible_cards(self):
-        possible_cards = []
-        self._deck.append(self.next_player.cards[0]) #Ajout de la carte adverse à la pioche (car la liste est construite en parcourant la pioche)
-        
-        #Parcourt de la pioche pour construire la liste
-        for card in self._deck:
-            if(not any(isinstance(x, card.__class__) for x in possible_cards)): #Si la liste ne contient pas de référence au type de la carte, l'ajouter à la liste
-                possible_cards.append(card)
-            if(possible_cards.__len__() == 10): #Toutes les cartes possibles sont dans la liste
-                break
-        self._deck.remove(self.next_player.cards[0]) #On retire la carte adverse de la pioche
-        return possible_cards
     
     #Fonction permettant de définir les cartes pouvant être piochée ainsi que leur probabilité d'être piochée
     def get_drawable_cards(self):

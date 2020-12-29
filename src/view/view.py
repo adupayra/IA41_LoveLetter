@@ -434,7 +434,7 @@ class GameScene(tk.Frame):
     def display_baron(self, player, ia):
         self._special_frame.display_baron_screen(player, ia)
         
-    #Affiche le label d'information du chancelier
+    #Affiche le label d'information
     def display_details_label(self, text_to_display):
         self._details_label['text'] = text_to_display
         self._details_label.place(relx = 0.1, rely = 0.8)

@@ -134,7 +134,9 @@ class Controller():
     def display_guard_ialabel(cls, card_guessed):
         if(cls._modelvar.islearning):
             return
+        
         cls._game_scene.display_details_label("L'IA a joué un garde\net deviné la carte : " + card_guessed)
+        cls._game_scene.freeze_screen()
         cls._game_scene.update_lastcardslabels("IA ", model.cards.Garde.__name__)
         cls._game_scene.update_iaUI(1)
         cls._game_scene.undisplay_details_label()

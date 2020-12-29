@@ -258,6 +258,15 @@ class IAMoyenne(IA):
         self._model.deck.append(self._model.burnt_card) #Ajout de la carte brûlée à la pioche car le joueur ne connaît pas cette carte. 
                                                         #Elle doit donc être théoriquement piochable
         
+        #Afin que l'IA ne découvre pas la carte de l'adversaire pendant la simulation, on lui donne la carte qu'il est le plus probable qu'il est
+        #(ce n'est pas optimal, le mieux serait de couvrir tous les cas possibles)
+        opponent = self._model.next_player
+        card = opponent.cards[0] 
+        self._model.deck.append(card) #Ajout de la carte de l'adversaire au deck
+        opponent.remove_card(card) #Suppression de la carte dans son jeu
+        newcard = self._model.pick_card_simu() 
+        opponent.add_card(newcard) #Obtention de la carte la plus probable
+        
         state = State(self._model, None) #Etat courant
 
         self._model.current_state=state
@@ -294,6 +303,12 @@ class IAMoyenne(IA):
         
         #self._model.current_state = state
         self._model.deck.remove(self._model.burnt_card) #On retire la carte brûlée
+        
+        opponent.remove_card(newcard) #on retir la carte intermédiaire du deck
+        opponent.add_card(card)#On redonne au joueur sa vraie carte
+        self._model.deck.append(newcard) #on replace la carte qu'avait le joueur dans le deck
+        self._model.deck.remove(card) #on enlève la carte du joueur
+        
         '''
         '''
         self._model.issimul = False
@@ -361,7 +376,7 @@ class State():
                 "\nLast card played by current : " + str(self._model.current_player.last_card_played) + "\nHand : " + str(self._model.current_player.cards) + 
                 "\nOpponent's cards played : " + str(self._model.next_player.cards_played) + "\nLast card played in game : " + 
                 str(self._last_card_played) + "\nOpponent's hand : " + str(self._model.next_player.cards) + 
-                "\nDeck : " + str(self._model.deck) + "\nPossible cards : " + str(self._possible_cards) + "\nKnows card : " + str(self._current_player.knows_card[0])
+                "\nDeck : " + str(self._model.deck) + "\nKnows card : " + str(self._current_player.knows_card[0])
                 + "\nOpponent knowscard : " + str(self._model.next_player.knows_card[0]) + "\nCurrent immune : " + str(self._current_player.immune) +
                 "\nOpponent immune : " + str(self._opponent.immune) + "\nCurrent espionne : " + str(self._model.current_player.espionne_played) +
                 "\nOpponent espionne : " + str(self._model.next_player.espionne_played) + "\n")
@@ -379,7 +394,6 @@ class State():
         self._last_card_played = self._opponent.last_card_played
         self._cards_remained = self._model.deck.__len__()
 
-        self._possible_cards = self._model.get_possible_cards()
         
         self._parent = parent
         
