@@ -260,6 +260,7 @@ class IAMoyenne(IA):
         
         state = State(self._model, None) #Etat courant
 
+        self._model.current_state=state
         
         temp = copy.copy(self._depth)
         (value, best_state) = self.max_val(state, float('-inf'), float('inf'), int(temp)) #Appel de l'algorithme minmax qui va nous retourner la valeur du meilleur état ainsi que l'état correspondant
@@ -385,7 +386,8 @@ class State():
         self._probability = probability
         self._model.current_state = self
         
-        self._dicocarte, self._nbcarte=self.info()
+        self._dicocarte, self._nbcarte=self.info()   
+        self._model.current_state = self
         
     @property
     def parent(self):
@@ -451,6 +453,7 @@ class State():
             
         mondeck=self._model.deck
         mondeck.append(self._model.next_player.cards[0])
+        print(mondeck)
           
         while i<len(mondeck):
             if(isinstance(mondeck[i],cards.Espionne)):
@@ -474,8 +477,10 @@ class State():
             if(isinstance(mondeck[i],cards.Princesse)):
                 nbprincesse=nbprincesse+1
             i=i+1
-
-            return {cards.Espionne:nbespionne,cards.Garde:nbgarde,cards.Pretre:nbpretre,cards.Baron:nbbaron,cards.Servante:nbservante,cards.Prince:nbprince,cards.Chancelier:nbchancelier,cards.Roi:nbroi,cards.Comtesse:nbcomtesse,cards.Princesse:nbprincesse},i
+            
+        mondeck.remove(self._model.next_player.cards[0])
+        
+        return {cards.Espionne:nbespionne,cards.Garde:nbgarde,cards.Pretre:nbpretre,cards.Baron:nbbaron,cards.Servante:nbservante,cards.Prince:nbprince,cards.Chancelier:nbchancelier,cards.Roi:nbroi,cards.Comtesse:nbcomtesse,cards.Princesse:nbprincesse},i
         
         
     def eval(self):

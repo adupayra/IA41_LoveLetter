@@ -242,7 +242,7 @@ class Prince(TwoActionCards):
             
             #Sinon algo ia
             #faut mettre self.deuxieme_action(fonction eval prince qui renvoie le camp) genre 0=self._player_side et 1=self._ia_side
-            choix=self._model._current_state.evalprince(False)
+            choix=self._model.current_state.evalprince(False)
             if(choix == 1):
                 self.deuxieme_action(self._player_side)
             else:
