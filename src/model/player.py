@@ -704,10 +704,31 @@ class State():
             else:
                 return 40
         else: #La, c'est le choix des cartes
-            for j in range(self._model.current_player.cards.__len__()):
+            print("bonjoir")
+            print(self._model.current_player.cards)
+            print("bonsour")
+            for j in range(0,self._model.current_player.cards.__len__()):
                 if(isinstance(self._model.current_player.cards[j],cards.Princesse)):
-                    #print("Il faut défausser la princesse",self._model.current_player.cards[j])
+                    print("Il faut défausser la princesse",self._model.current_player.cards[j],j)
                     return j
+                else:
+                    if(isinstance(self._model.current_player.cards[j-1],cards.Espionne)):
+                        print("Je rentre dans le cas de l'espionne pour le chancelier")
+                        if(self._model.current_player.cards.__len__==2):
+                            if(j==0):
+                                return random.choice[1,2]
+                            else:
+                                if(j==1):
+                                    return random.choice([0,2])
+                                else:
+                                    return random.choice[0,1]
+                        else:
+                            if(j==0):
+                                return 1
+                            else:
+                                if(j==1):
+                                    return 0
+                                
             if(self._model.current_player.cards[0]==self._model.current_player.cards[1]):
                 #print("Deux même cartes dans la main, on en défausse une au hasard")
                 defausse=random.choice([0,1])
@@ -752,19 +773,22 @@ class State():
                         poids=probatotal
             return poids
         else: #Dans le cas où il faut retourner un camp
-            if(isinstance(self._model.next_player.cards[0],cards.Princesse)):# or isinstance(self._model.next_player.cards[1],cards.Princesse)):
+            if(isinstance(self._model.next_player.cards[0],cards.Princesse)):
                 #print("Camp adverse")
                 return 1
             else:
-                if(self._model.current_player.knows_card[0]):
-                    #print("Camp IA")
-                    return 0
-                if(probatotal<20):
-                    #print("Camp IA")
-                    return 0
-                else:
-                    #print("Camp adversaire")
+                if(isinstance(self._model.next_player.cards[0],cards.Espionne)):
                     return 1
+                else:
+                    if(self._model.current_player.knows_card[0]):
+                        #print("Camp IA")
+                        return 0
+                    if(probatotal>40):
+                        #print("Camp IA")
+                        return 0
+                    else:
+                        #print("Camp adversaire")
+                        return 1
 
     def evalgarde(self,choix):
         probaespionne=(self._dicocarte[cards.Espionne]/self._nbcarte*100,0)

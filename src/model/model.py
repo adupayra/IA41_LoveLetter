@@ -54,6 +54,8 @@ class Model(object):
             self._cards.append(cards.Chancelier(self))
             
         for _ in range(0, 4):
+            self._cards.append(cards.Espionne(self))
+            self._cards.append(cards.Princesse(self))
             self._cards.append(cards.Chancelier(self))
 
     @property
