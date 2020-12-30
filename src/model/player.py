@@ -577,9 +577,12 @@ class State():
             if(isinstance(self._model.current_player.cards[0],cards.Chancelier)):
                 if(self._model.next_player.knows_card[0]==True):
                     probagarde=self._dicocarte[cards.Garde]/self._nbcarte*100
-                    poids1=(100-probagarde)*(self._dicocarte[cards.Garde]/self._nbcarte)
+                    #poids1=(100-probagarde)*(self._dicocarte[cards.Garde]/self._nbcarte)
+                    poids1=10
+                    pass
                 else:
-                    poids1=self.evalchancelier(True)*(self._dicocarte[cards.Chancelier]/self._nbcarte)
+                    #poids1=self.evalchancelier(True)*(self._dicocarte[cards.Chancelier]/self._nbcarte)
+                    poids1=10
         
             if(isinstance(self._model.current_player.cards[0],cards.Roi)):
                 if(self._model.next_player.knows_card[0]==True):
@@ -662,7 +665,8 @@ class State():
                 poids2=self.evalprince(True)*(self._dicocarte[cards.Prince]/self._nbcarte)
 
             if(isinstance(self._model.current_player.cards[1],cards.Chancelier)):
-                poids2=self.evalchancelier(True)*(self._dicocarte[cards.Chancelier]/self._nbcarte)
+                #poids2=self.evalchancelier(True)*(self._dicocarte[cards.Chancelier]/self._nbcarte)
+                poids2=10
         
             if(isinstance(self._model.current_player.cards[1],cards.Roi)):
                 if(self._opponent.immune==True):
@@ -682,6 +686,7 @@ class State():
             print("Carte jouer par l'adversaire :",self._model.next_player.cards_played)
             print("Le poids de l'état actuelle est :",poidsfinal,"/200\nLa main actuelle étant :",self._model.current_player.cards[0],self._model.current_player.cards[1])
             return poidsfinal
+            
     
     def evalchancelier(self,choix):
         if(choix): #Si choix est vrai, on est dans le cas où il faut retourner un poids
@@ -753,23 +758,24 @@ class State():
                     return 1
 
     def evalgarde(self,choix):
-        probaespionne=self._dicocarte[cards.Espionne]/self._nbcarte*100
-        probapretre=self._dicocarte[cards.Pretre]/self._nbcarte*100
-        probabaron=self._dicocarte[cards.Baron]/self._nbcarte*100
-        probaservante=self._dicocarte[cards.Servante]/self._nbcarte*100
-        probaprince=self._dicocarte[cards.Prince]/self._nbcarte*100
-        probachancelier=self._dicocarte[cards.Chancelier]/self._nbcarte*100
-        probaroi=self._dicocarte[cards.Roi]/self._nbcarte*100
-        probacomtesse=self._dicocarte[cards.Comtesse]/self._nbcarte*100
-        probaprincesse=self._dicocarte[cards.Princesse]/self._nbcarte*100
+        probaespionne=(self._dicocarte[cards.Espionne]/self._nbcarte*100,0)
+        probapretre=(self._dicocarte[cards.Pretre]/self._nbcarte*100,1)
+        probabaron=(self._dicocarte[cards.Baron]/self._nbcarte*100,2)
+        probaservante=(self._dicocarte[cards.Servante]/self._nbcarte*100,3)
+        probaprince=(self._dicocarte[cards.Prince]/self._nbcarte*100,4)
+        probachancelier=(self._dicocarte[cards.Chancelier]/self._nbcarte*100,5)
+        probaroi=(self._dicocarte[cards.Roi]/self._nbcarte*100,6)
+        probacomtesse=(self._dicocarte[cards.Comtesse]/self._nbcarte*100,7)
+        probaprincesse=(self._dicocarte[cards.Princesse]/self._nbcarte*100,8)
         probalist=[probaespionne,probapretre,probabaron,probaservante,probaprince,probachancelier,probaroi,probacomtesse,probaprincesse]
         print(probalist)
     
-        dicoproba={probaespionne:"Espionne",probapretre:"Pretre",probabaron:"Baron",probaservante:"Servante",probaprince:
+        '''dicoproba={probaespionne:"Espionne",probapretre:"Pretre",probabaron:"Baron",probaservante:"Servante",probaprince:
                    "Prince",probachancelier:"Chancelier",probaroi:"Roi",probacomtesse:"Comtesse",probaprincesse:"Princesse"}
         print(dicoproba[probachancelier],probachancelier)
-        print(dicoproba)
-        carteajouer=max(probalist)
+        print(dicoproba)'''
+        carteajouer = max(probalist, key = lambda x:x[0])
+        print(carteajouer)
         if(choix): #On est dans le cas où il faut retourner un poids
             if(self._opponent.immune==True):
                 return 50
@@ -778,13 +784,14 @@ class State():
                     print("Carte à faire deviner :",self._current_player.knows_card[1])
                     return 99
                 else:
-                    return carteajouer+15 #piti facteur chance
+                    return carteajouer[0]+15 #piti facteur chance
         else:
             if(self._current_player.knows_card[0]):
                 print("Carte à faire deviner :",self._current_player.knows_card[1])
+                return self._current_player.knows_card[1].value()
             else:
-                print("Carte à faire deviner :",dicoproba[carteajouer])#Si il y a plusieurs cartes avec la même probabilité, il va prendre la dernière carte avec la même probabilité
-                
+                print("Carte à faire deviner :",carteajouer[1])#Si il y a plusieurs cartes avec la même probabilité, il va prendre la dernière carte avec la même probabilité
+                '''
                 if(dicoproba[carteajouer]=="Espionne"): # Ce qui n'est pas trop con parce que c'est rangé dans l'ordre de valeur des cartes et il y aura (à mon avis) plus de chance que le joueur garde une carte haute qu'autre chose
                     return 0
                 if(dicoproba[carteajouer]=="Pretre"):
@@ -803,7 +810,8 @@ class State():
                     return 7
                 else:
                     return 8
-            
+                '''
+                return carteajouer[1]
 class Save():
     '''
     Classe permettant de sauvegarder l'état courant du jeu lors d'une simulation. Cette manière de faire est loin d'être la meilleure, implémenter un command 

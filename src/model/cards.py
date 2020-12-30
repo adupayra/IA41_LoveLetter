@@ -106,6 +106,9 @@ class Garde(TwoActionCards):
                     self._model.controller.display_guard_choice()
                 else:
                     guess=self._model.current_state.evalgarde(False)
+                    array = [Espionne.__name__, Pretre.__name__, Baron.__name__, Servante.__name__, Prince.__name__, Chancelier.__name__, Roi.__name__, 
+                         Comtesse.__name__, Princesse.__name__]
+                    self.deuxieme_action(array[guess])
             else:
                 guess=self._model.current_state.evalgarde(False)
                 array = [Espionne.__name__, Pretre.__name__, Baron.__name__, Servante.__name__, Prince.__name__, Chancelier.__name__, Roi.__name__, 
@@ -334,11 +337,9 @@ class Chancelier(TwoActionCards):
             if(isinstance(current_player, player.IA) or self._model.issimul):
                 if(not self._model.issimul):
                     self._model.controller.update_chancelier_IA(current_player, self._model.ia.cards.__len__())
-                #faut mettre l'algo ici
-                #genre bite=evalchancelier
-                #pareil pour ligne 353
-                #defaussecarte=self._model.current_state.evalchancelier(False)
-                Chancelier.deuxieme_action(current_player.cards[randrange(0, current_player.cards.__len__())])
+                
+                defaussecarte=self._model.current_state.evalchancelier(False)
+                Chancelier.deuxieme_action(current_player.cards[defaussecarte])
                 #algo IA
             else:
                 #Pareil pour le joueur
@@ -355,8 +356,8 @@ class Chancelier(TwoActionCards):
     
         if(current_player.cards.__len__() == 2):
             if(isinstance(current_player, player.IA) or cls._model.issimul):
-                #defaussecarte=cls._model.current_state.evalchancelier(False)
-                cls.deuxieme_action(current_player.cards[randrange(0, current_player.cards.__len__())])
+                defaussecarte=cls._model.current_state.evalchancelier(False)
+                cls.deuxieme_action(current_player.cards[defaussecarte])
             else:
                 cls._model.controller.update_chancelier_player(current_player, cls._model.player.cards_to_string)
                 
