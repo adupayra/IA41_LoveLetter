@@ -467,7 +467,6 @@ class State():
             
         mondeck=self._model.deck
         mondeck.append(self._model.next_player.cards[0])
-        print(mondeck)
           
         while i<len(mondeck):
             if(isinstance(mondeck[i],cards.Espionne)):
@@ -691,43 +690,38 @@ class State():
             else:
                 return 40
         else: #La, c'est le choix des cartes
-            x=[0,1,2]
-            for j in range(3):
+            for j in range(self._model.current_player.cards.__len__()):
                 if(isinstance(self._model.current_player.cards[j],cards.Princesse)):
                     print("Il faut défausser la princesse",self._model.current_player.cards[j])
-                    del x[j]
-                    defausse=random.choice(x)
-                    print("Avec la princesse je défausse :",self._model.current_player.cards[defausse])
-                    return 1
+                    return j
             if(self._model.current_player.cards[0]==self._model.current_player.cards[1]):
                 print("Deux même cartes dans la main, on en défausse une au hasard")
                 defausse=random.choice([0,1])
-                del x[defausse]
-                defausse1=random.choice(x)
                 print("On se débarasse de",self._model.current_player.cards[defausse])
-                print("Avec le doublon je défausse :",self._model.current_player.cards[defausse1])
+                return defausse
             else:
-                if(self._model.current_player.cards[0]==self._model.current_player.cards[2]):
-                    print("Deux même cartes dans la main, on en défausse une au hasard")
-                    defausse=random.choice([0,2])
-                    del x[defausse]
-                    defausse1=random.choice(x)
-                    print("On se débarasse de",self._model.current_player.cards[defausse])
-                    print("Avec le doublon je défausse :",self._model.current_player.cards[defausse1])
-                else:
-                    if(self._model.current_player.cards[1]==self._model.current_player.cards[2]):
+                if(self._model.current_player.cards.__len__==2):
+                    if(self._model.current_player.cards[0]==self._model.current_player.cards[2]):
                         print("Deux même cartes dans la main, on en défausse une au hasard")
-                        defausse=random.choice([1,2])
-                        del x[defausse]
-                        defausse1=random.choice(x)
+                        defausse=random.choice([0,2])
                         print("On se débarasse de",self._model.current_player.cards[defausse])
-                        print("Avec le doublon je défausse :",self._model.current_player.cards[defausse1])
+                        return defausse
                     else:
-                        defausse1=random.choice(x)
-                        del x[defausse1]
-                        defausse2=random.choice(x)
-                        print("Je défausse les cartes :",self._model.current_player.cards[defausse1],"et :",self._model.current_player.cards[defausse2])
-
+                        if(self._model.current_player.cards[1]==self._model.current_player.cards[2]):
+                            print("Deux même cartes dans la main, on en défausse une au hasard")
+                            defausse=random.choice([1,2])
+                            print("On se débarasse de",self._model.current_player.cards[defausse])
+                            return defausse
+                        else:
+                            defausse=random.choice([0,1,2])
+                            print("On se débarasse de",self._model.current_player.cards[defausse])
+                            return defausse
+                else:
+                    defausse=random.choice([0,1])
+                    print("On se débarasse de",self._model.current_player.cards[defausse])
+                    return defausse
+                        
+                        
     def evalprince(self,choix):
         probavictoire=self._dicocarte[cards.Princesse]/self._nbcarte*100
         probapourfairechier=(self._dicocarte[cards.Servante]+self._dicocarte[cards.Pretre])/self._nbcarte*100
@@ -751,7 +745,7 @@ class State():
                 if(self._model.current_player.knows_card[0]):
                     print("Camp IA")
                     return 0
-                if(probatotal<30):
+                if(probatotal<20):
                     print("Camp IA")
                     return 0
                 else:
@@ -768,8 +762,14 @@ class State():
         probaroi=self._dicocarte[cards.Roi]/self._nbcarte*100
         probacomtesse=self._dicocarte[cards.Comtesse]/self._nbcarte*100
         probaprincesse=self._dicocarte[cards.Princesse]/self._nbcarte*100
-        dicoproba={probaespionne:cards.Espionne,probapretre:cards.Pretre,probabaron:cards.Baron,probaservante:cards.Servante,probaprince:cards.Prince,probachancelier:cards.Chancelier,probaroi:cards.Roi,probacomtesse:cards.Comtesse,probaprincesse:cards.Princesse}
-        carteajouer=max(dicoproba)
+        probalist=[probaespionne,probapretre,probabaron,probaservante,probaprince,probachancelier,probaroi,probacomtesse,probaprincesse]
+        print(probalist)
+    
+        dicoproba={probaespionne:"Espionne",probapretre:"Pretre",probabaron:"Baron",probaservante:"Servante",probaprince:
+                   "Prince",probachancelier:"Chancelier",probaroi:"Roi",probacomtesse:"Comtesse",probaprincesse:"Princesse"}
+        print(dicoproba[probachancelier],probachancelier)
+        print(dicoproba)
+        carteajouer=max(probalist)
         if(choix): #On est dans le cas où il faut retourner un poids
             if(self._opponent.immune==True):
                 return 50
@@ -784,9 +784,25 @@ class State():
                 print("Carte à faire deviner :",self._current_player.knows_card[1])
             else:
                 print("Carte à faire deviner :",dicoproba[carteajouer])#Si il y a plusieurs cartes avec la même probabilité, il va prendre la dernière carte avec la même probabilité
-                return dicoproba[carteajouer]# Ce qui n'est pas trop con parce que c'est rangé dans l'ordre de valeur des cartes et il y aura (à mon avis) plus de chance que le joueur garde une carte haute qu'autre chose        
-
-     
+                
+                if(dicoproba[carteajouer]=="Espionne"): # Ce qui n'est pas trop con parce que c'est rangé dans l'ordre de valeur des cartes et il y aura (à mon avis) plus de chance que le joueur garde une carte haute qu'autre chose
+                    return 0
+                if(dicoproba[carteajouer]=="Pretre"):
+                    return 1
+                if(dicoproba[carteajouer]=="Baron"):
+                    return 2
+                if(dicoproba[carteajouer]=="Servante"):
+                    return 3
+                if(dicoproba[carteajouer]=="Prince"):
+                    return 4
+                if(dicoproba[carteajouer]=="Chancelier"):
+                    return 5
+                if(dicoproba[carteajouer]=="Roi"):
+                    return 6
+                if(dicoproba[carteajouer]=="Comtesse"):
+                    return 7
+                else:
+                    return 8
             
 class Save():
     '''

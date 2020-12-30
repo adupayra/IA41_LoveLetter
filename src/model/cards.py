@@ -104,16 +104,16 @@ class Garde(TwoActionCards):
             if(isinstance(self._model.current_player, player.RealPlayer)):
                 if(not self._model.issimul):
                     self._model.controller.display_guard_choice()
-                #else:
-                    #algo eval garde
-            elif not self._model.issimul: #remplace par un else:
-                #Algo IA renvoie un chiffre entre 0 et 9
-                guess = randrange(0,9)
+                else:
+                    guess=self._model.current_state.evalgarde(False)
+            else:
+                guess=self._model.current_state.evalgarde(False)
                 array = [Espionne.__name__, Pretre.__name__, Baron.__name__, Servante.__name__, Prince.__name__, Chancelier.__name__, Roi.__name__, 
                          Comtesse.__name__, Princesse.__name__]
                 
-                #if not issimule:
-                self._model.controller.display_guard_ialabel(array[guess]) #Affichage du label récapitulatif
+                if(not self._model.issimul):
+                    self._model.controller.display_guard_ialabel(array[guess]) #Affichage du label récapitulatif
+                
                 self.deuxieme_action(array[guess])
             
             
@@ -309,6 +309,7 @@ class Chancelier(TwoActionCards):
      
     def action(self):
         TwoActionCards.action(self)
+        print(self._model.current_player.cards,self._model.deck)
         #Si il n'y a plus de carte dans la pioche, ou si il y a simulation, alors jouer le chancelier n'aura pas d'effet
         if(self._model.deck.__len__() != 0 and (not self._model.issimul or self._model.deck.__len__() != 1)):
             Chancelier._model = self._model
@@ -328,7 +329,7 @@ class Chancelier(TwoActionCards):
             else:
                 current_player.add_card(self._model.pick_card())
             
-          
+            print(self._model.current_player.cards)
             #Si l'IA a joué le chancelier, alors on appelle les fonctions appropriées
             if(isinstance(current_player, player.IA) or self._model.issimul):
                 if(not self._model.issimul):
@@ -336,6 +337,7 @@ class Chancelier(TwoActionCards):
                 #faut mettre l'algo ici
                 #genre bite=evalchancelier
                 #pareil pour ligne 353
+                #defaussecarte=self._model.current_state.evalchancelier(False)
                 Chancelier.deuxieme_action(current_player.cards[randrange(0, current_player.cards.__len__())])
                 #algo IA
             else:
@@ -346,19 +348,21 @@ class Chancelier(TwoActionCards):
     #Fonction appelée lorsque le joueur courant a séléctionné une carte qu'il ne voulait pas
     @classmethod
     def deuxieme_action(cls, card_chosen):
+        print(card_chosen)
         current_player = cls._model.current_player
         current_player.remove_card(card_chosen)
         cls._model.deck.append(card_chosen)
     
         if(current_player.cards.__len__() == 2):
             if(isinstance(current_player, player.IA) or cls._model.issimul):
+                #defaussecarte=cls._model.current_state.evalchancelier(False)
                 cls.deuxieme_action(current_player.cards[randrange(0, current_player.cards.__len__())])
             else:
                 cls._model.controller.update_chancelier_player(current_player, cls._model.player.cards_to_string)
                 
         current_player.play_chancelier = False
             
-        
+        print(cls._model.current_player.cards,cls._model.deck)
         
 class Roi(Card):
     '''
