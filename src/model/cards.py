@@ -104,19 +104,16 @@ class Garde(TwoActionCards):
             if(isinstance(self._model.current_player, player.RealPlayer)):
                 if(not self._model.issimul):
                     self._model.controller.display_guard_choice()
-                else:
-                    guess=self._model.current_state.evalgarde(False)
-                    array = [Espionne.__name__, Pretre.__name__, Baron.__name__, Servante.__name__, Prince.__name__, Chancelier.__name__, Roi.__name__, 
-                         Comtesse.__name__, Princesse.__name__]
-                    self.deuxieme_action(array[guess])
-            else:
-                guess=self._model.current_state.evalgarde(False)
+                #else:
+                    #algo eval garde
+            elif not self._model.issimul: #remplace par un else:
+                #Algo IA renvoie un chiffre entre 0 et 9
+                guess = randrange(0,9)
                 array = [Espionne.__name__, Pretre.__name__, Baron.__name__, Servante.__name__, Prince.__name__, Chancelier.__name__, Roi.__name__, 
                          Comtesse.__name__, Princesse.__name__]
                 
-                if(not self._model.issimul):
-                    self._model.controller.display_guard_ialabel(array[guess]) #Affichage du label récapitulatif
-                
+                #if not issimule:
+                self._model.controller.display_guard_ialabel(array[guess]) #Affichage du label récapitulatif
                 self.deuxieme_action(array[guess])
             
             
