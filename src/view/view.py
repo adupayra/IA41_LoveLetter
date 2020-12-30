@@ -458,7 +458,7 @@ class GameScene(tk.Frame):
     def freeze_screen(self):
         self.lock_buttons() #Empêche l'utilisateur de faire des actions pendant le freeze
         self._var = tk.IntVar()
-        self.after(3000, self._var.set, 1)
+        self.after(1000, self._var.set, 1)
         self.wait_variable(self._var)
         self._var = None
         self.unlock_buttons() #Libère les boutons

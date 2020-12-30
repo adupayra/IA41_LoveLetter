@@ -246,7 +246,7 @@ class IAMoyenne(IA):
     
     def __init__(self, model):
         IA.__init__(self, model)
-        self._depth = 1
+        self._depth = 3
     
     def __str__(self):
         return "IA Moyenne"
@@ -268,40 +268,52 @@ class IAMoyenne(IA):
         opponent.add_card(newcard) #Obtention de la carte la plus probable
         
         state = State(self._model, None) #Etat courant
-
+        
         self._model.current_state=state
         
-        temp = copy.copy(self._depth)
-        (value, best_state) = self.max_val(state, float('-inf'), float('inf'), int(temp)) #Appel de l'algorithme minmax qui va nous retourner la valeur du meilleur état ainsi que l'état correspondant
-        
-        if(self._depth < 5):
-            self._depth += 0.5;
-        
-        print(best_state)
-        
-        #Partie à décommenter pour test la succession des états
-        '''
-        print(state)
-        test = state.next_states()
-        print(test[0])
-        test2 = test[0].next_states()
-        for i in range(0,10):
-            print(test2[i])
-        '''
-        
-        #Partie à commenter pour test la succession d'états (ne pas oublier de commenter l'appel à max_val)
-        '''
-        '''
-        #Grâce à l'état trouvé avec le minmax, on retrouve la carte à jouer menant à cet état
-        while(best_state.parent is not state):
-            best_state = best_state.parent
         index = 0
-        if(isinstance(self._cards[0], best_state.last_card_played.__class__)):
-            index = 0
-        else:
-            index = 1
+        #Si l'ia possède une comtesse et un prince ou un roi, alors pas besoin de lancer le minmax, la comtesse est jouée
+        play_comtesse = self.must_play_comtesse()
         
-        #self._model.current_state = state
+        #Si l'ia a une princesse elle n'est pas jouée, le minmax n'est pas lancé
+        if(isinstance(self.cards[0], cards.Princesse)):
+            index = 1
+        elif(isinstance(self.cards[1], cards.Princesse)):
+            index = 0
+        elif play_comtesse != -1:
+            index = play_comtesse
+        else:
+
+        
+            temp = copy.copy(self._depth)
+            (value, best_state) = self.max_val(self._model.current_state, float('-inf'), float('inf'), int(temp)) #Appel de l'algorithme minmax qui va nous retourner la valeur du meilleur état ainsi que l'état correspondant
+            
+            if(self._depth < 5):
+                self._depth += 0.5;
+            
+            
+            
+            #Partie à décommenter pour test la succession des états
+            '''
+            #print(state)
+            test = state.next_states()
+            #print(test[0])
+            test2 = test[0].next_states()
+            for i in range(0,10):
+                #print(test2[i])
+            '''
+            
+            #Partie à commenter pour test la succession d'états (ne pas oublier de commenter l'appel à max_val)
+            '''
+            '''
+            #Grâce à l'état trouvé avec le minmax, on retrouve la carte à jouer menant à cet état
+            while(best_state.parent is not state):
+                best_state = best_state.parent
+            if(isinstance(self._cards[0], best_state.last_card_played.__class__)):
+                index = 0
+            else:
+                index = 1
+
         self._model.deck.remove(self._model.burnt_card) #On retire la carte brûlée
         
         opponent.remove_card(newcard) #on retir la carte intermédiaire du deck
@@ -352,7 +364,7 @@ class IAMoyenne(IA):
     
     def reset_values(self):
         IA.reset_values(self)
-        self._depth = 1;
+        self._depth = 3
             
     
 class IADifficile(IA):
@@ -424,25 +436,27 @@ class State():
     
     def next_states(self): 
         
-        drawable_cards = self._model.get_drawable_cards()
-        states = []
-        
-        #Vérifie l'obligation de jouer la comtesse ou non
-        play_comtesse = self._current_player.must_play_comtesse()
-        if play_comtesse != -1:
-            self.play_simu(states, drawable_cards, play_comtesse)
-        else:
-            #On boucle sur les cartes du joueur courant, pour chaque carte, on boucle sur toutes les cartes possibles que le prochain joueur peut piocher
-            for i in range(0, self._model.current_player.cards.__len__()) :
-                self.play_simu(states, drawable_cards, i)
+        if(not self.is_final):
+            drawable_cards = self._model.get_drawable_cards()
+            states = []
+            
+            #Vérifie l'obligation de jouer la comtesse ou non
+            play_comtesse = self._current_player.must_play_comtesse()
+            if play_comtesse != -1:
+                self.play_simu(states, drawable_cards, play_comtesse)
+            else:
+                #On boucle sur les cartes du joueur courant, pour chaque carte, on boucle sur toutes les cartes possibles que le prochain joueur peut piocher
+                for i in range(0, self._model.current_player.cards.__len__()) :
+                    self.play_simu(states, drawable_cards, i)
             
         return states
     
     def play_simu(self, states, drawable_cards, i):
+        
         for card in drawable_cards:
             #Simulation
-            self._opponent.add_card(card)
             self._model.pick_card_simu(card)
+            self._opponent.add_card(card)
             self._model.play(i)
             
             #Génération de l'état correspondant
@@ -500,7 +514,7 @@ class State():
         if(self._model.victory):
             return 1
         else:
-            print("Nombre d'Espionne =",self._dicocarte[cards.Espionne]," Nombre de Garde =",self._dicocarte[cards.Garde]," Nombre de Pretre =",self._dicocarte[cards.Pretre]," Nombre de Baron =",self._dicocarte[cards.Baron]," Nombre de Servante =",self._dicocarte[cards.Servante]," Nombre de Prince =",self._dicocarte[cards.Prince]," Nombre de Chancelier =",self._dicocarte[cards.Chancelier]," Nombre de Roi =",self._dicocarte[cards.Roi]," Nombre de Comtesse =",self._dicocarte[cards.Comtesse]," Nombre de Princesse =",self._dicocarte[cards.Princesse],"Nombre total de carte :",self._nbcarte)
+            #print("Nombre d'Espionne =",self._dicocarte[cards.Espionne]," Nombre de Garde =",self._dicocarte[cards.Garde]," Nombre de Pretre =",self._dicocarte[cards.Pretre]," Nombre de Baron =",self._dicocarte[cards.Baron]," Nombre de Servante =",self._dicocarte[cards.Servante]," Nombre de Prince =",self._dicocarte[cards.Prince]," Nombre de Chancelier =",self._dicocarte[cards.Chancelier]," Nombre de Roi =",self._dicocarte[cards.Roi]," Nombre de Comtesse =",self._dicocarte[cards.Comtesse]," Nombre de Princesse =",self._dicocarte[cards.Princesse],"Nombre total de carte :",self._nbcarte)
             if(isinstance(self._model.current_player.cards[0],cards.Espionne)):
                 poids1=100*(self._dicocarte[cards.Espionne]/self._nbcarte)  #Faut pas chercher plus longtemps, si on a l'espionne, faut la jouer
 
@@ -531,7 +545,7 @@ class State():
                 probachancelier=(self._dicocarte[cards.Espionne]+self._dicocarte[cards.Garde]+self._dicocarte[cards.Pretre]+self._dicocarte[cards.Baron]+self._dicocarte[cards.Servante]+self._dicocarte[cards.Prince]+self._dicocarte[cards.Chancelier])/self._nbcarte*100
                 probaroi=(self._dicocarte[cards.Espionne]+self._dicocarte[cards.Garde]+self._dicocarte[cards.Pretre]+self._dicocarte[cards.Baron]+self._dicocarte[cards.Servante]+self._dicocarte[cards.Prince]+self._dicocarte[cards.Chancelier]+self._dicocarte[cards.Roi])/self._nbcarte*100
                 probacomtesse=(self._dicocarte[cards.Espionne]+self._dicocarte[cards.Garde]+self._dicocarte[cards.Pretre]+self._dicocarte[cards.Baron]+self._dicocarte[cards.Servante]+self._dicocarte[cards.Prince]+self._dicocarte[cards.Chancelier]+self._dicocarte[cards.Roi]+self._dicocarte[cards.Comtesse])/self._nbcarte*100
-                print("Les proba du Baron : Espionne :",probaespionne,"Garde :",probagarde,"Pretre :",probapretre,"Baron :",probabaron,"Servante :",probaservante,"Prince :",probaprince,"Chancelier :",probachancelier,"Roi :",probaroi,"Comtesse :",probacomtesse)
+                #print("Les proba du Baron : Espionne :",probaespionne,"Garde :",probagarde,"Pretre :",probapretre,"Baron :",probabaron,"Servante :",probaservante,"Prince :",probaprince,"Chancelier :",probachancelier,"Roi :",probaroi,"Comtesse :",probacomtesse)
                 if(self._model.next_player.knows_card[0]==True):
                     probagarde=self._dicocarte[cards.Garde]/self._nbcarte*100
                     poids1=(100-probagarde)*(self._dicocarte[cards.Garde]/self._nbcarte)
@@ -602,7 +616,7 @@ class State():
                 poids1=0 #Peut importe le contexte, le princesse est à 0. (Bon en vrai je pourrais faire une fonction qui nous permetterais de gagner la partie mais pour l'instant je laisse comme ça
 
 
-            print("Le poids 1 est :",poids1)
+            #print("Le poids 1 est :",poids1)
 
 
             if(isinstance(self._model.current_player.cards[1],cards.Espionne)):
@@ -630,7 +644,7 @@ class State():
                 probachancelier=(self._dicocarte[cards.Espionne]+self._dicocarte[cards.Garde]+self._dicocarte[cards.Pretre]+self._dicocarte[cards.Baron]+self._dicocarte[cards.Servante]+self._dicocarte[cards.Prince]+self._dicocarte[cards.Chancelier])/self._nbcarte*100
                 probaroi=(self._dicocarte[cards.Espionne]+self._dicocarte[cards.Garde]+self._dicocarte[cards.Pretre]+self._dicocarte[cards.Baron]+self._dicocarte[cards.Servante]+self._dicocarte[cards.Prince]+self._dicocarte[cards.Chancelier]+self._dicocarte[cards.Roi])/self._nbcarte*100
                 probacomtesse=(self._dicocarte[cards.Espionne]+self._dicocarte[cards.Garde]+self._dicocarte[cards.Pretre]+self._dicocarte[cards.Baron]+self._dicocarte[cards.Servante]+self._dicocarte[cards.Prince]+self._dicocarte[cards.Chancelier]+self._dicocarte[cards.Roi]+self._dicocarte[cards.Comtesse])/self._nbcarte*100
-                print("Les proba du Baron : Espionne :",probaespionne,"Garde :",probagarde,"Pretre :",probapretre,"Baron :",probabaron,"Servante :",probaservante,"Prince :",probaprince,"Chancelier :",probachancelier,"Roi :",probaroi,"Comtesse :",probacomtesse)
+                #print("Les proba du Baron : Espionne :",probaespionne,"Garde :",probagarde,"Pretre :",probapretre,"Baron :",probabaron,"Servante :",probaservante,"Prince :",probaprince,"Chancelier :",probachancelier,"Roi :",probaroi,"Comtesse :",probacomtesse)
                 if(self._opponent.immune==True):
                     poids2=35*(self._dicocarte[cards.Baron]/self._nbcarte)
                 else:
@@ -676,11 +690,11 @@ class State():
             if(isinstance(self._model.current_player.cards[1],cards.Princesse)):
                 poids2=0 #Peut importe le contexte, le princesse est à 0. (Bon en vrai je pourrais faire une fonction qui nous permetterais de gagner la partie mais pour l'instant je laisse comme ça
         
-            print("Le poids 2 est :",poids2)
+            #print("Le poids 2 est :",poids2)
 
             poidsfinal=poids1+poids2
-            print("Carte jouer par l'adversaire :",self._model.next_player.cards_played)
-            print("Le poids de l'état actuelle est :",poidsfinal,"/200\nLa main actuelle étant :",self._model.current_player.cards[0],self._model.current_player.cards[1])
+            #print("Carte jouer par l'adversaire :",self._model.next_player.cards_played)
+            #print("Le poids de l'état actuelle est :",poidsfinal,"/200\nLa main actuelle étant :",self._model.current_player.cards[0],self._model.current_player.cards[1])
             return poidsfinal
     
     def evalchancelier(self,choix):
@@ -692,33 +706,33 @@ class State():
         else: #La, c'est le choix des cartes
             for j in range(self._model.current_player.cards.__len__()):
                 if(isinstance(self._model.current_player.cards[j],cards.Princesse)):
-                    print("Il faut défausser la princesse",self._model.current_player.cards[j])
+                    #print("Il faut défausser la princesse",self._model.current_player.cards[j])
                     return j
             if(self._model.current_player.cards[0]==self._model.current_player.cards[1]):
-                print("Deux même cartes dans la main, on en défausse une au hasard")
+                #print("Deux même cartes dans la main, on en défausse une au hasard")
                 defausse=random.choice([0,1])
-                print("On se débarasse de",self._model.current_player.cards[defausse])
+                #print("On se débarasse de",self._model.current_player.cards[defausse])
                 return defausse
             else:
                 if(self._model.current_player.cards.__len__==2):
                     if(self._model.current_player.cards[0]==self._model.current_player.cards[2]):
-                        print("Deux même cartes dans la main, on en défausse une au hasard")
+                        #print("Deux même cartes dans la main, on en défausse une au hasard")
                         defausse=random.choice([0,2])
-                        print("On se débarasse de",self._model.current_player.cards[defausse])
+                        #print("On se débarasse de",self._model.current_player.cards[defausse])
                         return defausse
                     else:
                         if(self._model.current_player.cards[1]==self._model.current_player.cards[2]):
-                            print("Deux même cartes dans la main, on en défausse une au hasard")
+                            #print("Deux même cartes dans la main, on en défausse une au hasard")
                             defausse=random.choice([1,2])
-                            print("On se débarasse de",self._model.current_player.cards[defausse])
+                            #print("On se débarasse de",self._model.current_player.cards[defausse])
                             return defausse
                         else:
                             defausse=random.choice([0,1,2])
-                            print("On se débarasse de",self._model.current_player.cards[defausse])
+                            #print("On se débarasse de",self._model.current_player.cards[defausse])
                             return defausse
                 else:
                     defausse=random.choice([0,1])
-                    print("On se débarasse de",self._model.current_player.cards[defausse])
+                    #print("On se débarasse de",self._model.current_player.cards[defausse])
                     return defausse
                         
                         
@@ -727,7 +741,7 @@ class State():
         probapourfairechier=(self._dicocarte[cards.Servante]+self._dicocarte[cards.Pretre])/self._nbcarte*100
         probatotal=probavictoire+probapourfairechier
         if(choix): #Dans le cas où il faut retourner un poids
-            print("Les probas pour le Prince : Victoire :",probavictoire,"Pour faire chier :",probapourfairechier)    
+            #print("Les probas pour le Prince : Victoire :",probavictoire,"Pour faire chier :",probapourfairechier)    
             if(self._opponent.immune==True):
                 poids=30
             else:
@@ -739,17 +753,17 @@ class State():
             return poids
         else: #Dans le cas où il faut retourner un camp
             if(isinstance(self._model.next_player.cards[0],cards.Princesse)):# or isinstance(self._model.next_player.cards[1],cards.Princesse)):
-                print("Camp adverse")
+                #print("Camp adverse")
                 return 1
             else:
                 if(self._model.current_player.knows_card[0]):
-                    print("Camp IA")
+                    #print("Camp IA")
                     return 0
                 if(probatotal<20):
-                    print("Camp IA")
+                    #print("Camp IA")
                     return 0
                 else:
-                    print("Camp adversaire")
+                    #print("Camp adversaire")
                     return 1
 
     def evalgarde(self,choix):
@@ -763,27 +777,28 @@ class State():
         probacomtesse=self._dicocarte[cards.Comtesse]/self._nbcarte*100
         probaprincesse=self._dicocarte[cards.Princesse]/self._nbcarte*100
         probalist=[probaespionne,probapretre,probabaron,probaservante,probaprince,probachancelier,probaroi,probacomtesse,probaprincesse]
-        print(probalist)
+        #print(probalist)
     
         dicoproba={probaespionne:"Espionne",probapretre:"Pretre",probabaron:"Baron",probaservante:"Servante",probaprince:
                    "Prince",probachancelier:"Chancelier",probaroi:"Roi",probacomtesse:"Comtesse",probaprincesse:"Princesse"}
-        print(dicoproba[probachancelier],probachancelier)
-        print(dicoproba)
+        #print(dicoproba[probachancelier],probachancelier)
+        #print(dicoproba)
         carteajouer=max(probalist)
         if(choix): #On est dans le cas où il faut retourner un poids
             if(self._opponent.immune==True):
                 return 50
             else:
                 if(self._current_player.knows_card[0]):
-                    print("Carte à faire deviner :",self._current_player.knows_card[1])
+                    #print("Carte à faire deviner :",self._current_player.knows_card[1])
                     return 99
                 else:
                     return carteajouer+15 #piti facteur chance
         else:
             if(self._current_player.knows_card[0]):
-                print("Carte à faire deviner :",self._current_player.knows_card[1])
+                #print("Carte à faire deviner :",self._current_player.knows_card[1])
+                return 0
             else:
-                print("Carte à faire deviner :",dicoproba[carteajouer])#Si il y a plusieurs cartes avec la même probabilité, il va prendre la dernière carte avec la même probabilité
+                #print("Carte à faire deviner :",dicoproba[carteajouer])#Si il y a plusieurs cartes avec la même probabilité, il va prendre la dernière carte avec la même probabilité
                 
                 if(dicoproba[carteajouer]=="Espionne"): # Ce qui n'est pas trop con parce que c'est rangé dans l'ordre de valeur des cartes et il y aura (à mon avis) plus de chance que le joueur garde une carte haute qu'autre chose
                     return 0

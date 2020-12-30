@@ -54,7 +54,7 @@ class Model(object):
             self._cards.append(cards.Chancelier(self))
             
         for _ in range(0, 4):
-            self._cards.append(cards.Garde(self))
+            self._cards.append(cards.Chancelier(self))
 
     @property
     def controller(self):
@@ -280,28 +280,13 @@ class Model(object):
             
     #Choix de la carte jouée par l'IA
     def playAI(self):
-        
-        #Si l'ia a une princesse elle n'est pas jouée
-        if(isinstance(self.current_player.cards[0], cards.Princesse)):
-            self.play(1)
-            return
-        elif(isinstance(self.current_player.cards[1], cards.Princesse)):
-            self.play(0)
-            return
-        
-        #Si l'ia possède une comtesse et un prince ou un roi, alors pas besoin de lancer la simulation, la comtesse est jouée
-        play_comtesse = self.current_player.must_play_comtesse()
-        if play_comtesse != -1:
-            self.play(play_comtesse)
-        else:
-            index = self.ia.algorithme()
-            #self.play(randrange(0,2))
-            self.play(index)
+        index = self.ia.algorithme()
+        #self.play(randrange(0,2))
+        self.play(index)
         
     
     #Effectue l'action de la carte à l'index associée du joueur courrant
     def play(self, index):
-
         last_card_played = self.current_player.cards[index]
         self.current_player.add_cards_played(last_card_played)
 
@@ -324,6 +309,7 @@ class Model(object):
         self._players_list.next_turn() #On passe au prochain joueur
         
         temp = self.pick_card()
+        
         if(self._victorylearning):
             self._victorylearning = False
         else:
