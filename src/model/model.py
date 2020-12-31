@@ -46,16 +46,16 @@ class Model(object):
         
         for _ in range(0,2):
             self._cards.append(cards.Espionne(self))
-            self._cards.append(cards.Garde(self))
+            self._cards.append(cards.Chancelier(self))
             self._cards.append(cards.Pretre(self))
-            self._cards.append(cards.Baron(self))
+            self._cards.append(cards.Chancelier(self))
             self._cards.append(cards.Servante(self))
             self._cards.append(cards.Prince(self))
             self._cards.append(cards.Chancelier(self))
             
         for _ in range(0, 4):
-            self._cards.append(cards.Espionne(self))
-            self._cards.append(cards.Princesse(self))
+            #self._cards.append(cards.Espionne(self))
+            #self._cards.append(cards.Princesse(self))
             self._cards.append(cards.Chancelier(self))
 
     @property

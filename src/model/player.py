@@ -434,6 +434,9 @@ class State():
     def save(self):
         return self._save
     
+    @property
+    def model(self):
+        return self._model    
     def next_states(self): 
         
         if(not self.is_final):
@@ -593,7 +596,7 @@ class State():
                     probagarde=self._dicocarte[cards.Garde]/self._nbcarte*100
                     poids1=(100-probagarde)*(self._dicocarte[cards.Garde]/self._nbcarte)
                 else:
-                    poids1=self.evalchancelier(True)*(self._dicocarte[cards.Chancelier]/self._nbcarte)
+                    poids1=self.evalchancelier(True, self._model)*(self._dicocarte[cards.Chancelier]/self._nbcarte)
         
             if(isinstance(self._model.current_player.cards[0],cards.Roi)):
                 if(self._model.next_player.knows_card[0]==True):
@@ -676,7 +679,7 @@ class State():
                 poids2=self.evalprince(True)*(self._dicocarte[cards.Prince]/self._nbcarte)
 
             if(isinstance(self._model.current_player.cards[1],cards.Chancelier)):
-                poids2=self.evalchancelier(True)*(self._dicocarte[cards.Chancelier]/self._nbcarte)
+                poids2=self.evalchancelier(True, self._model)*(self._dicocarte[cards.Chancelier]/self._nbcarte)
         
             if(isinstance(self._model.current_player.cards[1],cards.Roi)):
                 if(self._opponent.immune==True):
@@ -697,24 +700,24 @@ class State():
             #print("Le poids de l'état actuelle est :",poidsfinal,"/200\nLa main actuelle étant :",self._model.current_player.cards[0],self._model.current_player.cards[1])
             return poidsfinal
     
-    def evalchancelier(self,choix):
+    def evalchancelier(self,choix, model):
         if(choix): #Si choix est vrai, on est dans le cas où il faut retourner un poids
-            if(isinstance(self._model.current_player.cards[0],cards.Princesse) or isinstance(self._model.current_player.cards[1],cards.Princesse)):
+            if(isinstance(model.current_player.cards[0],cards.Princesse) or isinstance(self._model.current_player.cards[1],cards.Princesse)):
                 return 99 #C'est maximal parce que c'est quand même une princesse, même si le fait d'avoir une princesse n'est pas avantageux je pense qu'il faut qu'en même se diriger vers cet état pour s'en débarrasser
             else:
                 return 40
         else: #La, c'est le choix des cartes
             print("bonjoir")
-            print(self._model.current_player.cards)
+            print(model.current_player.cards)
             print("bonsour")
-            for j in range(0,self._model.current_player.cards.__len__()):
-                if(isinstance(self._model.current_player.cards[j],cards.Princesse)):
-                    print("Il faut défausser la princesse",self._model.current_player.cards[j],j)
+            for j in range(0,model.current_player.cards.__len__()):
+                if(isinstance(model.current_player.cards[j],cards.Princesse)):
+                    print("Il faut défausser la princesse",model.current_player.cards[j],j)
                     return j
                 else:
-                    if(isinstance(self._model.current_player.cards[j-1],cards.Espionne)):
+                    if(isinstance(model.current_player.cards[j-1],cards.Espionne)):
                         print("Je rentre dans le cas de l'espionne pour le chancelier")
-                        if(self._model.current_player.cards.__len__==2):
+                        if(model.current_player.cards.__len__==2):
                             if(j==0):
                                 return random.choice[1,2]
                             else:
@@ -729,20 +732,20 @@ class State():
                                 if(j==1):
                                     return 0
                                 
-            if(self._model.current_player.cards[0]==self._model.current_player.cards[1]):
+            if(model.current_player.cards[0]==model.current_player.cards[1]):
                 #print("Deux même cartes dans la main, on en défausse une au hasard")
                 defausse=random.choice([0,1])
                 #print("On se débarasse de",self._model.current_player.cards[defausse])
                 return defausse
             else:
-                if(self._model.current_player.cards.__len__==2):
-                    if(self._model.current_player.cards[0]==self._model.current_player.cards[2]):
+                if(model.current_player.cards.__len__==2):
+                    if(model.current_player.cards[0]==model.current_player.cards[2]):
                         #print("Deux même cartes dans la main, on en défausse une au hasard")
                         defausse=random.choice([0,2])
                         #print("On se débarasse de",self._model.current_player.cards[defausse])
                         return defausse
                     else:
-                        if(self._model.current_player.cards[1]==self._model.current_player.cards[2]):
+                        if(model.current_player.cards[1]==model.current_player.cards[2]):
                             #print("Deux même cartes dans la main, on en défausse une au hasard")
                             defausse=random.choice([1,2])
                             #print("On se débarasse de",self._model.current_player.cards[defausse])
@@ -801,10 +804,10 @@ class State():
         probacomtesse=(self._dicocarte[cards.Comtesse]/self._nbcarte*100,7)
         probaprincesse=(self._dicocarte[cards.Princesse]/self._nbcarte*100,8)
         probalist=[probaespionne,probapretre,probabaron,probaservante,probaprince,probachancelier,probaroi,probacomtesse,probaprincesse]
-        print(probalist)
+        #print(probalist)
 
         carteajouer = max(probalist, key = lambda x:x[0])
-        print(carteajouer)
+        #print(carteajouer)
         
         if(choix): #On est dans le cas où il faut retourner un poids
             if(self._opponent.immune==True):
