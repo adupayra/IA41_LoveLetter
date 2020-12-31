@@ -312,7 +312,7 @@ class Chancelier(TwoActionCards):
      
     def action(self):
         TwoActionCards.action(self)
-        #print(self._model.current_player.cards,self._model.deck)
+        print(self._model.current_player.cards,self._model.deck)
         #Si il n'y a plus de carte dans la pioche, ou si il y a simulation, alors jouer le chancelier n'aura pas d'effet
         if(self._model.deck.__len__() != 0 and (not self._model.issimul or self._model.deck.__len__() != 1)):
             Chancelier._model = self._model
@@ -354,7 +354,7 @@ class Chancelier(TwoActionCards):
     #Fonction appelée lorsque le joueur courant a séléctionné une carte qu'il ne voulait pas
     @classmethod
     def deuxieme_action(cls, card_chosen):
-        #print(card_chosen)
+        print(card_chosen)
         current_player = cls._model.current_player
         current_player.remove_card(card_chosen)
         cls._model.deck.append(card_chosen)
@@ -372,7 +372,7 @@ class Chancelier(TwoActionCards):
                 
         current_player.play_chancelier = False
             
-        #print(cls._model.current_player.cards,cls._model.deck)
+        print(cls._model.current_player.cards,cls._model.deck)
         
 class Roi(Card):
     '''

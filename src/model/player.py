@@ -715,7 +715,7 @@ class State():
                     print("Il faut défausser la princesse",model.current_player.cards[j],j)
                     return j
                 else:
-                    if(isinstance(model.current_player.cards[j-1],cards.Espionne)):
+                    if(isinstance(model.current_player.cards[j],cards.Espionne)):
                         print("Je rentre dans le cas de l'espionne pour le chancelier")
                         if(model.current_player.cards.__len__==2):
                             if(j==0):
