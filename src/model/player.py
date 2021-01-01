@@ -707,16 +707,13 @@ class State():
             else:
                 return 40
         else: #La, c'est le choix des cartes
-            print("bonjoir")
-            print(model.current_player.cards)
-            print("bonsour")
             for j in range(0,model.current_player.cards.__len__()):
                 if(isinstance(model.current_player.cards[j],cards.Princesse)):
-                    print("Il faut défausser la princesse",model.current_player.cards[j],j)
+                    #print("Il faut défausser la princesse",model.current_player.cards[j],j)
                     return j
                 else:
                     if(isinstance(model.current_player.cards[j],cards.Espionne)):
-                        print("Je rentre dans le cas de l'espionne pour le chancelier")
+                        #print("Je rentre dans le cas de l'espionne pour le chancelier")
                         if(model.current_player.cards.__len__==2):
                             if(j==0):
                                 return random.choice[1,2]
