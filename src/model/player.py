@@ -288,6 +288,7 @@ class IAMoyenne(IA):
             temp = copy.copy(self._depth)
             (value, best_state) = self.max_val(self._model.current_state, float('-inf'), float('inf'), int(temp)) #Appel de l'algorithme minmax qui va nous retourner la valeur du meilleur état ainsi que l'état correspondant
             
+            
             if(self._depth < 5):
                 self._depth += 0.5;
             
@@ -306,9 +307,20 @@ class IAMoyenne(IA):
             #Partie à commenter pour test la succession d'états (ne pas oublier de commenter l'appel à max_val)
             '''
             '''
+            path = []
+            
+            
             #Grâce à l'état trouvé avec le minmax, on retrouve la carte à jouer menant à cet état
             while(best_state.parent is not state):
+                path.append(best_state)
                 best_state = best_state.parent
+            path.append(best_state)
+            path.append(state)
+            path.reverse()
+            for state in path:
+                print(state)
+            print("//////////////////////////////////////")
+            print()
             if(isinstance(self._cards[0], best_state.last_card_played.__class__)):
                 index = 0
             else:
@@ -387,7 +399,7 @@ class State():
                 "\nCards played by current : " + str(self._model.current_player.cards_played) +
                 "\nLast card played by current : " + str(self._model.current_player.last_card_played) + "\nHand : " + str(self._model.current_player.cards) + 
                 "\nOpponent's cards played : " + str(self._model.next_player.cards_played) + "\nLast card played in game : " + 
-                str(self._last_card_played) + "\nOpponent's hand : " + str(self._model.next_player.cards) + 
+                str(self._last_card_played) + 
                 "\nDeck : " + str(self._model.deck) + "\nKnows card : " + str(self._current_player.knows_card[0])
                 + "\nOpponent knowscard : " + str(self._model.next_player.knows_card[0]) + "\nCurrent immune : " + str(self._current_player.immune) +
                 "\nOpponent immune : " + str(self._opponent.immune) + "\nCurrent espionne : " + str(self._model.current_player.espionne_played) +
