@@ -10,7 +10,7 @@ import webbrowser
 import sys
 
 class Controller():
-    #Ne pas appeler cette variable depuis un module de view afin de garder l'indépendance entre modèle et view    
+    #Don't call this variable from the view in order to keep model and view independants   
     
     _modelvar = None
     _game_scene = None
@@ -28,57 +28,55 @@ class Controller():
         sys.exit(0)
     
     @classmethod
-    #Fonction appelée lorsque l'utilisateur lance une partie/finit une partie/retourne au menu
+    #Function called by the user when the user start/finish a round or get back to the menu
     def display_scene(cls, view, scene_name):
         view.display_scene(scene_name)
     
     @classmethod
-    #Fonction lancée lorsque l'utilisateur à choisi la difficulté de la partie
-    def start_game(cls, view, difficulty): #difficulty = -1 : nouveau round, difficulté != -1 : nouvelle partie
+    #Function called when user chooses the game's difficulty
+    def start_game(cls, view, difficulty): #difficulty = -1 : new round, difficulté != -1 : new game
         current_player = cls._modelvar.init_data(difficulty)
-        if(difficulty == 1): #Difficulté difficile choisie donc on lance une simulation pour faire apprendre l'IA (apprentissage par renforcement), à retirer quand l'IA
-                            #Aura appris
+        if(difficulty == 1): #Hard difficulty chosen so we start a simulation to make the AI learn (reinforcement learning), to remove when the AI has already learnt
             return
         
-        #Affichage du plateau de jeu
+        #Display the board
         cls.display_scene(view, "Game scene")
     
-        #Affichage des 3 premieres cartes et du nom de la personne qui commence et réinitialisation de la game scene
+        #Display the 3 first cards and name of the player which starts, also reset the game scene
         view.scenes["Game scene"].init_round(cls._modelvar.get_three_cards(), str(cls._modelvar.current_player), cls._modelvar.ia.score, cls._modelvar.player.score)
 
         
-        #Début du premier tour
+        #Start of the first turn
         cls.start_turn(current_player, view.scenes["Game scene"])
         
         
     @classmethod
-    #Fonction permettant le déroulement d'un tour
+    #Function processing a turn
     def start_turn(cls, current_player, gamescene):
         if(not cls._modelvar.victory):
             
-            #Actualisation de l'UI (nombre de cartes de l'IA)
+            #Update of the GUI (number of cards of AI)
             gamescene.update_iaUI(cls._modelvar.ia.cards.__len__())
             
-            #Actualisation de l'UI du vrai joueur (nombre de cartes et images associées du joueur)
+            #Uodate the GUI of the real player (number of cards and pictures of the player's cards)
             gamescene.update_playerUI(cls._modelvar.player.cards_to_string)
             
-           
-            #Si le joueur actuel est l'IA, alors l'utilisateur ne peut pas jouer, et le process se fera sans UI, dans le modèle
+            #If the current player is the AI, then the user can't play, and the actions won't be seen via the GUI , it'll be done in the model
             if(isinstance(current_player, model.player.IA)):
                 gamescene.update_tour_label("C'est le tour de l'IA")
-                #Vérification premier tour
+                #Verification of the first turn
                 if(cls._modelvar.player.last_card_played is not None):
                     
-                    gamescene.update_lastcardslabels(str(cls._modelvar.player), str(cls._modelvar.player.last_card_played)) #Affichage de la carte jouée par le joueur au dernier tour
+                    gamescene.update_lastcardslabels(str(cls._modelvar.player), str(cls._modelvar.player.last_card_played)) #Display the card played by the last player
                 cls.card_playedAI(gamescene)
             else:
                
                 gamescene.update_tour_label("C'est votre tour")
                 if(cls._modelvar.ia.last_card_played is not None):
-                    gamescene.update_lastcardslabels(str(cls._modelvar.ia), str(cls._modelvar.ia.last_card_played)) #Affichage de la carte jouée par l'IA au dernier tour
+                    gamescene.update_lastcardslabels(str(cls._modelvar.ia), str(cls._modelvar.ia.last_card_played)) #Display the card played by the last player
                 gamescene.unlock_buttons()
                 
-                #Cas où le joueur est obligé de jouer la comtesse
+                #Case where the player has to play the comtess
                 must_play_comtesse = cls._modelvar.player.must_play_comtesse()
                 if(must_play_comtesse != -1):
                     gamescene.lock_button((must_play_comtesse+1)%2)
@@ -86,10 +84,10 @@ class Controller():
        
     
     @classmethod
-    #L'IA joue une carte
+    #AI plays a card
     def card_playedAI(cls, gamescene):
         if(not cls._modelvar.islearning):
-            #Attente de 3 secondes
+            #Wait 3 sec
             gamescene.freeze_screen()
 
         cls._modelvar.playAI()
@@ -97,39 +95,37 @@ class Controller():
         cls.start_turn(cls._modelvar.current_player, gamescene)
        
     @classmethod
-    #Fonction appelée lorsqu'un joueur a choisi une carte
+    #Function called when a player choses a card
     def card_played(cls, gamescene, index):
-        #Vérifie si le joueur n'est pas entrain de jouer l'action du chancelier, auquel cas il ne faut pas que le programme interprète le click sur un bouton comme
-        #le fait de jouer une carte
+        #Checks if the player isn't playing the counselor, in that case, the program must not interpret the click on the button as card played
         if(cls._modelvar.player.play_chancelier):
             cls.played_chancelier(gamescene, index)
         else:
-            #Action de la carte et changement de joueur courant
+            #Action of the card and change current player
             cls._modelvar.play(index)
             
-            #Nouveau tour
+            #New turn
             cls.start_turn(cls._modelvar.current_player, gamescene)
     
 
         
     @classmethod
-    #Prend dans le modèle les cartes ayant été jouées lors du round afin de les redonner à la view qui va les afficher
+    #Takes in the model the cards which have been played during the round and give them back of the view which will display them
     def display_played_cards(cls, special_frame, call_from_special = False):
         special_frame.display_allcards(cls._modelvar.ia.cards_played, cls._modelvar.player.cards_played, cls._modelvar.get_three_cards(), cls._modelvar.cartes_defaussees, call_from_special)
     
-    #Si la carte est un garde et que c'est le tour de l'utilisateur, on va afficher une écran lui montrant quelles cartes il peut 
-    #deviner
+    #If the card is a guard and it's the user's turn, we'll display a screen showing which cards he can guess
     @classmethod
     def display_guard_choice(cls):
         cls._game_scene.display_guard_choice()
 
     
-    #Si la carte est un prince, alors il pourra choisir le camp qui défausse sa carte    
+    #If the card played is a prince, then the user wil be able to chose which player has to throw its card
     @classmethod
     def display_prince_choice(cls, jeu_joueur, jeu_ia):
         cls._game_scene.display_prince_choice(jeu_joueur, jeu_ia)
     
-    #Fonction permettant d'afficher le label d'informations et d'ajouter de la lisibilité au jeu
+    #Function which displays the label of information and adds some lisibility to the game
     @classmethod
     def display_guard_ialabel(cls, card_guessed):
         if(cls._modelvar.islearning):
@@ -141,7 +137,7 @@ class Controller():
         cls._game_scene.update_iaUI(1)
         cls._game_scene.undisplay_details_label()
     
-    #Affichage du label récapitulatif lorsqu'un des joueurs a joué un prince
+    #Displays the label which recapitulates when a player played a prince
     @classmethod
     def display_prince_detailslabel(cls, current_player, side_chosen, card):
         if(cls._modelvar.islearning):
@@ -154,16 +150,16 @@ class Controller():
         cls._game_scene.update_iaUI(1)
         
     @classmethod
-    #Fonction appelée lorsque l'utilisateur a tenté de deviner une carte grâce au guarde
+    #Function called when user tried to guess a card thanks to the guard card
     def card_chosen(cls, special_frame, card):
-        #On retire la special frame et on continue l'action du garde
+        #We remove the special frame and keep playing the guard's action
         special_frame.stop_display()
         model.cards.Garde.deuxieme_action(card)
         
     @classmethod
-    #Fonction appelée lorsque l'utilisateur a joué le prince et choisi le camp qui défausse sa carte
+    #Function called when user played the prince and chose the player who has to throw its card
     def side_chosen(cls, special_frame, side):
-        #On retir la special frame et on continue l'action du prince
+        #We remove the special frame and resume the action of the prince
         special_frame.stop_display()
         model.cards.Prince.deuxieme_action(side)
         
@@ -171,7 +167,7 @@ class Controller():
     def display_AI_card(cls,card):
         if(cls._modelvar.islearning):
             return
-        #Affichage de la carte de l'ia, verouillage des boutons, attente de 3 secondes, déverouillage des boutons et ré affichage de la carte cachée
+        #Displays the AI's card, locks the buttons, waits 3 sec, unlocks the buttons and displays the cards as hidden again
         cls._game_scene.display_AI_card(str(card))
         cls._game_scene.freeze_screen()
         cls._game_scene.update_iaUI(1)
@@ -181,10 +177,10 @@ class Controller():
         if(cls._modelvar.islearning):
             return
         cls._game_scene.update_lastcardslabels(str(cls._modelvar.current_player), model.cards.Baron.__name__)
-        #Affichage des cartes du joueur et de l'ia pendant 3 secondes
+        #Displays the cards of the player and the AI during 3 secs
         cls._game_scene.display_baron(firstcard, secondcard)
 
-    #Update l'UI de l'IA lorsqu'elle joue le chancelier, de manière à ce que le joueur puisse suivre son action
+    #Update the GUI of the AI when it plays the counselor, in such a way that the user can follow up with its actions
     @classmethod
     def update_chancelier_IA(cls, current_player, nbcardsia):
         if(cls._modelvar.islearning):
@@ -193,23 +189,23 @@ class Controller():
         cls._game_scene.update_iaUI(nbcardsia)
         cls._game_scene.freeze_screen()
     
-    #Update l'UI du joueur lorsqu'il joue un chancelier, de manière à ce qu'il puisse ensuite choisir la carte qu'il veut conserver
+    #Update the GUI of the user when he plays a counselor, in such a way that he can then choose which cards he wants to keep
     @classmethod
     def update_chancelier_player(cls, current_player, playercards):
-        cls._game_scene.display_details_label("Vous avez joué un chancelier\nChoisissez dans l'ordre\nles cartes que vous voulez avoir en fin de pioche") #Affichage du label d'info
+        cls._game_scene.display_details_label("Vous avez joué un chancelier\nChoisissez dans l'ordre\nles cartes que vous voulez avoir en fin de pioche") #Display the info label
         cls._game_scene.update_lastcardslabels(str(current_player), model.cards.Chancelier.__name__)
-        cls._game_scene.update_playerUI(playercards) #Update de l'UI
-        cls._game_scene.wait_chancelier() #Attente du choix du joueur
-        
-    #Fonction lancée lorsque le joueur a cliqué sur l'une des cartes qu'il souhaite mettre en bas de la pioche
+        cls._game_scene.update_playerUI(playercards) #Updates the GUI
+        cls._game_scene.wait_chancelier() #Waits for the user's choice
+    
+    #Function called when the user clicked on one of the cards he wants to place at the bottom of the deck
     @classmethod
     def played_chancelier(cls, gamescene, index):
-        gamescene.resume_game() #On reprend le jeu
-        model.cards.Chancelier.deuxieme_action(cls._modelvar.player.cards[index]) #On effectue le traitement approprié
-        cls._game_scene.undisplay_details_label()#On enlève le label d'info
+        gamescene.resume_game() #Resumes the game
+        model.cards.Chancelier.deuxieme_action(cls._modelvar.player.cards[index]) #associated treatement starts
+        cls._game_scene.undisplay_details_label()#Removes the label info
             
     @classmethod
-    #Affichage de l'écran de fin, de la manière dont s'est fini la partie, et du score de chaque joueur
+    #Displays the end game screen, the way the round ended, and the score of each player
     def display_victory(cls, victory_condition, score):
         cls._game_scene.view.scenes["End game scene"].victory_screen(victory_condition, score)
         

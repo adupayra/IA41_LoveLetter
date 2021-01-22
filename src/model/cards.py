@@ -12,34 +12,34 @@ from random import randrange
 
 class Card(metaclass = abc.ABCMeta):
     '''
-    template pour toutes les cartes du jeu
+    template for every cards of the game
     '''
     
     _model = None
     
-    #Permet d'afficher la string retournée par __str__ lorsque l'on veut print une instance d'une carte
+    #Used to print a card
     def __repr__(self):
         return self.__str__()
     
     def __init__(self, model):
         self._model = model
     
-    #Propriété des cartes (valeur)
+    #Property of the cards (value)
     @property
     @abstractmethod
     def value(self):
         pass
     
-    #Action effectuée par la carte une fois jouée
+    #Action performed by the card once played
     @abstractmethod
     def action(self):
-        #Si le joueur adverse connaissait la carte du joueur courant, alors il ne la connait plus
+        #If the opponent knew the current player's card, then he doesn't know it anymore
         if self._model.next_player.knows_card[0] and isinstance(self, self._model.next_player.knows_card[1]):
             self._model.next_player.knows_card = [False, None]
     
 class TwoActionCards(Card, metaclass = abc.ABCMeta):
     '''
-    classe abstraite parente des classes se déroulant en deux temps du point de vue utilisateur (choix de la carte -> second choix -> action sur le modèle)
+    Parent abstract class of the classes which performs two actions on the point of view of the user (Chose the card -> second choice -> action on the model)
     '''
     
     def __init__(self, model):
@@ -56,10 +56,10 @@ class TwoActionCards(Card, metaclass = abc.ABCMeta):
     
 class Espionne(Card):
     '''
-    Classe définissant la carte espionne
+    Class defining the spy card
     '''
     
-    #Permet de print Espionne à la place de la référence de l'objet en mémoire
+    #Used to print Espionne instead of the reference to the object in memory
     def __str__(self):
         return "Espionne"
     
@@ -83,7 +83,7 @@ class Espionne(Card):
     
 class Garde(TwoActionCards):
     '''
-    Classe définissant la carte garde
+    Class defining the guard card
     '''
     
     def __str__(self):
@@ -101,7 +101,7 @@ class Garde(TwoActionCards):
         TwoActionCards.action(self)
         if(not self._model.next_player.immune):
             Garde._model=self._model
-            #Vérification du joueur courant afin d'afficher ou non quelque chose sur l'UI
+            #Checks the current player in order to display or not something on the GUI
             if(isinstance(self._model.current_player, player.IAMoyenne) or self._model.issimul):
                 
                 guess=self._model.current_state.evalgarde(False)
@@ -109,7 +109,7 @@ class Garde(TwoActionCards):
                 array = [Espionne.__name__, Pretre.__name__, Baron.__name__, Servante.__name__, Prince.__name__, Chancelier.__name__, Roi.__name__, 
                          Comtesse.__name__, Princesse.__name__]
                 if(not self._model.issimul):
-                    self._model.controller.display_guard_ialabel(array[guess]) #Affichage du label récapitulatif
+                    self._model.controller.display_guard_ialabel(array[guess]) #Displays the recapitulative label
                 
                 self.deuxieme_action(array[guess])
                     
@@ -119,8 +119,7 @@ class Garde(TwoActionCards):
                 
                 
             
-            
-    #Action effectuée une fois que la carte à deviner a été choisi
+    #Action performed once the card to guess has been chosen
     @classmethod
     def deuxieme_action(cls, chosen_card):
         if(chosen_card == str(cls._model.next_player.cards[0])):
@@ -129,7 +128,7 @@ class Garde(TwoActionCards):
     
 class Pretre(Card):
     '''
-    Classe définissant la carte pretre
+    Class defining the Priest card
     '''
     
     def __str__(self):
@@ -146,16 +145,16 @@ class Pretre(Card):
     def action(self):
         Card.action(self)
         if(not self._model.next_player.immune):
-            #Indique que le joueur courant connait la carte du joueur adverse, indique également l'instance de cette carte
+            #Indicates that the current player knows the opponent's card, also indicates the instance of this card
             self._model.current_player.knows_card = [True,self._model.next_player.cards[0].__class__]
-            if(isinstance(self._model.current_player, player.RealPlayer) and not self._model.issimul): #Pas d'affichage en simulation
+            if(isinstance(self._model.current_player, player.RealPlayer) and not self._model.issimul): #Don't display in simulation
                 self._model.controller.display_AI_card(self._model.ia.cards[0])
 
             
             
 class Baron(Card):
     '''
-    Classe définissant la carte baron
+    Class defining the Baron's card
     '''
     
     def __str__(self):
@@ -172,33 +171,28 @@ class Baron(Card):
     def action(self):
         Card.action(self)
         if(not self._model.next_player.immune):
-
-            #Caching des valeurs auxquelles on va beaucoup accéder dans la fonction
+            
+            #Caching the values which we will use a lot in the function
             current_player = self._model.current_player
             next_player= self._model.next_player
             
-            #Chaine de caractere de victoire
+            #Victory string
             chaine = " gagne 1 point, grâce à un baron"
         
             if(not self._model.issimul):
                 self._model.controller.display_baron(current_player.cards[0], next_player.cards[0])
             
-            #Check du gagnant
+            #Check the winner
             if(current_player.cards[0].value() > next_player.cards[0].value()):
                 self._model.game_victory(current_player, str(current_player) + chaine)                     
             elif(current_player.cards[0].value() < next_player.cards[0].value()):
                 self._model.game_victory(next_player, str(next_player) + chaine)
             
-    #Fonction appelée lors d'une simulation de jeu de baron afin de déterminer les probabilités de gagner
-    @classmethod
-    def algorithme_simulation(cls):
-        return 0.5
-        
         
         
 class Servante(Card):
     '''
-    Classe définissant la carte servante
+    Class defining the servant's card
     '''
     def __str__(self):
         return "Servante"
@@ -217,7 +211,7 @@ class Servante(Card):
     
 class Prince(TwoActionCards):
     '''
-    Classe définissant la carte prince
+    Class defining the Prince's card
     '''
     
     def __str__(self):
@@ -238,13 +232,12 @@ class Prince(TwoActionCards):
     def action(self):
         TwoActionCards.action(self)
         Prince._model = self._model 
-        #Affichage de l'écran de séléction du camp si le joueur est le joueur courrant
+        #Displays the screen of selection of the side if the current's player is the user
         if(isinstance(self._model.current_player, player.RealPlayer) and not self._model.issimul):
                 self._model.controller.display_prince_choice(self._player_side, self._ia_side)
         else:
             if(not isinstance(self._model.ia, player.IADifficile)):
-                #Sinon algo ia
-                #faut mettre self.deuxieme_action(fonction eval prince qui renvoie le camp) genre 0=self._player_side et 1=self._ia_side
+                #else AI algo
                 choix=self._model.current_state.evalprince(False)
                 if(choix == 1):
                     self.deuxieme_action(self._player_side)
@@ -253,7 +246,7 @@ class Prince(TwoActionCards):
     
     @classmethod
     def deuxieme_action(cls, chosen_side):
-        # player est le joueur qui se fait deffausser ses cartes
+        #_player is the player which gets its card thrown
         if(chosen_side == cls._player_side):
             _player = cls._model.player
         else:
@@ -261,15 +254,15 @@ class Prince(TwoActionCards):
 
         if(not _player.immune):
             if(not cls._model.issimul):
-                cls._model.controller.display_prince_detailslabel(cls._model.current_player, chosen_side, _player.cards[0]) #Affichage du label récapitulatif
+                cls._model.controller.display_prince_detailslabel(cls._model.current_player, chosen_side, _player.cards[0]) #Displays the recapitulative label
             
-            #cas ou la carte déffaussé est une princesse
+            #Case where the thrown card is the princess
             if(_player.cards[0].value() == 9 and isinstance(_player, player.RealPlayer)):
                 cls._model.game_victory(cls._model.ia, "L'IA remporte 1 point car le vrai joueur s'est fait défaussé une princesse !")
             elif(_player.cards[0].value() == 9 and isinstance(_player, player.IA)):
                 cls._model.game_victory(cls._model.player, "Le vrai joueur remporte 1 point car l'IA s'est fait défaussé une princesse !")
             
-            #autre cas
+            #Other case
             else:
                 cls._model.add_defausse(_player.cards[0])
                 _player.remove_card(_player.cards[0])
@@ -283,12 +276,12 @@ class Prince(TwoActionCards):
         
 class Chancelier(TwoActionCards):
     '''
-    Classe définissant la carte chancelier
+    Class defining the counselor's card
     '''
     
     _choix_cartes = None
     
-    #Utilisé pour éviter les problèmes de référence au mauvais model lorsque l'on est en simulation (pas propre, à modifier si il y a le temps)
+    #Used to avoid problems of reference to the wrong model when used in simulation (not clean, to modify if we have time)
     _model = None
     
     def __str__(self):
@@ -302,24 +295,24 @@ class Chancelier(TwoActionCards):
         return 6
     
     '''
-    Explication du fonctionnement : Lorsqu'un des deux joueurs va jouer un chancelier, il va devoir choisir dans l'ordre les cartes qu'il veut voir
-    au fond de la pioche (il choisit donc (sauf exception) les 2 cartes qu'il ne veut pas garder)
-    Une fois qu'une carte a été sélectionnée, on va vérifier le nombre de cartes restantes du joueur.
-    si il possède plus d'une carte, cela signifie que le joueur doit encore choisir une carte qu'il ne veut pas et le processus est relancé
-    sinon, cela signifie soit que le joueur a finit sa séléction, soit que nous nous trouvons dans le cas d'exception où il n'y a qu'une carte dans la pioche
-    (auquel cas le joueur n'a qu'une carte a séléctionner). On arrête donc le processus.
+    Explanation of how it works : When one of the two players is about to play the counselor, he'll have to chose the order of the cards he wants to see at the 
+    bottom of the deck (he then choses (but exception) the 2 cards he doesn't want to keep)
+    Once a card has been selected, we'll check the number of remaining cards in the player's hand.
+    If he owns more than a card, it means that the player still needs to choose a card that he doesn't want ant the process starts again.
+    Else, it means that the player has either finished his selection, or that we are in the case of an exception where there's only one card left in the deck
+    (in which case the player only has one card to select). We therefore stop the process.
     '''
      
     def action(self):
         TwoActionCards.action(self)
         #print(self._model.current_player.cards,self._model.deck)
-        #Si il n'y a plus de carte dans la pioche, ou si il y a simulation, alors jouer le chancelier n'aura pas d'effet
+
         if(self._model.deck.__len__() != 0 and (not self._model.issimul or self._model.deck.__len__() != 1)):
             Chancelier._model = self._model
             current_player = self._model.current_player
-            current_player.play_chancelier = True #Variable permettant de savoir si le joueur est en pleine action de chancelier ou non lorsqu'il clique sur un bouton
+            current_player.play_chancelier = True #Variable used to know if the player is currently playing a counselor or not when he hits a button
             
-            #Vérifie si il y a bien deux cartes restantes dans la pioche au moins
+            #Checks that there's at least 2 remaining cards in the deck
             if(self._model.deck.__len__() >= 2):
                 if(not self._model.issimul):
                     current_player.add_card(self._model.pick_card())
@@ -332,7 +325,7 @@ class Chancelier(TwoActionCards):
             else:
                 current_player.add_card(self._model.pick_card())
             
-            #Si l'IA a joué le chancelier, alors on appelle les fonctions appropriées
+            #If the AI played the counselor, then we call the associated functions
             if(isinstance(current_player, player.IA) or self._model.issimul):
                 if(not self._model.issimul):
                     self._model.controller.update_chancelier_IA(current_player, self._model.ia.cards.__len__())
@@ -347,11 +340,11 @@ class Chancelier(TwoActionCards):
                 Chancelier.deuxieme_action(current_player.cards[defaussecarte])
                 #algo IA
             else:
-                #Pareil pour le joueur
+                #Same but for the user
                 self._model.controller.update_chancelier_player(current_player, self._model.player.cards_to_string)
         
     
-    #Fonction appelée lorsque le joueur courant a séléctionné une carte qu'il ne voulait pas
+    #Function called when the current user selected a card that he doesn't wanna keep
     @classmethod
     def deuxieme_action(cls, card_chosen):
         #print(card_chosen)
@@ -400,7 +393,7 @@ class Roi(Card):
             self._model.next_player.add_card(current_card)
             self._model.current_player.add_card(next_card)
             
-            #Indique que chaque joueur connait la carte de l'autre
+            #Indicates that each player knows the card of the other
             current_player.knows_card = [True,current_card.__class__]
             next_player.knows_card = [True, next_card.__class__]
     

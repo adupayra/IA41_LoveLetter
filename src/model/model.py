@@ -20,26 +20,27 @@ class Model(object):
 
     def __init__(self, controller):
         '''
-        Le constructeur va permettre l'instantiation de toutes les cartes, seule donnée persistante du programme (afin de ne pas avoir à ré instancier les cartes
-        à chaque début de partie/début de round
+        The constructor will allow the instantiation of all the cards, only persistant data of the program (So that we don't have to instantiate again every card
+        at every beginning of game/start of round)
         '''
-        #Définition des différents attributs
+        
+        #Definition of the different attributes
         self._controller = controller
-        self._cards = [] #Liste de toutes les cartes
-        self._cards_played = [] #Liste des cartes jouées (comprenant les 3 cartes montrées au début)
-        self._burnt_card = None #La carte inconnue
-        self._deck = [] #La pioche
-        self._players_list = None #Liste chainée contenant le joueur courant, le vrai joueur et l'ia
+        self._cards = [] #List of all cards
+        self._cards_played = [] #List of the played cards (contains the 3 cards of the beginning)
+        self._burnt_card = None #The unknown card
+        self._deck = [] #The deck
+        self._players_list = None #Linked list containing the current player, the real player and the AI
         self._victory = False
         self._winner = None
         cards.Card._model = self
-        self._cartes_defaussees = [] #Cartes défaussées lorsque le prince est joué
+        self._cartes_defaussees = [] #Thrown cards when the prince is played
         self._current_state = None
         self._issimul = False
         self._islearning = False
         self._victorylearning= False
         
-        #Instantiation de toutes les cartes
+        #Instantiation of all the cards
         self._cards.append(cards.Roi(self))
         self._cards.append(cards.Comtesse(self))
         self._cards.append(cards.Princesse(self))
@@ -68,7 +69,7 @@ class Model(object):
     def cards_played(self):
         return self._cards_played
     
-    #Utilisé en cas de sauvegarde du model (pour les simulations)
+    #Used in case of save of the model (during the simulations)
     @cards_played.setter
     def cards_played(self,value):
         self._cards_played = value
@@ -89,7 +90,7 @@ class Model(object):
     def deck(self):
         return self._deck
 
-    #Utilisé en cas de sauvegarde du model (pour les simulations)
+    #Used in case of save of the model (during the simulations)
     @deck.setter
     def deck(self, value):
         self._deck = value
@@ -153,11 +154,10 @@ class Model(object):
     def add_defausse(self, card):
         self._cartes_defaussees.append(card)
                 
-    
-    #Fonction permettant l'initialisation des données non persistantes (appel à chaque début de partie et début de round)
+    #Function used for the initialization of non persistant data (called at each beginning of round)
     def init_data(self,difficulty = -1):
         
-        #Réinitialisation des données du round précédent
+        #Reset the data of the precedant round
         self._cards_played = []
         self._cards_played_ia = []
         self._cards_played_player = []
@@ -167,21 +167,20 @@ class Model(object):
         self._cartes_defaussees = []
         self._current_state = None
         
-        #Mélange des cartes
+        #Shuffle the cards
         shuffle(self._cards)
         
-        #Création des joueurs si il s'agit d'un début de partie
-        if difficulty != -1: #-1 veut dire qu'aucun argument n'a été envoyé à la fonction, ce qui veut dire qu'il s'agit d'un nouveau round et non d'une nouvelle 
-                            #partie
+        #Creation of the players if it is the beginning of a game
+        if difficulty != -1: #-1 means that no parameters wer passed to the function, which means that it's a new round an not a new game
             self.creer_joueurs(difficulty)
-        else: #Nouveau round, on réinitialise donc la main de l'ia et du joueur
+        else: #New round, we reset the AI and user's hands
             self.ia.reset_values()
             self.player.reset_values()
             
-        #distribution des cartes dans les différentes listes
+        #Share the cards in the differnt lists
         self.distribution()
         
-        #Détermine le premier joueur aléatoirement
+        #Tells randomly the first player
         premier_joueur = randrange(0,2)
 
         if premier_joueur == 0:
@@ -195,13 +194,13 @@ class Model(object):
             self.play_simu()
             
         return self._players_list.current
-        
-    #Instanciation des joueurs
+    
+    #Instantiates the players
     def creer_joueurs(self, difficulty = 0):
-        #Création du noeud contenant l'instance du vrai joueur
+        #Creation of a node containing the instance of the user
         player_node = player.Node(player.RealPlayer())
         
-        #Création de l'instance de l'ia
+        #Creation of the AI
         ia = None
         if difficulty == 0:
             ia = player.IAMoyenne(self)
@@ -211,39 +210,37 @@ class Model(object):
             self._islearning = True
             
             
-        #Création du noeud contenant l'instance de l'ia
+        #Creation of the node containing the instance of the AI
         ia_node = player.Node(ia)
         
-        #Définition de l'attribut next player des noeuds, qui est une référence du noeud du prochain joueur
+        #Definition of the next player's attribute of the nodes, who is a reference of the node of the next player
         player_node.next_player = ia_node
         ia_node.next_player = player_node
         
-        #Création de la liste circulaire chaînée
+        #Creation of the circular linked list
         self._players_list = player.CircleLinkedList(player_node, ia_node)
         
         
-    
-    #Distribution des cartes dans les différentes listes
+    #Distribution of the cards in the differnt lists
     def distribution(self):
-        self.player.add_card(self._cards[0]) #Une carte au joueur
-        self.ia.add_card(self._cards[1]) #Une à l'IA
-        self._burnt_card = self._cards[2] #La carte qui restera cachée le long de la partie
+        self.player.add_card(self._cards[0]) #A card for the player
+        self.ia.add_card(self._cards[1]) #One for the AI
+        self._burnt_card = self._cards[2] #The cazrd which will remain hidden during the game
         
-        #Les 3 cartes visibles dès le début
+        #The 3 visible cards of the beginning
         self._cards_played.append(self._cards[3]) 
         self._cards_played.append(self._cards[4])
         self._cards_played.append(self._cards[5])
         
-        #la pioche
+        #The deck
         for i in range (6, self._cards.__len__()):
             self._deck.append(self._cards[i])
         
-        
-    #Ajoute une carte à la liste des cartes jouées dans le round
+    #Adds a card to the list of the played cards during the round
     def add_cards_played(self, new_card):
         self._cards_played.append(new_card)
-
-    #Pioche une carte
+    
+    #Draws a card
     def pick_card(self):
         if(self._deck):
             if(not self._issimul):
@@ -251,13 +248,12 @@ class Model(object):
         elif(self._victory is False):
             self.victory_emptydeck()
         
-    
-    #Fonction permettant de déterminer la fin de pioche lors de la simulation de l'IA, de simuler la pioche lors de la simulation de l'IA,
-    #et permet également le bon déroulement de la simulation dans des cas de pioche particulieres (Prince et Chancelier)
+    #Function used to determine the end of the deck when simulating an AI's play, to simulate the deck when the the AI is simulating, and to allow the good process of
+    #the simulation in the cases of particular draw of cards (Prince and Counselor)
     def pick_card_simu(self, card = None):
-        #Lorsqu'on parcourt l'arbre de jeu, le joueur courant ne sait pas quelle carte est brulée. La carte peut donc théoriquement 
-        #être piochée par le joueur adverse. Elle est donc mélangée à la pioche le temps de la simulation. Avoir une longueur de pioche de 1 pendant
-        #la simulation signifie donc que la pioche serait vide hors simulation
+        #When going through the game's tree, the current player doesn't know which card is burnt. The card can therefore theoretically be drawned by the opponent's 
+        #player. It is therefore placed inside the deck during the simulation. Having a deck's lenght of 1 during the simulation then means that the deck would
+        #be empty outside the simulation
         if(not self._deck or self._deck.__len__() == 1):
             self.victory_emptydeck()
         elif card is None:
@@ -268,8 +264,7 @@ class Model(object):
         else:
             self._deck.remove(card)
     
-
-    #Retourne les 3 première cartes de jeu (celles affichées au milieu du plateau)
+    #Returns the 3 first cards (the one displayed in the middle of the board)
     def get_three_cards(self):
         return str(self._cards_played[0]), str(self._cards_played[1]), str(self._cards_played[2])
     
@@ -277,22 +272,20 @@ class Model(object):
         while(self.ia.score <= 2000):
             self.playAI()
             
-            
-    #Choix de la carte jouée par l'IA
+    #Chosing of the card played by the AI
     def playAI(self):
         index = self.ia.algorithme()
         #self.play(randrange(0,2))
         self.play(index)
         
-    
-    #Effectue l'action de la carte à l'index associée du joueur courrant
+    #Performs the action of the card at the given index of the current player
     def play(self, index):
         last_card_played = self.current_player.cards[index]
         self.current_player.add_cards_played(last_card_played)
 
-        self.current_player.remove_card(last_card_played)#Suppression de la carte dans la main du joueur courrant
-        self._cards_played.append(last_card_played)#Ajout de cette carte à la liste des cartes jouées
-        last_card_played.action()#Action de la carte
+        self.current_player.remove_card(last_card_played)#Removes the card in the hand of the current player
+        self._cards_played.append(last_card_played)#Adds the card to the list of played cards
+        last_card_played.action()#Action of the card
         if(not self._victorylearning):
             self.next_player.immune = False
             self.current_player.last_card_played = last_card_played
@@ -302,11 +295,10 @@ class Model(object):
             self._victorylearning = False
         
         
-            
-    #Définition du prochain joueur
+    #Decides the next player
     def next_turn(self):
         
-        self._players_list.next_turn() #On passe au prochain joueur
+        self._players_list.next_turn() #Next player
         
         temp = self.pick_card()
         
@@ -316,11 +308,11 @@ class Model(object):
             if(temp is not None):
                 self.current_player.add_card(temp)
     
-    #Fonction appelée lorsque la pioche est vide
+    #Function called when the deck is empty
     def victory_emptydeck(self):
         string_to_pass = ""
         
-        #Exception à cause du cas du prince : dernière carte jouée est un prince donc l'un des deux joueurs n'a plus de carte en main
+        #Exception due to the prince's case : last card played is a prince therefore one of the player has no cards left in it hand
         if(self.player.cards.__len__() == 0):
             if(self.player.cards_played[self.player.cards_played.__len__() - 1].value() > self.ia.cards[0].value()):
                 winner = self.player
@@ -336,7 +328,7 @@ class Model(object):
                 winner = self.player
                 string_to_pass = "Pioche vide : \nJoueur a gagné car sa dernière carte jouée était plus forte"
         else:
-            #Cas usuel
+            #Usual case
             if(self.ia.cards[0].value() > self.player.cards[0].value()):
                 winner = self.ia
                 string_to_pass = "Pioche vide : \nIA a gagné car sa carte était plus forte"
@@ -344,18 +336,18 @@ class Model(object):
                 winner = self.player
                 string_to_pass = "Pioche vide : \nJoueur a gagné car sa carte était plus forte"
 
-        #Victoire
+        #Victory
         self.game_victory(winner, string_to_pass)
     
-    #Fonction appelée chaque foiqu'il y a victoire
+    #Function called each time there's victory
     def game_victory(self, winner, chaine):
         
         self._victory = True 
         
         self._winner = winner
         if(not self.issimul):
-            #On affiche l'écran de fin de jeu en passant par le controller
-            self._winner.win(1) #Le joueur ayant gagné gagne un point de score
+            #We display the end game screen thanks to the controller
+            self._winner.win(1) #The player which won gets a point
             
             if(self.player.espionne_played):
                 self.player.win(1)
@@ -368,30 +360,29 @@ class Model(object):
             else:
                 self._victorylearning = True
                 self.init_data()
-
-    #Sauvegarde des variables
+                
+    #Save the variables
     def save_attributes(self):
         return {"Deck" : copy.copy(self._deck), "Cards played" : copy.copy(self._cards_played),
                 "Victory" : self._victory}
         
-    #Restauration des variables avec recopie de la sauvegarde afin de ne pas la corrompre
+    #Reset the variables and copies the save in order not to corupt them
     def set_attributes(self, attributes):
         self._deck = copy.copy(attributes["Deck"])
         self._cards_played = copy.copy(attributes["Cards played"])
         self._victory = attributes["Victory"]
         
-    
-    #Fonction permettant de définir les cartes pouvant être piochée ainsi que leur probabilité d'être piochée
+    #Function used to define the cards which can be drawned and their probability to be drawned
     def get_drawable_cards(self):
         drawable_cards = {}
         for card in self._deck:
-            if(not any(isinstance(x, card.__class__) for x in drawable_cards)): #Vérifie si la carte possède déjà une instance dans la liste
-                proba = sum(isinstance(x, card.__class__) for x in self._deck)/self._deck.__len__() #Calcul du pourcentage associé
+            if(not any(isinstance(x, card.__class__) for x in drawable_cards)): #Checks whether the card already has an instance in the list or not
+                proba = sum(isinstance(x, card.__class__) for x in self._deck)/self._deck.__len__() #Compute associated percentage
                 drawable_cards[card] = proba
-                
-            #Si la liste contient 10 cartes, elle contient tous les types de carte possible du jeu, on sort donc de la boucle
+            
+            #If the list contains 10 cards, then it contains every possible types of cards, therefore we leave the loop
             if(drawable_cards.__len__() == 10):
                 break
-        return {k:v for k,v in sorted(drawable_cards.items(), key = lambda item:item[1], reverse = True)} #Tri du dictionnaire en fonction de ses valeurs (décroissant)
+        return {k:v for k,v in sorted(drawable_cards.items(), key = lambda item:item[1], reverse = True)} #Sort dictionnary thanks to its values (Decreasingly)
         #return drawable_cards
 

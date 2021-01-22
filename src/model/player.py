@@ -11,7 +11,7 @@ import copy
 import random
 import src.model.cards as cards
 
-#Liste circulairement chainée, contenant les noeuds contenant chaque joueur, ainsi que le noeud du joueur courant
+#Circular linked list, containing the nodes containing each player, and the node containing the current player
 class CircleLinkedList(object):
 
     def __init__(self, head, tail):
@@ -19,7 +19,7 @@ class CircleLinkedList(object):
         self._ia_node = tail
         self._current_node = None
     
-    #Passe au prochain joueur
+    #Get to the next player
     def next_turn(self):
         self._current_node = self._current_node.next_player
         return self._current_node
@@ -64,8 +64,7 @@ class CircleLinkedList(object):
     def next_player(self):
         return self._current_node.next_player.player
     
-
-#Noeud contenant l'instance d'un joueur et la référence vers le noeud suivant
+#Node containing the instance of a player and the reference to the next node
 class Node(object):
     
     def __init__(self, player):
@@ -92,7 +91,7 @@ class Node(object):
 
 class Player(metaclass = abc.ABCMeta):
     '''
-    Classe servant de template pour la classe vraie joueur et les classes d'IA
+    Class used as a template for the class realPlayer and the AI classes
     '''
     
 
@@ -111,11 +110,12 @@ class Player(metaclass = abc.ABCMeta):
         self._knows_card = [False, None]
     
     def save_attributes(self):
-        #Sauvegarde des variables
+        #Save of the variables
         return {"Cards" : copy.copy(self._cards), "Cards played" : copy.copy(self._cards_played), "Immune" : self._immune, "Espionne played" : self._espionne_played, 
                 "Knows card" : copy.deepcopy(self._knows_card)}
     
     def set_attributes(self, attributes):
+        #Reset of the variables and copies of the save (in order not to corrupt it)
         #Restauration des variables avec recopie de la sauvegarde (afin de ne pas la corrompre)
         self._cards = copy.copy(attributes["Cards"])
         self._cards_played = copy.copy(attributes["Cards played"])
@@ -198,7 +198,7 @@ class Player(metaclass = abc.ABCMeta):
         self._knows_card[0] = False
         self._knows_card[1] = None
     
-    #Fonction utilisée pour vérifier si le joueur possède la comtesse et le roi ou le prince
+    #Function used to check if the player owns a comtess and the king or the prince
     def must_play_comtesse(self):
         if (any(isinstance(x, cards.Comtesse) for x in self._cards)):
             if(any(isinstance(y, cards.Roi) or isinstance(y, cards.Prince) for y in self._cards)):
@@ -225,7 +225,7 @@ class RealPlayer(Player):
     
 class IA(Player, metaclass = abc.ABCMeta):
     '''
-    Classe servant de template pour les différentes IA
+    Class used as a template for the different AIs
     '''
     
     def __init__(self, model):
@@ -251,31 +251,31 @@ class IAMoyenne(IA):
     def __str__(self):
         return "IA Moyenne"
     
-    #Algorithme de décision de la carte à jouer de l'IA facile
+    #Algorithm used by the Intermediate AI to decide the card to play
     def algorithme(self):
         self._model.issimul = True
             
-        self._model.deck.append(self._model.burnt_card) #Ajout de la carte brûlée à la pioche car le joueur ne connaît pas cette carte. 
-                                                        #Elle doit donc être théoriquement piochable
+        self._model.deck.append(self._model.burnt_card) #Adds the burnt card to the deck since the player doesn't know that card 
+                                                        #It therefore must be drawable
         
-        #Afin que l'IA ne découvre pas la carte de l'adversaire pendant la simulation, on lui donne la carte qu'il est le plus probable qu'il est
-        #(ce n'est pas optimal, le mieux serait de couvrir tous les cas possibles)
+        #In order for the AI not to discover the card of its opponent during the simulation, we give the user the card that he might have with the highest possibility
+        #(not the most optimal way, the best would be to cover all possibile cases)
         opponent = self._model.next_player
         card = opponent.cards[0] 
-        self._model.deck.append(card) #Ajout de la carte de l'adversaire au deck
-        opponent.remove_card(card) #Suppression de la carte dans son jeu
+        self._model.deck.append(card) #Adds the card to the opponent's deck
+        opponent.remove_card(card) #Remove the card from its hand
         newcard = self._model.pick_card_simu() 
-        opponent.add_card(newcard) #Obtention de la carte la plus probable
+        opponent.add_card(newcard) #Get the most probable card
         
-        state = State(self._model, None) #Etat courant
+        state = State(self._model, None) #Current state
         
         self._model.current_state=state
         
         index = 0
-        #Si l'ia possède une comtesse et un prince ou un roi, alors pas besoin de lancer le minmax, la comtesse est jouée
+        #If the AI has the comtess and a prince or a king, then no need to start the algorithm, the comtess is played
         play_comtesse = self.must_play_comtesse()
         
-        #Si l'ia a une princesse elle n'est pas jouée, le minmax n'est pas lancé
+        #If the AI has a princess, it doesn't play it, the alpha beta doesn't start then
         if(isinstance(self.cards[0], cards.Princesse)):
             index = 1
         elif(isinstance(self.cards[1], cards.Princesse)):
@@ -286,7 +286,9 @@ class IAMoyenne(IA):
 
         
             temp = copy.copy(self._depth)
-            (value, best_state) = self.max_val(self._model.current_state, float('-inf'), float('inf'), int(temp)) #Appel de l'algorithme minmax qui va nous retourner la valeur du meilleur état ainsi que l'état correspondant
+            
+            #Call to the alpha beta algorithm which will find the value of the best state and the corresponding state
+            (value, best_state) = self.max_val(self._model.current_state, float('-inf'), float('inf'), int(temp)) 
             
             
             if(self._depth < 5):
@@ -309,8 +311,7 @@ class IAMoyenne(IA):
             '''
             path = []
             
-            
-            #Grâce à l'état trouvé avec le minmax, on retrouve la carte à jouer menant à cet état
+            #Thanks to the state found with the alpha beta, we find the card which lead to that state
             while(best_state.parent is not state):
                 path.append(best_state)
                 best_state = best_state.parent
@@ -326,23 +327,21 @@ class IAMoyenne(IA):
             else:
                 index = 1
 
-        self._model.deck.remove(self._model.burnt_card) #On retire la carte brûlée
+        self._model.deck.remove(self._model.burnt_card) #Remove the burnt card
         
-        opponent.remove_card(newcard) #on retir la carte intermédiaire du deck
-        opponent.add_card(card)#On redonne au joueur sa vraie carte
-        self._model.deck.append(newcard) #on replace la carte qu'avait le joueur dans le deck
-        self._model.deck.remove(card) #on enlève la carte du joueur
-        
+        opponent.remove_card(newcard) #Remove intermediary card from the deck
+        opponent.add_card(card)#Give back to the player its real card
+        self._model.deck.append(newcard) #Replace the card that the player had in the deck
+        self._model.deck.remove(card) #Remove the player's card
         '''
         '''
         self._model.issimul = False
         return index
     
     
-    
-    #Algorithme classique d'un noeud max
+    #Classic algorithm of a MAX node
     def max_val(self, state, alpha, beta, depth):
-        #Condition d'arrêt
+        #Stop condition
         if state.is_final or depth == 0:
             return (state.eval(),state)
         
@@ -350,15 +349,16 @@ class IAMoyenne(IA):
         for s in state.next_states():
             
             temp = self.min_val(s, alpha, beta, depth-1)
-            value = max(temp, value, key = lambda x:x[0]) #Puisqu'on a un couple (valeur, état parent), on cherche le maximum des deux couples en fonction de la valeur
+            value = max(temp, value, key = lambda x:x[0]) #Since we have a couple (value, parent's state), we search the maximum of the two couples using the value
+                                                            #each couple
             if(value[0] >= beta):
                 return value
             alpha = max(alpha, value[0])
         return value
     
-    #Algorithme classique d'un noeud min
+    #Classic algorithm of a MIN node
     def min_val(self, state, alpha, beta, depth):
-        #Condition d'arrêt
+        #stop condition
         if(state.is_final or depth == 0):
             return (-state.eval(),state)
         
@@ -367,7 +367,8 @@ class IAMoyenne(IA):
         for s in state.next_states():
             
             temp = self.max_val(s, alpha, beta, depth-1)
-            value = min(value, temp, key = lambda x:x[0]) #Puisqu'on a un couple (valeur, état parent), on cherche le minimum des deux couples en fonction de la valeur
+            value = min(value, temp, key = lambda x:x[0]) #Since we have a couple (value, parent's state), we search the minimum of the two couples using the value of
+                                                            #each couple
             if(value[0] <= alpha):
                 return value
             beta = min(beta, value[0])
@@ -455,12 +456,12 @@ class State():
             drawable_cards = self._model.get_drawable_cards()
             states = []
             
-            #Vérifie l'obligation de jouer la comtesse ou non
+            #Checks if the player has to play comtess or not
             play_comtesse = self._current_player.must_play_comtesse()
             if play_comtesse != -1:
                 self.play_simu(states, drawable_cards, play_comtesse)
             else:
-                #On boucle sur les cartes du joueur courant, pour chaque carte, on boucle sur toutes les cartes possibles que le prochain joueur peut piocher
+                #Looping on the cards of the current player, for each card, we loop through each possible card the next player can draw
                 for i in range(0, self._model.current_player.cards.__len__()) :
                     self.play_simu(states, drawable_cards, i)
             
@@ -474,11 +475,11 @@ class State():
             self._opponent.add_card(card)
             self._model.play(i)
             
-            #Génération de l'état correspondant
+            #Generates the corresponding state
             state = State(self._model, self, drawable_cards[card])
             states.append(state)
             
-            #Restauration de l'environnement
+            #Save the environnement
             self._save.backup() 
                 
     def info(self):
@@ -773,7 +774,7 @@ class State():
         probavictoire=self._dicocarte[cards.Princesse]/self._nbcarte*100
         probapourfairechier=(self._dicocarte[cards.Servante]+self._dicocarte[cards.Pretre])/self._nbcarte*100
         probatotal=probavictoire+probapourfairechier
-        if(choix): #Dans le cas où il faut retourner un poids
+        if(choix): #Case where we have to return a weight
             #print("Les probas pour le Prince : Victoire :",probavictoire,"Pour faire chier :",probapourfairechier)    
             if(self._opponent.immune==True):
                 poids=30
@@ -784,7 +785,7 @@ class State():
                     if(probatotal>=0):
                         poids=probatotal
             return poids
-        else: #Dans le cas où il faut retourner un camp
+        else: #Case where we have to return a side
             if(isinstance(self._model.next_player.cards[0],cards.Princesse)):
                 #print("Camp adverse")
                 return 1
@@ -818,7 +819,7 @@ class State():
         carteajouer = max(probalist, key = lambda x:x[0])
         #print(carteajouer)
         
-        if(choix): #On est dans le cas où il faut retourner un poids
+        if(choix): #Case where we have to return a weight
             if(self._opponent.immune==True):
                 return 50
             else:
@@ -826,7 +827,7 @@ class State():
                     #print("Carte à faire deviner :",self._current_player.knows_card[1])
                     return 99
                 else:
-                    return carteajouer[0]+15 #piti facteur chance
+                    return carteajouer[0]+15 #luck factor
         else:
             if(self._current_player.knows_card[0]):
                 #print("Carte à faire deviner :",self._current_player.knows_card[1])
@@ -839,17 +840,17 @@ class State():
                 return carteajouer[1]
 class Save():
     '''
-    Classe permettant de sauvegarder l'état courant du jeu lors d'une simulation. Cette manière de faire est loin d'être la meilleure, implémenter un command 
-    pattern pour la simulation aurait probablement été plus bénéfique, bien que rendant l'architecture des fichiers moins lisible
+    Class used to save the current state of the game during a simulation. This way of doing things is far from being the best, implementing a command pattern
+    for the simulation would've been more beneficial, but would've made the files' architecture messier
     '''
     def __init__(self, model):
-        #Création d'un environnement propre à l'état courant, afin de ne pas manipuler l'environnement hors de l'état courant
+        #Create an environment linked to the current state in order not to manipulate the environnement outside the current state
         self._model = copy.deepcopy(model)
         
         self._current_player = self._model.current_player
         self._next_player = self._model.next_player
         
-        #Sauvagarde des éléments de l'environnement
+        #Save the elements of the environnment
         self._modelsave = self._model.save_attributes()
         self._current_player_save = self._model.current_player.save_attributes()
         self._next_player_save = self._model.next_player.save_attributes()
@@ -857,14 +858,14 @@ class Save():
     def get_model(self):
         return self._model
 
-    #Restauration de l'environnement
+    #reset the environnement
     def backup(self):
         
         self._current_player.set_attributes(self._current_player_save)
         self._next_player.set_attributes(self._next_player_save)
         self._model.set_attributes(self._modelsave)
         
-        #La restauration ne se fait que sur les listes de carte, il faut revenir au joueur courant manuellement
+        #Reset is only done on the cards' lists, we have to reset the current player manually
         self._model.players_list.next_turn()
         
 

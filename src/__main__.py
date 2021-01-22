@@ -11,7 +11,7 @@ import src.view.view as view
 import os   
 
 def main():
-    #Changement du répertoire courant afin de se trouver dans le répertoire où se trouvent les ressources
+    #We change the current directory in order to place inside the resource directory
     path_ressources = os.path.dirname(os.path.abspath(__file__))
     os.chdir(path_ressources)
     os.chdir(os.pardir)
